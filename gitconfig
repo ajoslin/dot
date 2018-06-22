@@ -1,0 +1,35 @@
+[alias]
+  lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
+  co = checkout
+  st = status -s
+  ri = rebase -i
+  ca = commit -a
+  cam = commit -a --amend
+  camno = commit --amend --no-edit
+  pom = push origin master
+  pog = push origin gh-pages
+  prom = pull --rebase origin master
+  prog = pull --rebase origin gh-pages
+  log-file = log -p -M --follow --stat --
+[core]
+	excludesfile = /Users/andrew/.globalgitignore
+  editor = vim
+  # pager = "diff-highlight | diff-so-fancy | less --tabs=1,5 -R"
+[mergetool]
+  keepBackup = false
+[diff]
+  tool = vimdiff
+[difftool]
+  prompt = false
+[color]
+  ui = true
+[web]
+	browser = open
+[push]
+	default = matching
+[user]
+	name = Andrew Joslin
+	email = andrewtjoslin@gmail.com
+	signingkey = 6D684901
+[merge]
+	tool = opendiff

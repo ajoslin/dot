@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ -z "$1" ]]; then
+  DATE=$(date +"%Y-%m-%d")
+else
+  DATE=$1
+fi
+
+vim $HOME/journal/$DATE.txt

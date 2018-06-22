@@ -1,0 +1,9 @@
+#!/bin/bash
+
+FROM=$1
+TO=$2
+SEP=$([[ -z $3 ]] && echo '|' || echo $3)
+
+sed -i '' \
+    "s$(echo $SEP)$(echo $FROM)$(echo $SEP)$(echo $TO)$(echo $SEP)g" \
+    $(ag -l $FROM)

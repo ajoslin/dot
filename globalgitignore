@@ -1,0 +1,9 @@
+.tern-port
+.DS_Store
+npm-debug.log
+.divshot-cache
+package-lock.json
+yarn.lock
+.#*
+dump.rdb
+rethinkdb_data

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+do-not-disturb $@
+do-not-disturb status

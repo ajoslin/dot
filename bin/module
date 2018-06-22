@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Thanks bendrucker
+
+mkdir $1
+cd $1
+git init
+yo bd
+git add .
+git commit -am 'Init'
+git remote add origin git@github.com:ajoslin/$1
+hub create
+travis enable --no-interactive

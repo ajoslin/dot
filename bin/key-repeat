@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: key-repeat <InitialKeyRepeat> <KeyRepeat>"
+  echo "  (all ints in milliseconds, lower is faster)"
+  echo "Current values: InitialKeyRepeat=$(defaults read -g InitialKeyRepeat), KeyRepeat=$(defaults read -g KeyRepeat)"
+  exit 0
+fi
+
+defaults write -g InitialKeyRepeat -int $1
+defaults write -g KeyRepeat -int $2
+
+echo "InitialKeyRepeat set to $1, KeyRepeat set to $2."
+echo "Restart or logout for changes to take effect."

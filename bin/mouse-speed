@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+  echo $(defaults read -g com.apple.mouse.scaling)
+  exit 0
+fi
+
+defaults write -g com.apple.mouse.scaling -float $1
+
+echo "Mouse speed set to $1. Restart or logout for the changes to take effect."

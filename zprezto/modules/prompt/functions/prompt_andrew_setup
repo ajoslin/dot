@@ -1,0 +1,30 @@
+function prompt_andrew_precmd {
+  git-info
+}
+
+function prompt_andrew_setup {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+  prompt_opts=(cr percent subst)
+
+  # Load required functions.
+  autoload -Uz add-zsh-hook
+
+  # Add hook for calling git-info before each command.
+  add-zsh-hook precmd prompt_andrew_precmd
+
+  # Set git-info parameters.
+  zstyle ':prezto:module:git:info' verbose 'yes'
+  zstyle ':prezto:module:git:info:branch' format '%F{yellow}%b%f'
+  zstyle ':prezto:module:git:info:clean' format '%F{yellow}%f'
+  zstyle ':prezto:module:git:info:dirty' format '%F{grey}|%F{red}*%f'
+  zstyle ':prezto:module:git:info:keys' format \
+    'prompt' '%F{grey}|$(coalesce "%b" "%p" "%c")${git_info[rprompt]}%s%F{green}%f' \
+    'rprompt' '%C%D'
+
+  # Define prompts.
+  PROMPT='%F{blue}%~${(e)git_info[prompt]} '
+  RPROMPT=''
+}
+
+prompt_andrew_setup "$@"

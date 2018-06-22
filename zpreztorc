@@ -1,0 +1,48 @@
+# Color output (auto set to 'no' on dumb terminals).
+zstyle ':prezto:*:*' color 'yes'
+zstyle ':prezto:module:editor' key-bindings 'vi'
+zstyle ':prezto:module:ssh:load' identities 'id_rsa'
+
+if [[ -n ${EMACS} ]]; then
+  zstyle ':prezto:module:terminal' auto-title 'no'
+  zstyle ':prezto:module:terminal' window-title 'no'
+  zstyle ':prezto:module:terminal' tab-title 'no'
+else
+  zstyle ':prezto:module:terminal' auto-title 'yes'
+  zstyle ':prezto:module:terminal:window-title' format '%n@%m: %s'
+  zstyle ':prezto:module:terminal:tab-title' format '%m: %s'
+fi
+
+# Auto start a session when Zsh is launched in a SSH connection.
+# zstyle ':prezto:module:tmux:auto-start' remote 'yes'
+zstyle ':prezto:module:prompt' theme 'andrew'
+
+
+# Set the Prezto modules to load (browse modules).
+# The order matters.
+zstyle ':prezto:load' pmodule \
+  'environment' \
+  'terminal' \
+  'editor' \
+  'history' \
+  'directory' \
+  'spectrum' \
+  'utility' \
+  'ssh' \
+  'completion' \
+  'homebrew' \
+  'osx' \
+  'ruby' \
+  'rails' \
+  'git' \
+  'tmux' \
+  'syntax-highlighting' \
+  'history-substring-search' \
+  'prompt'
+
+zstyle ':prezto:module:syntax-highlighting' highlighters \
+  'main' \
+  'brackets' \
+  'pattern' \
+  'cursor' \
+  'root'
