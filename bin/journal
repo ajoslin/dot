@@ -6,4 +6,4 @@ else
   DATE=$1
 fi
 
-vim $HOME/journal/$DATE.txt
+vim /Users/andrew/owncloud/org/personal/journal/$DATE.txt
