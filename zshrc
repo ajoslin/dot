@@ -57,10 +57,8 @@ vi () {
   FILE=${1:-.}
 
   # Make sure the socket ID has no slashes, emacs does not like that.
-  EMACS_SOCKET="tmux$(tmux display -p '#{client_tty}' | sed 's|/|_|g')"
-
-  ls $TMPDIR/emacs$UID | grep -q $EMACS_SOCKET || emacs -nw --daemon="$EMACS_SOCKET"
-  emacsclient -nw -s "$EMACS_SOCKET" $FILE
+  ls $TMPDIR/emacs$UID | grep -q server || emacs -nw --daemon
+  emacsclient -nw $FILE
 }
 
 # tabtab source for serverless package
