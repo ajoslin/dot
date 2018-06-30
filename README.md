@@ -37,4 +37,8 @@ sudo vi /etc/shells
 chsh -s $(which zsh)
 ```
 
+```
+C-a I # tmux-plugins
+```
+
 Start a new terminal, and it should start zsh and tmux. Type `<C-A I>` to install Tmux plugins.
