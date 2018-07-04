@@ -100,7 +100,7 @@ hs.hotkey.bind(hyper, "u", launchOrCycleFocus("clementine"))
 hs.hotkey.bind(hyper, "w", launchOrCycleFocus("Dictionary"))
 hs.hotkey.bind(hyper, "x", launchOrCycleFocus("XCode"))
 hs.hotkey.bind(hyper, "o", launchOrCycleFocus("Finder"))
-hs.hotkey.bind(hyper, "p", launchOrCycleFocus("NotePlan"))
+hs.hotkey.bind(hyper, "p", launchOrCycleFocus("Notes"))
 hs.hotkey.bind(hyper, "`", function() os.execute( "open ~" ) end )
 
 -- hs.hotkey.bind(hyper, "m", fullScreenCurrent)
