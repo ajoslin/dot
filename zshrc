@@ -12,6 +12,8 @@ alias anon-chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrom
 export EMAIL="andrewtjoslin@gmail.com"
 export NAME="Andrew Joslin"
 
+export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+export ICLOUD_BOX_DIR="$ICLOUD_DIR/box"
 export TERM=xterm-256color
 export CFLAGS=-Qunused-arguments
 export CPPFLAGS=-Qunused-arguments
@@ -59,6 +61,10 @@ vi () {
   # Make sure the socket ID has no slashes, emacs does not like that.
   ls $TMPDIR/emacs$UID | grep -q server || emacs -nw --daemon
   emacsclient -nw $FILE
+}
+
+portgrep () {
+  lsof -i :$1
 }
 
 # tabtab source for serverless package
