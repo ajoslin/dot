@@ -7,8 +7,6 @@ source ~/.config/z/z.sh
 
 zstyle ':completion:*:*:git:*' script ~/.config/git-completion.bash
 
-alias anon-chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/tmp --no-default-browser-check --no-first-run --disable-default-apps --disable-popup-blocking --disable-translate'
-
 export EMAIL="andrew@ajoslin.com"
 export NAME="Andrew Joslin"
 
