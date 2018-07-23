@@ -5,7 +5,7 @@
   ri = rebase -i
   ca = commit -a
   cam = commit -a --amend
-  camno = commit --amend --no-edit
+  camno = commit -a --amend --no-edit
   pom = push origin master
   pog = push origin gh-pages
   prom = pull --rebase origin master
