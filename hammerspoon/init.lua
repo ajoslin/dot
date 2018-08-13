@@ -52,55 +52,25 @@ screenMode:bind('', 'h' , function()
                   screenMode:exit()
 end)
 
--- screenOrder = {
---     "Color LCD"
--- }
-
--- screenMoveMode = hs.hotkey.modal.new(hyper, "s")
--- function screenMoveMode:entered()
---   hs.alert.show('Mode: Move to screen', 10)
-
---   -- main display = 1
---   -- screen to
-
---   manualScreenOrder = {
---       [69677504] = 1 -- Macbook display
---   }
---   screenMappings = {}
---   allScreens = hs.screen.allScreens()
-
---   for i, screen in pairs(allScreens) do
---     local id = screen:id()
---     local name = screen:name()
-
---     hs.alert(string.format('display: %s real ID: %s', name, id), 10)
---   end
--- end
-
--- function screenMoveMode:exited()  hs.alert.show('Exited mode')  end
-
 ---------------------------------------------------------
 -- APP HOTKEYS
 ---------------------------------------------------------
 
 hs.hotkey.bind(hyper, "1", launchOrCycleFocus("1Password 7"))
 hs.hotkey.bind(hyper, "a", launchOrCycleFocus("Safari"))
-hs.hotkey.bind(hyper, "b", launchOrCycleFocus("iTunes"))
 hs.hotkey.bind(hyper, "c", launchOrCycleFocus("Sketch"))
 hs.hotkey.bind(hyper, "d", launchOrCycleFocus("Google Chrome"))
 hs.hotkey.bind(hyper, "e", launchOrCycleFocus("Slack"))
 hs.hotkey.bind(hyper, "f", launchOrCycleFocus("iTerm", "iTerm2"))
-hs.hotkey.bind(hyper, "g", launchOrCycleFocus("Evernote"))
 hs.hotkey.bind(hyper, "i", launchOrCycleFocus("Microsoft Outlook"))
 hs.hotkey.bind(hyper, "n", launchOrCycleFocus("Spotify"))
-hs.hotkey.bind(hyper, "r", launchOrCycleFocus("Brave"))
 hs.hotkey.bind(hyper, "s", launchOrCycleFocus("Simulator"))
 hs.hotkey.bind(hyper, "t", launchOrCycleFocus("Messages"))
 hs.hotkey.bind(hyper, "u", launchOrCycleFocus("Fantastical 2"))
 hs.hotkey.bind(hyper, "w", launchOrCycleFocus("Dictionary"))
 hs.hotkey.bind(hyper, "x", launchOrCycleFocus("XCode"))
 hs.hotkey.bind(hyper, "o", launchOrCycleFocus("Finder"))
-hs.hotkey.bind(hyper, "p", launchOrCycleFocus("Notes"))
+hs.hotkey.bind(hyper, "p", launchOrCycleFocus("Bear"))
 hs.hotkey.bind(hyper, "`", function() os.execute( "open ~" ) end )
 
 -- hs.hotkey.bind(hyper, "m", fullScreenCurrent)
