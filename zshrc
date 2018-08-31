@@ -13,7 +13,7 @@ export NAME="Andrew Joslin"
 export PIP_USER_BASE_PATH=$(python -m site --user-base)
 
 export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
-export ICLOUD_BOX_DIR="$ICLOUD_DIR/box"
+export BOX="$ICLOUD_DIR/box"
 export TERM=xterm-256color
 export CFLAGS=-Qunused-arguments
 export CPPFLAGS=-Qunused-arguments
@@ -42,6 +42,10 @@ alias subl="/Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text"
 alias gti=git
 alias sll=/usr/local/Cellar/sl/5.02/bin/sl
 alias gitd='git daemon --base-path=. --export-all --enable=receive-pack --reuseaddr --informative-errors --verbose'
+alias pwine="source $HOME/wine/wine-prefix"
+alias voobly="pwine Voobly && export STAGING_WRITECOPY=1 && export STAGING_SHARED_MEMORY=1 && wine Voobly.exe"
+alias kvoobly="pwine Voobly && wineserver -k"
+
 
 alias clocker="HOME=~/sync/andrew clocker"
 

@@ -4,8 +4,8 @@
   st = status -s
   ri = rebase -i
   ca = commit -a
-  cam = commit -a --amend
-  camno = commit -a --amend --no-edit
+  cam = commit --amend
+  camno = commit --amend --no-edit
   pom = push origin master
   pog = push origin gh-pages
   prom = pull --rebase origin master
