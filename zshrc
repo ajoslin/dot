@@ -23,7 +23,7 @@ export GOPATH=$HOME/gocode
 export AWS_REGION=us-west-2
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-export PATH="$HOME/.bin:/usr/local/bin:/opt/local/bin:$HOME/terraform:$GOPATH/bin:/usr/local/Cellar/logstash/2.3.2/bin:$HOME/.rvm/bin:$PIP_USER_BASE_PATH/bin:$PATH"
+export PATH="$HOME/.bin:/usr/local/opt/openssl/bin:/usr/local/bin:/opt/local/bin:$HOME/terraform:$GOPATH/bin:/usr/local/Cellar/logstash/2.3.2/bin:$HOME/.rvm/bin:$PIP_USER_BASE_PATH/bin:$PATH"
 
 export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"
 export ANDROID_HOME=$ANDROID_SDK_ROOT/tools
@@ -38,6 +38,7 @@ fi
 # export GPG_TTY=$(tty)
 # eval $(gpg-agent --daemon --sh)
 
+alias tf=terraform
 alias subl="/Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text"
 alias gti=git
 alias sll=/usr/local/Cellar/sl/5.02/bin/sl
@@ -85,3 +86,8 @@ if [ -f '/Users/andrew/google-cloud-sdk/path.zsh.inc' ]; then source '/Users/and
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/andrew/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/andrew/google-cloud-sdk/completion.zsh.inc'; fi
+export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
+
+# tabtab source for slss package
+# uninstall by removing these lines or running `tabtab uninstall slss`
+[[ -f /Users/andrew/dev/ydv/bd-graphql-commerce/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/andrew/dev/ydv/bd-graphql-commerce/node_modules/tabtab/.completions/slss.zsh

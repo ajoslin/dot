@@ -6,4 +6,4 @@ else
   DATE=$1
 fi
 
-vim "$ICLOUD_BOX_DIR/org/personal/journal/$DATE.txt"
+vim "$BOX/org/personal/journal/$DATE.txt"

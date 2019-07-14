@@ -25,35 +25,12 @@ hs.crash.crashLogToNSLog = true
 -- SCREENS
 ---------------------------------------------------------
 
-local screenMode = hs.hotkey.modal.new(hyper, 'z')
-
-screenMode:bind('', 'escape', function() screenMode:exit() end)
-
-function screenMode:entered() hs.alert('Screen Mode') end
-
-screenMode:bind('', 'l', function()
-                  local win = hs.window.focusedWindow()
-                  if win then win:moveOneScreenEast() end
-                  appStates:save()
-                  screenMode:exit()
-end)
-screenMode:bind('', 'j', function()
-                  local win = hs.window.focusedWindow()
-                  if win then win:moveOneScreenSouth() end
-                  appStates:save()
-                  screenMode:exit()
-end)
-screenMode:bind('', 'k', function()
-                  local win = hs.window.focusedWindow()
-                  if win then win:moveOneScreenNorth() end
-                  appStates:save()
-                  screenMode:exit()
-end)
-screenMode:bind('', 'h' , function()
-                  local win = hs.window.focusedWindow()
-                  if win then win:moveOneScreenWest() end
-                  appStates:save()
-                  screenMode:exit()
+hs.hotkey.bind(hyper, "z", function()
+  local win = hs.window.focusedWindow()
+  if win then
+    win:moveToScreen(win:screen():next(), false, true, .1)
+  end
+  appStates:save()
 end)
 
 ---------------------------------------------------------
@@ -69,13 +46,11 @@ hs.hotkey.bind(hyper, "f", launchOrCycleFocus("iTerm", "iTerm2"))
 hs.hotkey.bind(hyper, "i", launchOrCycleFocus("Microsoft Outlook"))
 hs.hotkey.bind(hyper, "p", launchOrCycleFocus("Cardhop"))
 hs.hotkey.bind(hyper, "n", launchOrCycleFocus("Spotify"))
+hs.hotkey.bind(hyper, "r", launchOrCycleFocus("Notion"))
 hs.hotkey.bind(hyper, "s", launchOrCycleFocus("Simulator"))
 hs.hotkey.bind(hyper, "t", launchOrCycleFocus("Messages"))
 hs.hotkey.bind(hyper, "u", launchOrCycleFocus("Fantastical 2"))
 hs.hotkey.bind(hyper, "w", launchOrCycleFocus("Dictionary"))
-hs.hotkey.bind(hyper, "x", launchOrCycleFocus("XCode"))
-hs.hotkey.bind(hyper, "o", launchOrCycleFocus("Finder"))
-hs.hotkey.bind(hyper, "g", launchOrCycleFocus("Bear"))
 hs.hotkey.bind(hyper, "`", function() os.execute( "open ~" ) end )
 
 -- hs.hotkey.bind(hyper, "m", fullScreenCurrent)
