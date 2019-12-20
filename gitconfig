@@ -26,10 +26,14 @@
 [web]
 	browser = open
 [push]
-	default = matching
+	default = current
 [user]
 	name = Andrew Joslin
 	email = andrewtjoslin@gmail.com
 	signingkey = 6D684901
 [merge]
 	tool = opendiff
+[rebase]
+	autoStash = true
+[pull]
+	default = current

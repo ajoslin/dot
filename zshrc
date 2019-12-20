@@ -91,3 +91,8 @@ export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
 # tabtab source for slss package
 # uninstall by removing these lines or running `tabtab uninstall slss`
 [[ -f /Users/andrew/dev/ydv/bd-graphql-commerce/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/andrew/dev/ydv/bd-graphql-commerce/node_modules/tabtab/.completions/slss.zsh
+
+export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
+
+source /usr/local/opt/asdf/asdf.sh
+eval "$(direnv hook zsh)"
