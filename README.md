@@ -12,7 +12,7 @@
 
 ```
 brew tap thoughtbot/formulae
-brew install the_silver_searcher git emacs node reattach-to-user-namespace vim tmux zsh rcm jo
+brew install the_silver_searcher git emacs node reattach-to-user-namespace vim tmux zsh rcm jo direnv
 ```
 
 
