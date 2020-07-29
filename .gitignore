@@ -2,3 +2,4 @@
 saves/
 node_modules
 npmrc
+.env

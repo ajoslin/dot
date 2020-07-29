@@ -12,8 +12,10 @@
 
 ```
 brew tap thoughtbot/formulae
-brew install the_silver_searcher git emacs node reattach-to-user-namespace vim tmux zsh rcm jo direnv asdf
+brew install the_silver_searcher git emacs node reattach-to-user-namespace vim tmux zsh rcm jo direnv asdf jq fzf
 ```
+
+https://app-updates.agilebits.com/product_history/CLI
 
 
 There's also vim in there, for old times' sake.

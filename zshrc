@@ -29,6 +29,8 @@ export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"
 export ANDROID_HOME=$ANDROID_SDK_ROOT/tools
 # export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 
+source $HOME/dot/env
+
 if [ -d "$HOME/Library/Python/3.6/bin/" ] ; then
     PATH="$HOME/Library/Python/3.6/bin/:$PATH"
 fi
@@ -93,6 +95,11 @@ export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
 [[ -f /Users/andrew/dev/ydv/bd-graphql-commerce/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/andrew/dev/ydv/bd-graphql-commerce/node_modules/tabtab/.completions/slss.zsh
 
 export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
+
+alias grain-staging="/Applications/Grain\ Staging.app/Contents/MacOS/Grain\ Staging"
+alias grain="/Applications/Grain.app/Contents/MacOS/Grain"
+alias grain-dev="/Applications/Grain\ Dev.app/Contents/MacOS/Grain\ Dev"
+alias grain-fb="/Applications/Grain\ Feature\ Branch.app/Contents/MacOS/Grain\ Feature\ Branch"
 
 source /usr/local/opt/asdf/asdf.sh
 eval "$(direnv hook zsh)"
