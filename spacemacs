@@ -52,7 +52,7 @@ values."
      markdown
      org
      helm
-     (auto-completion :disabled-for org git)
+     auto-completion
      git
      github
      gnus
@@ -82,8 +82,6 @@ values."
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages
    '(
-     tern
-     tern-mode
      smartparens
      evil-org-mode
      )
@@ -513,7 +511,7 @@ Switch projects and subprojects from NEXT back to TODO"
         sh-basic-offset 2 ; shell scripts
         sh-indentation 2)
 
-  (spacemacs|disable-company web-mode)
+  ;(spacemacs|disable-company web-mode)
 
   (turn-off-smartparens-mode)
   (define-key evil-normal-state-map ";" 'evil-ex)
