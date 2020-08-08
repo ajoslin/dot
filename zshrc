@@ -1,7 +1,3 @@
-if [[ -z $TMUX ]]; then
-  tmux attach || tmux new-session -s main
-fi
-
 source ~/.zprezto/init.zsh
 source ~/.config/z/z.sh
 
