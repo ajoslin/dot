@@ -317,18 +317,12 @@ end
 -- Needed to enable cycling of application windows
 lastToggledApplication = ''
 
-function launchOrCycleFocus(applicationName, applicationTitle)
+function launchOrCycleFocus(applicationBundleID)
   return function()
     local nextWindow = nil
     local targetWindow = nil
     local focusedWindow          = hs.window.focusedWindow()
-    local lastToggledApplication = focusedWindow and focusedWindow:application():title()
-
-    -- Note, applicationTitle is optional, and only useful in those
-    -- cases where the name and title are not the same (i.e. Visual Studio Code).
-    if applicationTitle == nil then
-        applicationTitle = applicationName
-    end
+    local lastToggledBundleID = focusedWindow and focusedWindow:application():bundleID()
 
     if not focusedWindow then return nil end
 
@@ -337,11 +331,11 @@ function launchOrCycleFocus(applicationName, applicationTitle)
 
     dbgf('last: %s, current: %s', lastToggledApplication, applicationTitle)
 
-    if lastToggledApplication == applicationTitle then
+    if lastToggledBundleID == applicationBundleID then
       hs.eventtap.keyStroke({"cmd"}, "`")
       nextWindow = hs.window.focusedWindow()
     else
-      hs.application.launchOrFocus(applicationName)
+      hs.application.launchOrFocusByBundleID(applicationBundleID)
     end
 
     -- this blindly assumed that previous steps have been successful..
@@ -352,12 +346,12 @@ function launchOrCycleFocus(applicationName, applicationTitle)
     end
 
     if not targetWindow then
-      dbgf('failed finding a window for application: %s', applicationName)
+      dbgf('failed finding a window for application: %s', applicationBundleID)
       return nil
     end
 
     if appStates:lookup(targetWindow) then
-      dbgf('restoring state of: %s', targetWindow:application():title())
+      dbgf('restoring state of: %s', targetWindow:application():bundleID())
       appStates:restore(targetWindow)
     else
       local windowFrame = targetWindow:frame()

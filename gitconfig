@@ -37,3 +37,4 @@
 	autoStash = true
 [pull]
 	default = current
+	rebase = true

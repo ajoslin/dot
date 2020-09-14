@@ -1,7 +1,11 @@
+if [[ -z $TMUX ]]; then
+  tmux attach || tmux new-session -s main
+fi
+
 source ~/.zprezto/init.zsh
 source ~/.config/z/z.sh
 
-zstyle ':completion:*:*:git:*' script ~/.config/git-completion.bash
+# zstyle ':completion:*:*:git:*' script ~/.config/git-completion.bash
 
 export EMAIL="andrew@ajoslin.com"
 export NAME="Andrew Joslin"

@@ -9,6 +9,12 @@
           def (pop bindings)))
   )
 
+(defun enable-minor-mode (my-pair)
+  "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
+  (if (buffer-file-name)
+      (if (string-match (car my-pair) buffer-file-name)
+          (funcall (cdr my-pair)))))
+
 (defun dotspacemacs/layers ()
   "Configuration Layers declaration.
 You should not put any user code in this function besides modifying the variable
@@ -37,15 +43,18 @@ values."
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(
-     ;; ----------------------------------------------------------------
-     ;; Example of useful layers you may want to use right away.
-     ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
-     ;; <M-m f e R> (Emacs style) to install them.
-     ;; ----------------------------------------------------------------
-     helm
+   '(python
+     windows-scripts
+     elixir
+     lua
+     typescript
+     (helm :variables
+           helm-enable-auto-resize t
+           )
      neotree
-     auto-completion
+     (auto-completion :variables
+                      auto-completion-return-key-behavior nil
+                      )
      evil-commentary
      ;; better-defaults
      emacs-lisp
@@ -55,13 +64,14 @@ values."
      markdown
      html
      javascript
+     osx
+
      react
      (shell :variables
-              shell-default-shell 'eshell
-              close-window-with-terminal t
-              multi-term-program "/usr/local/bin/zsh"
-     )
-     spacemacs-layouts
+            shell-default-shell 'multi-term
+            close-window-with-terminal t
+            shell-default-term-shell "/usr/loca/bin/zsh"
+            )
      tmux
      ;; markdown
      ;; org
@@ -77,12 +87,18 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(
+                                      prettier-js
+                                      persp-mode
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '(
+                                    spacemacs-layouts
+                                    prettier
                                     smartparens
+                                    evil-escape
+                                    fill-column-indicator
                                     )
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -201,7 +217,7 @@ values."
    dotspacemacs-default-layout-name "Default"
    ;; If non nil the default layout name is displayed in the mode-line.
    ;; (default nil)
-   dotspacemacs-display-default-layout nil
+   dotspacemacs-display-default-layout t
    ;; If non nil then the last auto saved layouts are resume automatically upon
    ;; start. (default nil)
    dotspacemacs-auto-resume-layouts nil
@@ -217,7 +233,7 @@ values."
    ;; Maximum number of rollback slots to keep in the cache. (default 5)
    dotspacemacs-max-rollback-slots 5
    ;; If non nil, `helm' will try to minimize the space it uses. (default nil)
-   dotspacemacs-helm-resize nil
+   dotspacemacs-helm-resize t
    ;; if non nil, the helm header is hidden when there is only one source.
    ;; (default nil)
    dotspacemacs-helm-no-header nil
@@ -244,12 +260,12 @@ values."
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil to boost the loading time. (default t)
    dotspacemacs-loading-progress-bar t
-   ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
-   ;; (Emacs 24.4+ only)
-   dotspacemacs-fullscreen-at-startup t
    ;; If non nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX. (default nil)
    dotspacemacs-fullscreen-use-non-native t
+   ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
+   ;; (Emacs 24.4+ only)
+   dotspacemacs-fullscreen-at-startup nil
    ;; If non nil the frame is maximized when Emacs starts up.
    ;; Takes effect only if `dotspacemacs-fullscreen-at-startup' is nil.
    ;; (default nil) (Emacs 24.4+ only)
@@ -328,7 +344,6 @@ before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
 
   (setq vc-follow-symlinks t)
-
   )
 
 (defun dotspacemacs/user-config ()
@@ -342,8 +357,11 @@ you should place your code here."
   (global-linum-mode t) ;Show line numbers always
   (global-auto-revert-mode t) ; Always load new file
 
+  (spacemacs/toggle-fullscreen-frame-on)
+  (global-company-mode)
+
   (setq indent-tabs-mode nil)
-  (setq company-idle-delay 0.05
+  (setq company-idle-delay 0.125
         json-encoding-default-indentation 2
         lua-indent-level 2
         evil-shift-width 2
@@ -381,9 +399,13 @@ you should place your code here."
     (add-to-list 'web-mode-indentation-params '("lineup-args" . nil))
     (add-to-list 'web-mode-indentation-params '("lineup-concats" . nil))
     (add-to-list 'web-mode-indentation-params '("lineup-calls" . nil)))
-    (define-key evil-normal-state-map ";" 'evil-ex)
+  (define-key evil-normal-state-map ";" 'evil-ex)
 
-  ; Custom leader
+  (with-eval-after-load 'rjsx-mode
+    (define-key rjsx-mode-map "<" nil)
+    (define-key rjsx-mode-map (kbd "C-d") nil))
+
+                                        ; Custom leader
   (evil-leader/set-key "oe" 'eval-region)
   (evil-leader/set-key "os" 'helm-google-suggest)
   (evil-leader/set-key "oa" 'helm-apropos)
@@ -391,7 +413,16 @@ you should place your code here."
   (evil-leader/set-key "oo" 'js2-mode-hide-warnings-and-errors)
   (evil-leader/set-key "fn" 'neotree-show)
 
+  ;; Prettier
+  (add-hook 'js2-mode-hook 'prettier-js-mode)
+  (add-hook 'rjsx-mode-hook 'prettier-js-mode)
+  (setq prettier-js-command "prettier-standard")
+  (add-hook 'web-mode-hook #'(lambda ()
+                               (enable-minor-mode
+                                '("\\.jsx?\\'" . prettier-js-mode))))
+
   (blink-cursor-mode 1)
+
   (require 'helm)
   (setq projectile-switch-project-action 'helm-projectile-find-file)
   (setq projectile-switch-project-action 'helm-projectile)
@@ -411,8 +442,29 @@ you should place your code here."
     )
   (add-hook 'neotree-mode-hook 'ajos-configure-neotree)
 
-  (setq dotspacemacs-auto-resume-layouts t)
-  )
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode))
+  (add-to-list 'magic-mode-alist '("^import React" . rjsx-mode))
+
+  ;; Multiterm
+  (add-hook 'term-mode-hook (lambda ()
+                              (define-key term-mode-map (kbd "C-c") 'term-interrupt-subjob)
+                              (spacemacs/set-leader-keys "C-c" nil)
+                             ))
+
+  ;; (add-to-list 'term-bind-key-alist '(
+  ;;                                     ("C-c" . term-interrupt-subjob)
+  ;;                                     ("C-k" . 'tmux-nav-up)
+  ;;                                     ("C-j" . 'tmux-nav-down)
+  ;;                                     ))
+
+  (persp-def-buffer-save/load
+   :mode 'term-mode
+   :mode-restore-function #'(lambda (_mode) (vterm)) ; or #'identity if you do not want to start shell process
+   :tag-symbol 'def-vterm
+   :save-vars '(major-mode default-directory))
+)
+
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -435,18 +487,5 @@ you should place your code here."
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (neotree evil-commentary solarized-dark-high-contrast-theme-theme solarizaed-dark-high-contrast-theme-theme yaml-mode xterm-color web-mode web-beautify tern tagedit solarized-theme smeargle slim-mode shell-pop scss-mode sass-mode pug-mode persp-mode orgit org-plus-contrib multi-term mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup magit-gh-pulls livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors s js2-mode js-doc helm-gitignore request helm-css-scss helm-company helm-c-yasnippet haml-mode gitignore-mode github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gist gh marshal logito pcache ht gh-md fuzzy eyebrowse evil-magit magit git-commit with-editor transient eshell-z eshell-prompt-extras esh-help emmet-mode company-web web-completion-data dash company-statistics company coffee-mode auto-yasnippet yasnippet ac-ispell auto-complete which-key use-package pcre2el macrostep hydra lv helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-flx flx helm-descbinds helm-ag exec-path-from-shell evil-visualstar evil goto-chg evil-escape undo-tree elisp-slime-nav diminish bind-map bind-key auto-compile packed ace-window ace-jump-helm-line helm avy helm-core popup async))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 )
+
