@@ -17,7 +17,7 @@ export BOX="$ICLOUD_DIR/box"
 export TERM=xterm-256color
 export CFLAGS=-Qunused-arguments
 export CPPFLAGS=-Qunused-arguments
-export EDITOR=vim
+export EDITOR=nvim
 export RCRC=$HOME/dot/rcrc
 export GOPATH=$HOME/gocode
 export AWS_REGION=us-west-2
@@ -103,3 +103,5 @@ alias grain-fb="/Applications/Grain\ Feature\ Branch.app/Contents/MacOS/Grain\ F
 
 source /usr/local/opt/asdf/asdf.sh
 eval "$(direnv hook zsh)"
+
+export LESS="$LESS -FRXK"

@@ -1,4 +1,5 @@
 [alias]
+  wip = commit --no-verify -am 'wip'
   lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
   co = checkout
   st = status -s
@@ -13,7 +14,7 @@
   log-file = log -p -M --follow --stat --
 [core]
 	excludesfile = /Users/andrew/.globalgitignore
-  editor = vim
+	editor = nvim
   # pager = "diff-highlight | diff-so-fancy | less --tabs=1,5 -R"
 [mergetool]
   keepBackup = false
@@ -38,3 +39,5 @@
 [pull]
 	default = current
 	rebase = true
+[github]
+	user = ajoslin

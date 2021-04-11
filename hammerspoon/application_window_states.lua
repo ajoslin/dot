@@ -33,7 +33,7 @@ function ApplicationWindowStates:key(window)
     return ''
   end
 
-  return window:key()
+  return window:id()
 end
 
 function ApplicationWindowStates:save()

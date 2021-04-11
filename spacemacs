@@ -43,7 +43,9 @@ values."
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(python
+   '(systemd
+     csv
+     python
      windows-scripts
      elixir
      lua
@@ -487,5 +489,19 @@ you should place your code here."
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (systemd evil-commentary solarized-dark-high-contrast-theme-theme solarizaed-dark-high-contrast-theme-theme yaml-mode xterm-color web-mode web-beautify tern tagedit solarized-theme smeargle slim-mode shell-pop scss-mode sass-mode pug-mode persp-mode orgit org-plus-contrib multi-term mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup magit-gh-pulls livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors s js2-mode js-doc helm-gitignore request helm-css-scss helm-company helm-c-yasnippet haml-mode gitignore-mode github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gist gh marshal logito pcache ht gh-md fuzzy eyebrowse evil-magit magit git-commit with-editor transient eshell-z eshell-prompt-extras esh-help emmet-mode company-web web-completion-data dash company-statistics company coffee-mode auto-yasnippet yasnippet ac-ispell auto-complete which-key use-package pcre2el macrostep hydra lv helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-flx flx helm-descbinds helm-ag exec-path-from-shell evil-visualstar evil goto-chg evil-escape undo-tree elisp-slime-nav diminish bind-map bind-key auto-compile packed ace-window ace-jump-helm-line helm avy helm-core popup async))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 )
 
