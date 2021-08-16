@@ -24,32 +24,41 @@ values."
    ;; `+distribution'. For now available distributions are `spacemacs-base'
    ;; or `spacemacs'. (default 'spacemacs)
    dotspacemacs-distribution 'spacemacs
-   ;; Lazy installation of layers (i.e. layers are installed only when a file
-   ;; with a supported type is opened). Possible values are `all', `unused'
-   ;; and `nil'. `unused' will lazy install only unused layers (i.e. layers
-   ;; not listed in variable `dotspacemacs-configuration-layers'), `all' will
-   ;; lazy install any layer that support lazy installation even the layers
-   ;; listed in `dotspacemacs-configuration-layers'. `nil' disable the lazy
-   ;; installation feature and you have to explicitly list a layer in the
-   ;; variable `dotspacemacs-configuration-layers' to install it.
-   ;; (default 'unused)
+   ;; ;; Lazy installation of layers (i.e. layers are installed only when a file
+   ;; ;; with a supported type is opened). Possible values are `all', `unused'
+   ;; ;; and `nil'. `unused' will lazy install only unused layers (i.e. layers
+   ;; ;; not listed in variable `dotspacemacs-configuration-layers'), `all' will
+   ;; ;; lazy install any layer that support lazy installation even the layers
+   ;; ;; listed in `dotspacemacs-configuration-layers'. `nil' disable the lazy
+   ;; ;; installation feature and you have to explicitly list a layer in the
+   ;; ;; variable `dotspacemacs-configuration-layers' to install it.
+   ;; ;; (default 'unused)
    dotspacemacs-enable-lazy-installation 'unused
-   ;; If non-nil then Spacemacs will ask for confirmation before installing
-   ;; a layer lazily. (default t)
+   ;; ;; If non-nil then Spacemacs will ask for confirmation before installing
+   ;; ;; a layer lazily. (default t)
    dotspacemacs-ask-for-lazy-installation t
-   ;; If non-nil layers with lazy install support are lazy installed.
-   ;; List of additional paths where to look for configuration layers.
-   ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
+   ;; ;; If non-nil layers with lazy install support are lazy installed.
+   ;; ;; List of additional paths where to look for configuration layers.
+   ;; ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
    dotspacemacs-configuration-layer-path '()
-   ;; List of configuration layers to load.
+   ;; ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(systemd
+   '(go
+     nginx
+     systemd
      csv
      python
      windows-scripts
      elixir
      lua
-     typescript
+     prettier
+     (lsp :variables
+          lsp-use-lsp-ui t
+      )
+     (typescript :variables
+                 typescript-fmt-on-save t
+                 typescript-fmt-tool 'prettier
+      )
      (helm :variables
            helm-enable-auto-resize t
            )
@@ -65,15 +74,14 @@ values."
      yaml
      markdown
      html
-     javascript
+     (javascript :variables
+                 javascript-backend 'lsp
+                 javascript-fmt-tool 'prettier
+                 javascript-fmt-on-save t
+                 javascript-repl 'nodejs
+                 )
      osx
-
      react
-     (shell :variables
-            shell-default-shell 'multi-term
-            close-window-with-terminal t
-            shell-default-term-shell "/usr/loca/bin/zsh"
-            )
      tmux
      ;; markdown
      ;; org
@@ -89,15 +97,14 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(
-                                      prettier-js
                                       persp-mode
+                                      vue-mode
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '(
                                     spacemacs-layouts
-                                    prettier
                                     smartparens
                                     evil-escape
                                     fill-column-indicator
@@ -310,9 +317,7 @@ values."
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    ;; (default nil)
    dotspacemacs-smartparens-strict-mode nil
-   ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
    ;; over any automatically added closing parenthesis, bracket, quote, etc…
-   ;; This can be temporary disabled by pressing `C-q' before `)'. (default nil)
    dotspacemacs-smart-closing-parenthesis nil
    ;; Select a scope to highlight delimiters. Possible values are `any',
    ;; `current', `all' or `nil'. Default is `all' (highlight any scope and
@@ -334,7 +339,7 @@ values."
    ;; `trailing' to delete only the whitespace at end of lines, `changed'to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup "trailing"
+   dotspacemacs-whitespace-cleanup 'trailing
    ))
 
 (defun dotspacemacs/user-init ()
@@ -363,7 +368,7 @@ you should place your code here."
   (global-company-mode)
 
   (setq indent-tabs-mode nil)
-  (setq company-idle-delay 0.125
+  (setq company-idle-delay 0
         json-encoding-default-indentation 2
         lua-indent-level 2
         evil-shift-width 2
@@ -416,12 +421,18 @@ you should place your code here."
   (evil-leader/set-key "fn" 'neotree-show)
 
   ;; Prettier
-  (add-hook 'js2-mode-hook 'prettier-js-mode)
+  ;; (add-hook 'js2-mode-hook 'prettier-js-mode)
   (add-hook 'rjsx-mode-hook 'prettier-js-mode)
-  (setq prettier-js-command "prettier-standard")
-  (add-hook 'web-mode-hook #'(lambda ()
-                               (enable-minor-mode
-                                '("\\.jsx?\\'" . prettier-js-mode))))
+  (add-hook 'typescript-mode-hook 'prettier-js-mode)
+  (add-hook 'typescript-tsx-mode-hook 'prettier-js-mode)
+  (add-hook 'vue-mode-hook 'prettier-js-mode)
+  (add-hook 'css-mode-hook 'prettier-js-mode)
+  (add-hook 'html-mode-hook 'prettier-js-mode)
+  (add-hook 'json-mode-hook 'prettier-js-mode)
+  ;; (setq prettier-js-command "prettier-standard")
+  ;; (add-hook 'web-mode-hook #'(lambda ()
+  ;;                              (enable-minor-mode
+  ;;                               '("\\.jsx?\\'" . prettier-js-mode))))
 
   (blink-cursor-mode 1)
 
@@ -443,28 +454,11 @@ you should place your code here."
     (define-key neotree-mode-map (kbd "C-n") 'neotree-create-node)
     )
   (add-hook 'neotree-mode-hook 'ajos-configure-neotree)
-
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
-  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode))
-  (add-to-list 'magic-mode-alist '("^import React" . rjsx-mode))
-
-  ;; Multiterm
-  (add-hook 'term-mode-hook (lambda ()
-                              (define-key term-mode-map (kbd "C-c") 'term-interrupt-subjob)
-                              (spacemacs/set-leader-keys "C-c" nil)
-                             ))
-
-  ;; (add-to-list 'term-bind-key-alist '(
-  ;;                                     ("C-c" . term-interrupt-subjob)
-  ;;                                     ("C-k" . 'tmux-nav-up)
-  ;;                                     ("C-j" . 'tmux-nav-down)
-  ;;                                     ))
-
-  (persp-def-buffer-save/load
-   :mode 'term-mode
-   :mode-restore-function #'(lambda (_mode) (vterm)) ; or #'identity if you do not want to start shell process
-   :tag-symbol 'def-vterm
-   :save-vars '(major-mode default-directory))
+  (setq prettier-js-args '(
+                           "--trailing-comma" "none"
+                           "--bracket-spacing" "true"
+                           "--single-quote" "true"
+                           ))
 )
 
 
@@ -494,9 +488,9 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol nil)
  '(package-selected-packages
-   (quote
-    (systemd evil-commentary solarized-dark-high-contrast-theme-theme solarizaed-dark-high-contrast-theme-theme yaml-mode xterm-color web-mode web-beautify tern tagedit solarized-theme smeargle slim-mode shell-pop scss-mode sass-mode pug-mode persp-mode orgit org-plus-contrib multi-term mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup magit-gh-pulls livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors s js2-mode js-doc helm-gitignore request helm-css-scss helm-company helm-c-yasnippet haml-mode gitignore-mode github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gist gh marshal logito pcache ht gh-md fuzzy eyebrowse evil-magit magit git-commit with-editor transient eshell-z eshell-prompt-extras esh-help emmet-mode company-web web-completion-data dash company-statistics company coffee-mode auto-yasnippet yasnippet ac-ispell auto-complete which-key use-package pcre2el macrostep hydra lv helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-flx flx helm-descbinds helm-ag exec-path-from-shell evil-visualstar evil goto-chg evil-escape undo-tree elisp-slime-nav diminish bind-map bind-key auto-compile packed ace-window ace-jump-helm-line helm avy helm-core popup async))))
+   '(helm-gtags godoctor go-tag go-rename go-impl go-guru go-gen-test go-fill-struct go-eldoc ggtags flycheck-golangci-lint dap-mode lsp-treemacs bui lsp-mode treemacs cfrs pfuture posframe counsel-gtags counsel swiper ivy company-go go-mode evil-commentary solarized-dark-high-contrast-theme-theme solarizaed-dark-high-contrast-theme-theme yaml-mode xterm-color web-mode web-beautify tern tagedit solarized-theme smeargle slim-mode shell-pop scss-mode sass-mode pug-mode persp-mode orgit org-plus-contrib multi-term mmm-mode markdown-toc markdown-mode magit-gitflow magit-popup magit-gh-pulls livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors s js2-mode js-doc helm-gitignore request helm-css-scss helm-company helm-c-yasnippet haml-mode gitignore-mode github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gist gh marshal logito pcache ht gh-md fuzzy eyebrowse evil-magit magit git-commit with-editor transient eshell-z eshell-prompt-extras esh-help emmet-mode company-web web-completion-data dash company-statistics company coffee-mode auto-yasnippet yasnippet ac-ispell auto-complete which-key use-package pcre2el macrostep hydra lv helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-flx flx helm-descbinds helm-ag exec-path-from-shell evil-visualstar evil goto-chg evil-escape undo-tree elisp-slime-nav diminish bind-map bind-key auto-compile packed ace-window ace-jump-helm-line helm avy helm-core popup async)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

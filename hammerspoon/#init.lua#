@@ -1,3 +1,4 @@
+:qa
 local hyper = {"ctrl", "alt", "shift"}
 local cmdHyper = {"cmd", "ctrl", "alt", "shift"}
 
@@ -44,20 +45,18 @@ hs.hotkey.bind(hyper, "d", launchOrCycleFocus("com.google.Chrome"))
 hs.hotkey.bind(hyper, "e", launchOrCycleFocus("com.tinyspeck.slackmacgap"))
 -- hs.hotkey.bind(hyper, "f", launchOrCycleFocus("Emacs"))
 hs.hotkey.bind(hyper, "f", launchOrCycleFocus("com.googlecode.iterm2"))
-hs.hotkey.bind(hyper, "g", launchOrCycleFocus("com.microsoft.VSCode"))
-hs.hotkey.bind(hyper, "i", launchOrCycleFocus("com.culturedcode.ThingsMac"))
+hs.hotkey.bind(hyper, "g", launchOrCycleFocus("com.adobe.xd"))
+hs.hotkey.bind(hyper, "i", launchOrCycleFocus("com.apple.DigitalColorMeter"))
 hs.hotkey.bind(hyper, "n", launchOrCycleFocus("com.spotify.client"))
-hs.hotkey.bind(hyper, "o", launchOrCycleFocus("com.readdle.smartemail-Mac"))
+hs.hotkey.bind(hyper, "o", launchOrCycleFocus("com.google.Chrome.canary"))
 hs.hotkey.bind(hyper, "p", launchOrCycleFocus("ru.keepcoder.Telegram"))
 hs.hotkey.bind(hyper, "r", launchOrCycleFocus("com.lukilabs.lukiapp"))
 hs.hotkey.bind(hyper, "s", launchOrCycleFocus("com.apple.iphonesimulator"))
-hs.hotkey.bind(hyper, "t", launchOrCycleFocus("com.apple.MobileSMS"))
+hs.hotkey.bind(hyper, "t", launchOrCycleFocus("com.apple.iChat"))
 hs.hotkey.bind(hyper, "y", launchOrCycleFocus("com.linear"))
 hs.hotkey.bind(hyper, "u", launchOrCycleFocus("com.flexibits.fantastical2.mac"))
 hs.hotkey.bind(hyper, "w", launchOrCycleFocus("com.apple.Dictionary"))
 hs.hotkey.bind(hyper, "x", launchOrCycleFocus("com.apple.dt.Xcode"))
-hs.hotkey.bind(hyper, "x", launchOrCycleFocus("com.apple.dt.Xcode"))
--- hs.hotkey.bind(hyper, "z", launchOrCycleFocus("us.zoom.xos"))
 hs.hotkey.bind(hyper, "`", function() os.execute( "open ~" ) end )
 
 -- hs.hotkey.bind(hyper, "m", fullScreenCurrent)

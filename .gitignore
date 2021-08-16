@@ -3,3 +3,5 @@ saves/
 node_modules
 npmrc
 .env
+config/tmux-plugins
+*.log

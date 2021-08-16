@@ -323,6 +323,7 @@ function launchOrCycleFocus(applicationBundleID)
     local targetWindow = nil
     local focusedWindow          = hs.window.focusedWindow()
     local lastToggledBundleID = focusedWindow and focusedWindow:application():bundleID()
+    dbgf(focusedWindow:application():bundleID())
 
     if not focusedWindow then return nil end
 

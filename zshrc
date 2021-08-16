@@ -1,3 +1,10 @@
+export HOMEBREW_PREFIX="/opt/homebrew";
+export HOMEBREW_CELLAR="/opt/homebrew/Cellar";
+export HOMEBREW_REPOSITORY="/opt/homebrew";
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin${PATH+:$PATH}";
+export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:";
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}";
+
 if [[ -z $TMUX ]]; then
   tmux attach || tmux new-session -s main
 fi
@@ -14,7 +21,6 @@ export PIP_USER_BASE_PATH=$(python -m site --user-base)
 
 export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 export BOX="$ICLOUD_DIR/box"
-export TERM=xterm-256color
 export CFLAGS=-Qunused-arguments
 export CPPFLAGS=-Qunused-arguments
 export EDITOR=nvim
@@ -40,15 +46,17 @@ fi
 # export GPG_TTY=$(tty)
 # eval $(gpg-agent --daemon --sh)
 
+alias bp=bundle-phobia
 alias tf=terraform
-alias subl="/Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text"
+alias subl="/Applications/Sublime\ Text.app/Contents/MacOS/sublime_text"
 alias gti=git
 alias sll=/usr/local/Cellar/sl/5.02/bin/sl
 alias gitd='git daemon --base-path=. --export-all --enable=receive-pack --reuseaddr --informative-errors --verbose'
 alias pwine="source $HOME/wine/wine-prefix"
 alias voobly="pwine Voobly && export STAGING_WRITECOPY=1 && export STAGING_SHARED_MEMORY=1 && wine Voobly.exe"
 alias kvoobly="pwine Voobly && wineserver -k"
-
+alias FZF_DEFAULT_COMMAND='ag'
+alias vi=nvim
 
 alias clocker="HOME=~/sync/andrew clocker"
 
@@ -63,14 +71,6 @@ unsetopt CORRECT
 [ -f $HOME/.tokens ] && source ~/.tokens
 
 export PATH="$HOME/.yarn/bin:$PATH"
-
-vi () {
-  FILE=${1:-.}
-
-  # Make sure the socket ID has no slashes, emacs does not like that.
-  ls $TMPDIR/emacs$UID | grep -q server || emacs -nw --daemon
-  emacsclient -nw $FILE
-}
 
 portgrep () {
   lsof -i :$1
@@ -101,7 +101,5 @@ alias grain="/Applications/Grain.app/Contents/MacOS/Grain"
 alias grain-dev="/Applications/Grain\ Dev.app/Contents/MacOS/Grain\ Dev"
 alias grain-fb="/Applications/Grain\ Feature\ Branch.app/Contents/MacOS/Grain\ Feature\ Branch"
 
-source /usr/local/opt/asdf/asdf.sh
+# source /usr/local/opt/asdf/asdf.sh
 eval "$(direnv hook zsh)"
-
-export LESS="$LESS -FRXK"

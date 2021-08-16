@@ -12,8 +12,12 @@
 
 ```
 brew tap thoughtbot/formulae
-brew install the_silver_searcher git emacs node reattach-to-user-namespace vim tmux zsh rcm jo direnv asdf jq fzf
+brew install the_silver_searcher git emacs node reattach-to-user-namespace nvim tmux zsh rcm jo direnv asdf jq fzf bat ripgrep git-delta
+sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 ```
+
+https://gist.github.com/bbqtd/a4ac060d6f6b9ea6fe3aabe735aa9d95
 
 https://app-updates.agilebits.com/product_history/CLI
 
