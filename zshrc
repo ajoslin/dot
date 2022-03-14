@@ -29,7 +29,7 @@ export GOPATH=$HOME/gocode
 export AWS_REGION=us-west-2
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-export PATH="$HOME/.bin:/usr/local/opt/openssl/bin:/usr/local/bin:/opt/local/bin:$HOME/terraform:$GOPATH/bin:/usr/local/Cellar/logstash/2.3.2/bin:$HOME/.rvm/bin:$PIP_USER_BASE_PATH/bin:$PATH"
+export PATH="$HOME/.bin:/usr/local/opt/openssl/bin:/usr/local/bin:/opt/local/bin:$HOME/terraform:$GOPATH/bin:/usr/local/Cellar/logstash/2.3.2/bin:$HOME/.rvm/bin:$PIP_USER_BASE_PATH/bin:$HOME/flutter/bin:$HOME/tools/lua-language-server/bin:$PATH"
 
 export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"
 export ANDROID_HOME=$ANDROID_SDK_ROOT/tools
@@ -101,5 +101,18 @@ alias grain="/Applications/Grain.app/Contents/MacOS/Grain"
 alias grain-dev="/Applications/Grain\ Dev.app/Contents/MacOS/Grain\ Dev"
 alias grain-fb="/Applications/Grain\ Feature\ Branch.app/Contents/MacOS/Grain\ Feature\ Branch"
 
+alias nuc='ssh root@10.1.10.69'
+
+alias pod='arch -x86_64 pod'
+
 # source /usr/local/opt/asdf/asdf.sh
 eval "$(direnv hook zsh)"
+
+
+alias luamake=/Users/andrew/tools/lua-language-server/3rd/luamake/luamake
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export PATH="/Users/andrew/.local/share/solana/install/active_release/bin:$PATH"

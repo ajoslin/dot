@@ -5,3 +5,10 @@ npmrc
 .env
 config/tmux-plugins
 *.log
+gitconfig-pm
+gitconfig-personal
+config/configstore
+config/flutter
+config/gh
+config/github-copilot
+config/solana

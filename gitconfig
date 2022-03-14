@@ -1,4 +1,7 @@
 [alias]
+  ps = push
+  cm = commit
+  pl = pull
   wip = commit --no-verify -am 'wip'
   lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
   co = checkout
@@ -12,13 +15,19 @@
   prom = pull --rebase origin master
   prog = pull --rebase origin gh-pages
   log-file = log -p -M --follow --stat --
+  rp = rev-parse
 [core]
 	excludesfile = /Users/andrew/.globalgitignore
 	editor = nvim
   # pager = "diff-highlight | diff-so-fancy | less --tabs=1,5 -R"
+[mergetool "nvim"]
+  cmd = nvim -f -c \"Gdiffsplit!\" \"$MERGED\"
+# set "nvim" as tool for merging
+[merge]
+  tool = nvim
+# automatically launch merge tool without displaying a prompt
 [mergetool]
-  keepBackup = false
-
+  prompt = false
 [diff]
   tool = vimdiff
 [difftool]
@@ -29,12 +38,6 @@
 	browser = open
 [push]
 	default = current
-[user]
-	name = Andrew Joslin
-	email = andrewtjoslin@gmail.com
-	signingkey = 6D684901
-[merge]
-	tool = opendiff
 [rebase]
 	autoStash = true
 [pull]
@@ -59,3 +62,9 @@
 
 [interactive]
     diffFilter = delta --color-only
+
+[includeIf "gitdir:~/dev/"]
+    path = .gitconfig-personal
+[includeIf "gitdir:~/pm/"]
+    path = .gitconfig-pm
+

@@ -46,12 +46,24 @@ call plug#begin(stdpath('data') . '/plugged')
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
+Plug 'williamboman/nvim-lsp-installer'
 
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'glepnir/lspsaga.nvim'
+Plug 'tami5/lspsaga.nvim'
+Plug 'github/copilot.vim'
+Plug 'norcalli/nvim-colorizer.lua'
 " Plug 'ray-x/lsp_signature.nvim'
-Plug 'hrsh7th/nvim-compe'
+
+Plug 'neovim/nvim-lspconfig'
+Plug 'windwp/nvim-ts-autotag'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-cmdline'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'jose-elias-alvarez/null-ls.nvim'
 Plug 'jose-elias-alvarez/nvim-lsp-ts-utils'
 Plug 'folke/lsp-colors.nvim'
@@ -132,8 +144,8 @@ inoremap <silent> <C-s> <cmd>lua vim.lsp.buf.signature_help()<CR>
 
 nnoremap <silent> <leader>e <cmd>lua require'lspsaga.diagnostic'.show_line_diagnostics()<CR>
 
-nnoremap <silent> <leader>gn <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
-nnoremap <silent> <leader>gp <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+nnoremap <silent> <leader>gn <cmd>lua vim.lsp.diagnostic.goto_next()<CR>:Telescope lsp_code_actions theme=get_cursor<cr>
+nnoremap <silent> <leader>gp <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>:Telescope lsp_code_actions theme=get_cursor<cr>
 nnoremap <silent> <leader>go :OpenURL <cfile><CR>
 
 let g:open_url_default_mappings = 0
@@ -179,20 +191,49 @@ let NERDTreeMapJumpParent='h'
 
 
 "----------LSP
-lua require("lsp-config")
+lua require('lsp-config')
 lua require('telescope-config')
-"Completion
-function! s:s(delta) abort
-  if pumvisible()
-    let l:i = complete_info(['selected']).selected
-    call timer_start(0, { -> nvim_select_popupmenu_item(l:i + a:delta, v:true, v:false, {}) })
-  endif
-  return "\<Ignore>"
-endfunction
-inoremap <silent><expr><C-j>     <SID>s(+1)
-inoremap <silent><expr><C-k>     <SID>s(-1)
 
-inoremap <silent><expr> <C-l> compe#confirm('<CR>')
+"Completion
+set completeopt=menu,menuone,noselect
+
+lua <<EOF
+  -- Setup nvim-cmp.
+  local cmp = require'cmp'
+
+  cmp.setup({
+    completion = {
+      completeopt = 'menu,menuone,noinsert'
+    },
+    formatting = {
+      format = require('lspkind').cmp_format(),
+    },
+    snippet = {
+      -- REQUIRED - you must specify a snippet engine
+      expand = function(args)
+        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      end,
+    },
+    mapping = {
+      ['<C-j>'] = cmp.mapping.select_next_item(),
+      ['<C-k>'] = cmp.mapping.select_prev_item(),
+      ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
+      ['<C-l>'] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+      ['<Tab>'] = cmp.config.disable
+    },
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'buffer' }, -- For vsnip users.
+      { name = 'path' }, -- For vsnip users.
+      -- { name = 'luasnip' }, -- For luasnip users.
+      -- { name = 'ultisnips' }, -- For ultisnips users.
+      -- { name = 'snippy' }, -- For snippy users.
+    })
+  })
+EOF
 
 "LSP Saga
 
@@ -232,3 +273,6 @@ if executable('rg')
   let g:ctrlp_use_caching = 0
 endif
 "------End Ctrlp
+
+cabbrev wq execute "lua vim.lsp.buf.formatting_seq_sync()" <bar> wq
+

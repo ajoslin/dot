@@ -1,12 +1,17 @@
 local nvim_lsp = require("lspconfig")
 local util = require 'lspconfig/util'
 
--- enable null-ls integration (optional)
-require("null-ls").config {}
-require("lspconfig")["null-ls"].setup {}
+require'nvim-treesitter.configs'.setup {
+  context_commentstring = {
+    enable = true
+  }
+}
+
+require'colorizer'.setup()
 
 nvim_lsp.tsserver.setup {
     on_attach = function(client, bufnr)
+
         -- disable tsserver formatting if you plan on formatting via null-ls
         client.resolved_capabilities.document_formatting = false
         -- define an alias
@@ -18,40 +23,52 @@ nvim_lsp.tsserver.setup {
         local ts_utils = require("nvim-lsp-ts-utils")
 
         -- defaults
-        ts_utils.setup {
+        ts_utils.setup({
             debug = false,
             disable_commands = false,
             enable_import_on_completion = false,
 
             -- import all
             import_all_timeout = 5000, -- ms
+            -- lower numbers = higher priority
             import_all_priorities = {
-                buffers = 4, -- loaded buffer names
-                buffer_content = 3, -- loaded buffer content
-                local_files = 2, -- git files or files with relative path markers
                 same_file = 1, -- add to existing import statement
+                local_files = 2, -- git files or files with relative path markers
+                buffer_content = 3, -- loaded buffer content
+                buffers = 4, -- loaded buffer names
             },
             import_all_scan_buffers = 100,
             import_all_select_source = false,
+            -- if false will avoid organizing imports
+            always_organize_imports = true,
 
-            -- eslint
-            eslint_enable_code_actions = true,
-            eslint_enable_disable_comments = true,
-            eslint_bin = "eslint_d",
-            eslint_config_fallback = nil,
-            eslint_enable_diagnostics = false,
-            eslint_show_rule_id = false,
+            -- filter diagnostics
+            filter_out_diagnostics_by_severity = {},
+            filter_out_diagnostics_by_code = {},
 
-            -- formatting
-            enable_formatting = true,
-            formatter = "prettierd",
-            formatter_config_fallback = nil,
+            -- inlay hints
+            auto_inlay_hints = true,
+            inlay_hints_highlight = "Comment",
+            inlay_hints_priority = 200, -- priority of the hint extmarks
+            inlay_hints_throttle = 150, -- throttle the inlay hint request
+            inlay_hints_format = { -- format options for individual hint kind
+                Type = {},
+                Parameter = {},
+                Enum = {},
+                -- Example format customization for `Type` kind:
+                -- Type = {
+                --     highlight = "Comment",
+                --     text = function(text)
+                --         return "->" .. text:sub(2)
+                --     end,
+                -- },
+            },
 
             -- update imports on file move
-            update_imports_on_move = true,
+            update_imports_on_move = false,
             require_confirmation_on_move = false,
             watch_dir = nil,
-        }
+        })
 
         -- required to fix code action ranges
         ts_utils.setup_client(client)
@@ -63,44 +80,24 @@ nvim_lsp.tsserver.setup {
         vim.api.nvim_buf_set_keymap(bufnr, "n", "gr", ":TSLspRenameFile<CR>", opts)
         vim.api.nvim_buf_set_keymap(bufnr, "n", "gi", ":TSLspImportAll<CR>", opts)
     end
+
+    -- capabilities = require('cmp-nvim-lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 }
+
+local null_ls = require("null-ls")
+null_ls.setup({
+    sources = {
+        null_ls.builtins.diagnostics.eslint, -- eslint or eslint_d
+        null_ls.builtins.code_actions.eslint, -- eslint or eslint_d
+        null_ls.builtins.formatting.prettier -- prettier, eslint, eslint_d, or prettierd
+    },
+})
+
 
 -- use .ts snippets in .tsx files
 vim.g.vsnip_filetypes = {
     typescriptreact = {"typescript"}
 }
-require"compe".setup {
-    preselect = "always",
-    source = {
-        path = true,
-        buffer = false,
-        vsnip = false,
-        nvim_lsp = true,
-        nvim_lua = true
-    }
-}
-local t = function(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-end
-_G.tab_complete = function()
-    if vim.fn.pumvisible() == 1 then
-        return vim.fn["compe#confirm"]()
-    elseif vim.fn.call("vsnip#available", {1}) == 1 then
-        return t("<Plug>(vsnip-expand-or-jump)")
-    else
-        return t("<Tab>")
-    end
-end
-vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
-vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
-vim.api.nvim_set_keymap("i", "<C-Space>", "compe#complete()",
-                        {expr = true, silent = true})
-vim.api.nvim_set_keymap("i", "<CR>", [[compe#confirm("<CR>")]],
-                        {expr = true, silent = true})
-vim.api.nvim_set_keymap("i", "<C-e>", [[compe#close("<C-e>")]],
-                        {expr = true, silent = true})
-
-
                     -- require('trouble').setup()
 require('lspsaga').init_lsp_saga({
         border_style='single';
