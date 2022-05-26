@@ -1,13 +1,22 @@
 local nvim_lsp = require("lspconfig")
 local util = require 'lspconfig/util'
 
+require'lspconfig'.prismals.setup{}
+
 require'nvim-treesitter.configs'.setup {
   context_commentstring = {
     enable = true
+  },
+  autotag = {
+    enable = true,
   }
 }
 
 require'colorizer'.setup()
+
+local cmpCapabilities = require('cmp_nvim_lsp').update_capabilities(
+  vim.lsp.protocol.make_client_capabilities()
+)
 
 nvim_lsp.tsserver.setup {
     on_attach = function(client, bufnr)
@@ -26,7 +35,7 @@ nvim_lsp.tsserver.setup {
         ts_utils.setup({
             debug = false,
             disable_commands = false,
-            enable_import_on_completion = false,
+            enable_import_on_completion = true,
 
             -- import all
             import_all_timeout = 5000, -- ms
@@ -37,7 +46,7 @@ nvim_lsp.tsserver.setup {
                 buffer_content = 3, -- loaded buffer content
                 buffers = 4, -- loaded buffer names
             },
-            import_all_scan_buffers = 100,
+            import_all_scan_buffers = 500,
             import_all_select_source = false,
             -- if false will avoid organizing imports
             always_organize_imports = true,
@@ -79,17 +88,17 @@ nvim_lsp.tsserver.setup {
         vim.api.nvim_buf_set_keymap(bufnr, "n", "qq", ":TSLspFixCurrent<CR>", opts)
         vim.api.nvim_buf_set_keymap(bufnr, "n", "gr", ":TSLspRenameFile<CR>", opts)
         vim.api.nvim_buf_set_keymap(bufnr, "n", "gi", ":TSLspImportAll<CR>", opts)
-    end
+    end,
 
-    -- capabilities = require('cmp-nvim-lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+    capabilities = cmpCapabilities
 }
 
 local null_ls = require("null-ls")
 null_ls.setup({
     sources = {
-        null_ls.builtins.diagnostics.eslint, -- eslint or eslint_d
-        null_ls.builtins.code_actions.eslint, -- eslint or eslint_d
-        null_ls.builtins.formatting.prettier -- prettier, eslint, eslint_d, or prettierd
+        null_ls.builtins.diagnostics.eslint_d, -- eslint or eslint_d
+        null_ls.builtins.code_actions.eslint_d, -- eslint or eslint_d
+        null_ls.builtins.formatting.prettierd -- prettier, eslint, eslint_d, or prettierd
     },
 })
 

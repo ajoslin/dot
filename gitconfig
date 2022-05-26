@@ -19,6 +19,7 @@
 [core]
 	excludesfile = /Users/andrew/.globalgitignore
 	editor = nvim
+	autocrlf = input
   # pager = "diff-highlight | diff-so-fancy | less --tabs=1,5 -R"
 [mergetool "nvim"]
   cmd = nvim -f -c \"Gdiffsplit!\" \"$MERGED\"

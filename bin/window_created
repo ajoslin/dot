@@ -1,0 +1,35 @@
+#!/opt/homebrew/bin/zsh
+
+set -x
+
+# When there are more than 3 windows open on the current space we stack Google
+# Chrome and Transmit along with stacking VSCode and Tower if both are open.
+
+# Get all the windows on current space
+local CURRENT_DISPLAY=$(yabai -m query --windows --window | jq '.display')
+local WINDOWS_ARRAY=$(yabai -m query --windows --space $(yabai -m query --spaces --space | jq '.id') --display $CURRENT_DISPLAY | jq -r 'map(select(.["is-minimized"]==false and .["is-floating"]==false))')
+
+# Get the number of windows on the current space
+local NUMBER_OF_WINDOWS=$(echo $WINDOWS_ARRAY | jq -r 'length')
+
+# If we are Less than or equal to 2 windows on current space exit script
+if [ "$NUMBER_OF_WINDOWS" -le "2" ]; then
+    return 42
+fi
+
+# Stack first instance of Chrome, Safari, Brave when more than 3 windows
+local CHROME_ID=$(echo $WINDOWS_ARRAY | jq -r 'map(select(.app=="Google Chrome")) | .[0] | .id')
+local BRAVE_ID=$(echo $WINDOWS_ARRAY | jq -r 'map(select(.app=="Brave Browser")) | .[0] | .id')
+local SAFARI_ID=$(echo $WINDOWS_ARRAY | jq -r 'map(select(.app=="Safari")) | .[0] | .id')
+
+if [[ $CHROME_ID == 'null' ]]; then CHROME_ID=; fi
+if [[ $BRAVE_ID == 'null' ]]; then BRAVE_ID=; fi
+if [[ $SAFARI_ID == 'null' ]]; then SAFARI_ID=; fi
+
+BASE_ID=$(echo $CHROME_ID || echo $BRAVE_ID || echo $SAFARI_ID)
+
+if [[ "$BASE_ID" != "" ]]; then
+    yabai -m window $BRAVE_ID --stack $BASE_ID 
+    yabai -m window $SAFARI_ID --stack $(echo $BRAVE_ID || echo $BASE_ID)
+fi
+

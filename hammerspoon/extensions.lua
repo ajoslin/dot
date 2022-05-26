@@ -317,6 +317,18 @@ end
 -- Needed to enable cycling of application windows
 lastToggledApplication = ''
 
+function simpleLauncher(bundleId)
+  return function()
+    local focusedWindow = hs.window.focusedWindow()
+    if focusedWindow:application():bundleID() == bundleId then 
+      return nil 
+    end
+
+    hs.application.launchOrFocusByBundleID(bundleId)
+
+  end
+end
+
 function launchOrCycleFocus(applicationBundleID)
   return function()
     local nextWindow = nil

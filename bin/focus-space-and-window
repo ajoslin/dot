@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -x
+
+app=$1
+# dir is app app
+
+space="$(yabai -m query --windows | jq --arg app "$app" '.[] | select(.app==$app)' | jq .space)"
+id="$(yabai -m query --windows | jq --arg app "$app" '.[] | select(.app==$app)' | jq .id)"
+
+current_space="$(yabai -m query --spaces --space | jq '.id')"
+
+if [[ $space != "" ]]; then
+    if [[ $space != $current_space ]]; then
+        yabai -m space --focus $space &> /dev/null;
+    fi
+    yabai -m window --focus $id
+else
+    open -a "$app"
+    sleep 1
+    id="$(yabai -m query --windows | jq --arg app "$app" '.[] | select(.app==$app)' | jq .id)"
+    yabai -m window --focus $id
+fi
+

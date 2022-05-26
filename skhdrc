@@ -1,0 +1,2 @@
+
+hyper - backspace : $(yabai -m window $(yabai -m query --windows --window | jq -re ".id") --close)

@@ -35,8 +35,6 @@ export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"
 export ANDROID_HOME=$ANDROID_SDK_ROOT/tools
 # export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 
-source $HOME/dot/env
-
 if [ -d "$HOME/Library/Python/3.6/bin/" ] ; then
     PATH="$HOME/Library/Python/3.6/bin/:$PATH"
 fi
@@ -111,8 +109,8 @@ eval "$(direnv hook zsh)"
 
 alias luamake=/Users/andrew/tools/lua-language-server/3rd/luamake/luamake
 
+export PATH="/Users/andrew/.local/share/solana/install/active_release/bin:$PATH"
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-export PATH="/Users/andrew/.local/share/solana/install/active_release/bin:$PATH"
