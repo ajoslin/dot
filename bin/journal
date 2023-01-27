@@ -6,4 +6,4 @@ else
   DATE=$1
 fi
 
-vim "$BOX/org/personal/journal/$DATE.txt"
+nvim "$BOX/org/personal/journal/$DATE.txt"

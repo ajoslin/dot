@@ -103,13 +103,24 @@ alias nuc='ssh root@10.1.10.69'
 
 alias pod='arch -x86_64 pod'
 
-# source /usr/local/opt/asdf/asdf.sh
-eval "$(direnv hook zsh)"
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
 
 
 alias luamake=/Users/andrew/tools/lua-language-server/3rd/luamake/luamake
 
 export PATH="/Users/andrew/.local/share/solana/install/active_release/bin:$PATH"
+
+
+# bun completions
+[ -s "/Users/andrew/.bun/_bun" ] && source "/Users/andrew/.bun/_bun"
+
+# Bun
+export BUN_INSTALL="/Users/andrew/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+fpath+=~/.zfunc
+
+eval "$(direnv hook zsh)"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

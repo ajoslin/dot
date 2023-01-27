@@ -45,6 +45,7 @@ set guicursor=a:blinkon100
 call plug#begin(stdpath('data') . '/plugged')
 
 Plug 'nvim-lua/popup.nvim'
+Plug 'tpope/vim-fugitive'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'akinsho/flutter-tools.nvim'
 Plug 'nvim-telescope/telescope.nvim'
@@ -65,9 +66,11 @@ Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/nvim-cmp'
+Plug 'simrat39/rust-tools.nvim'
+Plug 'hrsh7th/cmp-vsnip'
 Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'jose-elias-alvarez/null-ls.nvim'
-Plug 'jose-elias-alvarez/nvim-lsp-ts-utils'
+Plug 'jose-elias-alvarez/typescript.nvim'
 Plug 'folke/lsp-colors.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'onsails/lspkind-nvim'
@@ -75,6 +78,10 @@ Plug 'RishabhRD/popfix'
 Plug 'RishabhRD/nvim-lsputils'
 Plug 'folke/trouble.nvim'
 Plug 'ruanyl/vim-gh-line'
+Plug 'williamboman/mason.nvim'
+Plug 'williamboman/mason-lspconfig.nvim'
+Plug 'MunifTanjim/prettier.nvim'
+Plug 'themaxmarchuk/tailwindcss-colors.nvim'
 
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'tpope/vim-commentary'
@@ -96,6 +103,8 @@ Plug 'liuchengxu/vim-clap' " , { 'do': ':Clap install-binary' }
 Plug 'liuchengxu/vista.vim'
 Plug 'pantharshit00/vim-prisma'
 Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
+Plug 'edgedb/edgedb-vim'
+Plug 'junegunn/goyo.vim'
 
 call plug#end()
 "End dein Scripts-------------------------
@@ -151,6 +160,7 @@ nnoremap <silent> <leader>ci :TSLspOrganize<CR>
 nnoremap <silent> <leader>ca :CodeActionMenu<CR>
 nnoremap <silent> <leader>cn :Lspsaga rename<CR>
 nnoremap <silent> <leader>cd :Telescope lsp_definitions<cr>
+nnoremap <silent> <leader>cs :TypescriptGoToSourceDefinition<cr>
 nnoremap <silent> <leader>cr :Telescope lsp_references<cr>
 nnoremap <silent> <leader>cm :Telescope lsp_implementations<cr>
 nnoremap <silent> <leader>cw :Telescope lsp_dynamic_workspace_symbols<cr>
@@ -303,5 +313,49 @@ EOF
     " \  '<C-c>': 'close_preview_popup',
     " \}
 "------
+"
+"
+let g:rooter_patterns = ['.git']
 
 cabbrev wq execute "lua vim.lsp.buf.formatting_seq_sync()" <bar> wq
+
+" Configure LSP through rust-tools.nvim plugin.
+" rust-tools will configure and enable certain LSP features for us.
+" See https://github.com/simrat39/rust-tools.nvim#configuration
+lua <<EOF
+
+-- nvim_lsp object
+local nvim_lsp = require'lspconfig'
+
+require('rust-tools').setup({
+    tools = {
+        runnables = {
+            use_telescope = true
+        },
+        inlay_hints = {
+            auto = true,
+            show_parameter_hints = false,
+            parameter_hints_prefix = "",
+            other_hints_prefix = "",
+        },
+    },
+
+    -- all the opts to send to nvim-lspconfig
+    -- these override the defaults set by rust-tools.nvim
+    -- see https://github.com/neovim/nvim-lspconfig/blob/master/CONFIG.md#rust_analyzer
+    server = {
+        -- on_attach is a callback called when the language server attachs to the buffer
+        -- on_attach = on_attach,
+        settings = {
+            -- to enable rust-analyzer settings visit:
+            -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
+            ["rust-analyzer"] = {
+                -- enable clippy on save
+                checkOnSave = {
+                    command = "clippy"
+                },
+            }
+        }
+    },
+})
+EOF

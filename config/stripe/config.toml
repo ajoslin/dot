@@ -1,10 +1,10 @@
 color = ""
 
 [default]
-  account_id = "acct_1GxaL1DKWEGREG1H"
-  device_name = "MacBook-Pro.hsd1.wa.comcast.net"
-  display_name = "DripShop"
-  live_mode_api_key = "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"
-  live_mode_publishable_key = "pk_live_51GxaL1DKWEGREG1HMeiCLthJhVAKRkgXA27zStFqxXXPqpqegiPsrtbTHd23ausortTy4ZYUeE1sodXmhGSbzrCu003yM2NwX8"
-  test_mode_api_key = "rk_test_51GxaL1DKWEGREG1HgSB9R7H4ZqM4lMepUAZY79CaFKv9PGuEImNXjgqFJwCskkL4sQHBu3Wzl5HqozHau8Ci7gnC00bhQ6N5Gs"
-  test_mode_publishable_key = "pk_test_51GxaL1DKWEGREG1HToddNJdctZvQVfH0R0elILk0e0JG20SUtC3gk502uOEY0zxZ3t8MhBEcMNUYkq9WphwGASzo00TeFrHYer"
+  account_id = "acct_1LE9qPJelA7OBryz"
+  device_name = "ajoslin"
+  display_name = "neweralearning.net"
+  live_mode_api_key = "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"
+  live_mode_publishable_key = "pk_live_51LE9qPJelA7OBryzk4xyMnkegetxATQoXpsHE4TNIZHJU05THJOpu0XWhtixmjKPXrMQfVJ36X4g13RSIAOGWUPt00oBwnYgzk"
+  test_mode_api_key = "rk_test_51LE9qPJelA7OBryzz5GJdDmLbC7x8yhTUw7T3bD5Hj4p23c6vBUTtaZx16lBzJpIXQxdppz0Cs9OWWoJTGiAa52T00ovvvF3ko"
+  test_mode_publishable_key = "pk_test_51LE9qPJelA7OBryzgHJ6vi7yXerKxCC6WVgSkheOQTaCb7hQHVUhLckITBUQGAuHXaUT7gIeby4u7mbed5s9UaPt00XHDgZgtZ"

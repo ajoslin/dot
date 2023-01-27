@@ -1,142 +1,131 @@
-local nvim_lsp = require("lspconfig")
-local util = require 'lspconfig/util'
+local null_ls = require("null-ls")
+local group = vim.api.nvim_create_augroup("lsp_format_on_save", { clear = false })
+local event = "BufWritePre" -- or "BufWritePost"
+require("prettier").setup({
+  bin = "prettierd", -- or `'prettierd'` (v0.22+)
+  filetypes = {
+    "css",
+    "graphql",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "less",
+    "markdown",
+    "scss",
+    "typescript",
+    "typescriptreact",
+    "yaml",
+  },
+})
 
-require'lspconfig'.prismals.setup{}
+local async = event == "BufWritePost"
+null_ls.setup({
+  sources = {
+    null_ls.builtins.formatting.prettierd,
+    null_ls.builtins.formatting.rustfmt,
+    null_ls.builtins.formatting.stylua,
+    null_ls.builtins.diagnostics.eslint_d,
+    null_ls.builtins.code_actions.eslint_d,
+  },
+  on_attach = function(client, bufnr)
+    if client.supports_method("textDocument/formatting") then
+      vim.keymap.set("n", "<Leader>cf", function()
+        vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
+      end, { buffer = bufnr, desc = "[lsp] format" })
 
-require'nvim-treesitter.configs'.setup {
+      -- format on save
+      vim.api.nvim_clear_autocmds({ buffer = bufnr, group = group })
+      vim.api.nvim_create_autocmd(event, {
+        buffer = bufnr,
+        group = group,
+        callback = function()
+          vim.lsp.buf.format({ bufnr = bufnr, async = async })
+        end,
+        desc = "[lsp] format on save",
+      })
+    end
+
+    if client.supports_method("textDocument/rangeFormatting") then
+      vim.keymap.set("x", "<Leader>f", function()
+        vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
+      end, { buffer = bufnr, desc = "[lsp] format" })
+    end
+  end,
+})
+
+require("mason").setup({})
+require("mason-lspconfig").setup({
+  ensure_installed = { "sumneko_lua", "tailwindcss" },
+})
+
+require("lspconfig").graphql.setup({})
+require("lspconfig").prismals.setup({})
+require("lspconfig").gopls.setup({})
+require("lspconfig").sumneko_lua.setup({})
+require("lspconfig").tailwindcss.setup({
+  on_attach = function(client, bufnr)
+    require("tailwindcss-colors").buf_attach(bufnr)
+  end,
+})
+require("tailwindcss-colors").setup({})
+-- require'lspconfig'.tailwindcss.setup{}
+
+require("nvim-treesitter.configs").setup({
   context_commentstring = {
-    enable = true
+    enable = true,
   },
   autotag = {
     enable = true,
-  }
-}
-
-require'colorizer'.setup()
-
-local cmpCapabilities = require('cmp_nvim_lsp').update_capabilities(
-  vim.lsp.protocol.make_client_capabilities()
-)
-
-nvim_lsp.tsserver.setup {
-    on_attach = function(client, bufnr)
-
-        -- disable tsserver formatting if you plan on formatting via null-ls
-        client.resolved_capabilities.document_formatting = false
-        -- define an alias
-        vim.cmd("command! -buffer Formatting lua vim.lsp.buf.formatting()")
-
-        -- format on save
-        vim.cmd("autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting()")
-
-        local ts_utils = require("nvim-lsp-ts-utils")
-
-        -- defaults
-        ts_utils.setup({
-            debug = false,
-            disable_commands = false,
-            enable_import_on_completion = true,
-
-            -- import all
-            import_all_timeout = 5000, -- ms
-            -- lower numbers = higher priority
-            import_all_priorities = {
-                same_file = 1, -- add to existing import statement
-                local_files = 2, -- git files or files with relative path markers
-                buffer_content = 3, -- loaded buffer content
-                buffers = 4, -- loaded buffer names
-            },
-            import_all_scan_buffers = 500,
-            import_all_select_source = false,
-            -- if false will avoid organizing imports
-            always_organize_imports = true,
-
-            -- filter diagnostics
-            filter_out_diagnostics_by_severity = {},
-            filter_out_diagnostics_by_code = {},
-
-            -- inlay hints
-            auto_inlay_hints = true,
-            inlay_hints_highlight = "Comment",
-            inlay_hints_priority = 200, -- priority of the hint extmarks
-            inlay_hints_throttle = 150, -- throttle the inlay hint request
-            inlay_hints_format = { -- format options for individual hint kind
-                Type = {},
-                Parameter = {},
-                Enum = {},
-                -- Example format customization for `Type` kind:
-                -- Type = {
-                --     highlight = "Comment",
-                --     text = function(text)
-                --         return "->" .. text:sub(2)
-                --     end,
-                -- },
-            },
-
-            -- update imports on file move
-            update_imports_on_move = false,
-            require_confirmation_on_move = false,
-            watch_dir = nil,
-        })
-
-        -- required to fix code action ranges
-        ts_utils.setup_client(client)
-
-        -- no default maps, so you may want to define some here
-        local opts = {silent = true}
-        vim.api.nvim_buf_set_keymap(bufnr, "n", "gs", ":TSLspOrganize<CR>", opts)
-        vim.api.nvim_buf_set_keymap(bufnr, "n", "qq", ":TSLspFixCurrent<CR>", opts)
-        vim.api.nvim_buf_set_keymap(bufnr, "n", "gr", ":TSLspRenameFile<CR>", opts)
-        vim.api.nvim_buf_set_keymap(bufnr, "n", "gi", ":TSLspImportAll<CR>", opts)
-    end,
-
-    capabilities = cmpCapabilities
-}
-
-local null_ls = require("null-ls")
-null_ls.setup({
-    sources = {
-        null_ls.builtins.diagnostics.eslint_d, -- eslint or eslint_d
-        null_ls.builtins.code_actions.eslint_d, -- eslint or eslint_d
-        null_ls.builtins.formatting.prettierd -- prettier, eslint, eslint_d, or prettierd
-    },
+  },
 })
 
+require("colorizer").setup()
+
+local cmpCapabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
+
+require("typescript").setup({
+  disable_commands = false, -- prevent the plugin from creating Vim commands
+  debug = false, -- enable debug logging for commands
+  go_to_source_definition = {
+    fallback = true, -- fall back to standard LSP definition on failure
+  },
+  server = { -- pass options to lspconfig's setup method
+    -- on_attach = ...,
+    capabitilies = cmpCapabilities,
+    -- on_attach = function(client, bufnr)
+    --   -- disable tsserver formatting if you plan on formatting via null-ls
+    --   client.server_capabilities.document_formatting = false
+    --   -- define an alias
+    --   -- vim.cmd("command! -buffer Formatting lua vim.lsp.buf.formatting()")
+    -- end,
+  },
+})
 
 -- use .ts snippets in .tsx files
 vim.g.vsnip_filetypes = {
-    typescriptreact = {"typescript"}
+  typescriptreact = { "typescript" },
 }
-                    -- require('trouble').setup()
-require('lspsaga').init_lsp_saga({
-        border_style='single';
-        code_action_prompt = {
-            enable = false 
-        }
-    })
+-- require('trouble').setup()
+require("lspsaga").init_lsp_saga({
+  border_style = "single",
+  code_action_prompt = {
+    enable = false,
+  },
+})
 
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-  vim.lsp.diagnostic.on_publish_diagnostics, {
-    signs = {
-      severity_limit = 'Warning',
-    },
-    underline = true,
-    update_in_insert = false,
-    virtual_text = {
-      spacing = 2,
-      severity_limit = 'Warning',
-    },
-  }
-)
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+  signs = {
+    severity_limit = "Warning",
+  },
+  underline = true,
+  update_in_insert = false,
+  virtual_text = {
+    spacing = 2,
+    severity_limit = "Warning",
+  },
+})
 
-require('lspkind').init({
-        preset = 'codicons'
-    })
-
--- require('lspconfig').tailwindcss.setup { 
---   default_config = {
---     cmd = 'tailwindcss-language-server';
---     filetypes = {'html','svelte','typescriptreact'};
---     root_dir = util.root_pattern("tailwind.config.js", "package.json", ".git");
---   };
--- }
+require("lspkind").init({
+  preset = "codicons",
+})

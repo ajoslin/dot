@@ -1,0 +1,3 @@
+[build]
+lld = "rust-lld.exe"
+clang = "/usr/bin/clang"
