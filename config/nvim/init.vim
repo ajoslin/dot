@@ -99,8 +99,6 @@ Plug 'dhruvasagar/vim-open-url'
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'kwkarlwang/bufjump.nvim'
 Plug 'phaazon/hop.nvim'
-Plug 'liuchengxu/vim-clap' " , { 'do': ':Clap install-binary' }
-Plug 'liuchengxu/vista.vim'
 Plug 'pantharshit00/vim-prisma'
 Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
 Plug 'edgedb/edgedb-vim'
