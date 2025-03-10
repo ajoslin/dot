@@ -1,0 +1,17 @@
+
+font-family = "FiraCode Nerd Font Mono Light"
+font-style = "Regular"
+font-size = 14
+font-feature = -liga
+
+theme = ayu
+
+window-decoration = false
+window-height = 999999999
+window-width = 999999999
+window-padding-color = extend
+
+link-url = true
+
+confirm-close-surface = false
+

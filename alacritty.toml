@@ -1,0 +1,23 @@
+import = [
+    "~/dot/config/alacritty/themes/themes/monokai_pro.toml"
+]
+
+[font]
+# normal = { family = "FiraCode Nerd Font Mono", size = 14.0, style = "Regular" }
+# normal.family = "Fira Code"
+normal.family = "FiraCode Nerd Font Mono Light"
+normal.style="Light"
+bold.style = "Bold"
+italic.style = "Italic"
+# normal.style = "Light"
+size = 14
+
+[cursor]
+style.blinking = "Always"
+blink_timeout = 0
+unfocused_hollow = true
+blink_interval = 600
+
+[window]
+decorations = 'None'
+startup_mode = 'Maximized'

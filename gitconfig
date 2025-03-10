@@ -1,5 +1,7 @@
 [alias]
-  ps = push
+  p = push
+  cp = cherry-pick
+  rp = rev-parse
   cm = commit
   pl = pull
   wip = commit --no-verify -am 'wip'
@@ -16,6 +18,7 @@
   prog = pull --rebase origin gh-pages
   log-file = log -p -M --follow --stat --
   rp = rev-parse
+  x = !git add . && git commit --allow-empty -a -m 'x' && git push
 [core]
 	excludesfile = /Users/andrew/.globalgitignore
 	editor = nvim
@@ -56,9 +59,6 @@
     show = delta
 
 [delta]
-    plus-style = "syntax #012800"
-    minus-style = "syntax #340001"
-    syntax-theme = Monokai Extended
     navigate = true
 
 [interactive]
@@ -69,3 +69,5 @@
 [includeIf "gitdir:~/pm/"]
     path = .gitconfig-pm
 
+[advice]
+	skippedCherryPicks = false

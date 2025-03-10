@@ -34,11 +34,11 @@ dbg = function(...)
   print(hs.inspect(...))
 end
 
-dbgf = function (...)
+dbgf = function(...)
   return dbg(string.format(...))
 end
 
-function tap (a)
+function tap(a)
   dbg(a)
   return a
 end
@@ -58,7 +58,6 @@ function hs.window:key()
   return string.format("%s:%s", applicationName, self:id())
 end
 
-
 function hs.window:isMaximized()
   local screen = self:screen()
   local screenFrame = screen:frame()
@@ -66,11 +65,9 @@ function hs.window:isMaximized()
   return compareShallow(self:frame(), screenFrame)
 end
 
-
 function hs.mouse.centerOnRect(rect)
   hs.mouse.setAbsolutePosition(geometry.rectMidPoint(rect))
 end
-
 
 ---------------------------------------------------------
 -- MODAL HOTKEY UTILS
@@ -84,7 +81,7 @@ mode.enter = function(modalName, subName)
   if subName then modalName = string.format('%s::%s', modalName, subName) end
   modeLabel = string.format("Mode: %s", modalName)
 
-  local pos = {x = 0, y = 10, w = 300, h = 30}
+  local pos = { x = 0, y = 10, w = 300, h = 30 }
   modeIndicator = hs.drawing.rectangle(pos)
   modeIndicator:setRoundedRectRadii(10, 10)
 
@@ -142,21 +139,20 @@ function manipulateScreen(func)
   end
 end
 
-
 fullScreenCurrent = function()
   window = hs.window.focusedWindow()
   if not window then return end
 
   -- no prev state
-    -- fullscreen
-    -- no fullscreen
-      -- toggle fullscreen
+  -- fullscreen
+  -- no fullscreen
+  -- toggle fullscreen
 
   -- prev state
-    -- fullscreen
-      -- revert to prev state if prev state
-    -- no fullscreen
-      -- toggle fullscreen
+  -- fullscreen
+  -- revert to prev state if prev state
+  -- no fullscreen
+  -- toggle fullscreen
 
   if window:isMaximized() then
     dbg('NOT MAXIMIZED')
@@ -216,8 +212,8 @@ function mouseHighlight()
   mousepoint = hs.mouse.get()
 
   -- Prepare a big circle around the mouse pointer
-  mouseCircle = hs.drawing.circle(hs.geometry.rect(mousepoint.x-40, mousepoint.y-40, 85, 85))
-  mouseCircle:setFillColor({["red"]=0,["blue"]=1,["green"]=0,["alpha"]=0.5})
+  mouseCircle = hs.drawing.circle(hs.geometry.rect(mousepoint.x - 40, mousepoint.y - 40, 85, 85))
+  mouseCircle:setFillColor({ ["red"] = 0, ["blue"] = 1, ["green"] = 0, ["alpha"] = 0.5 })
   mouseCircle:setStrokeWidth(5)
   mouseCircle:show()
 
@@ -227,40 +223,40 @@ function mouseHighlight()
   end)
 end
 
-function table.val_to_str ( v )
-  if "string" == type( v ) then
-    v = string.gsub( v, "\n", "\\n" )
-    if string.match( string.gsub(v,"[^'\"]",""), '^"+$' ) then
+function table.val_to_str(v)
+  if "string" == type(v) then
+    v = string.gsub(v, "\n", "\\n")
+    if string.match(string.gsub(v, "[^'\"]", ""), '^"+$') then
       return "'" .. v .. "'"
     end
-    return '"' .. string.gsub(v,'"', '\\"' ) .. '"'
+    return '"' .. string.gsub(v, '"', '\\"') .. '"'
   else
-    return "table" == type( v ) and table.tostring( v ) or
-      tostring( v )
+    return "table" == type(v) and table.tostring(v) or
+        tostring(v)
   end
 end
 
-function table.key_to_str ( k )
-  if "string" == type( k ) and string.match( k, "^[_%a][_%a%d]*$" ) then
+function table.key_to_str(k)
+  if "string" == type(k) and string.match(k, "^[_%a][_%a%d]*$") then
     return k
   else
-    return "[" .. table.val_to_str( k ) .. "]"
+    return "[" .. table.val_to_str(k) .. "]"
   end
 end
 
-function table.tostring( tbl )
+function table.tostring(tbl)
   local result, done = {}, {}
-  for k, v in ipairs( tbl ) do
-    table.insert( result, table.val_to_str( v ) )
-    done[ k ] = true
+  for k, v in ipairs(tbl) do
+    table.insert(result, table.val_to_str(v))
+    done[k] = true
   end
-  for k, v in pairs( tbl ) do
-    if not done[ k ] then
-      table.insert( result,
-                    table.key_to_str( k ) .. "=" .. table.val_to_str( v ) )
+  for k, v in pairs(tbl) do
+    if not done[k] then
+      table.insert(result,
+        table.key_to_str(k) .. "=" .. table.val_to_str(v))
     end
   end
-  return "{" .. table.concat( result, "," ) .. "}"
+  return "{" .. table.concat(result, ",") .. "}"
 end
 
 ---------------------------------------------------------
@@ -317,38 +313,37 @@ end
 -- Needed to enable cycling of application windows
 lastToggledApplication = ''
 
-function simpleLauncher(bundleId)
+function simpleLauncher(title)
   return function()
     local focusedWindow = hs.window.focusedWindow()
-    if focusedWindow:application():bundleID() == bundleId then 
-      return nil 
+    if focusedWindow:title() == title then
+      return nil
     end
 
-    hs.application.launchOrFocusByBundleID(bundleId)
-
+    hs.application.launchOrFocus(title)
   end
 end
 
-function launchOrCycleFocus(applicationBundleID)
+function launchOrCycleFocus(title)
   return function()
-    local nextWindow = nil
-    local targetWindow = nil
-    local focusedWindow          = hs.window.focusedWindow()
-    local lastToggledBundleID = focusedWindow and focusedWindow:application():bundleID()
-    dbgf(focusedWindow:application():bundleID())
+    local nextWindow       = nil
+    local targetWindow     = nil
+    local focusedWindow    = hs.window.focusedWindow()
+    local lastToggledTitle = focusedWindow and focusedWindow:title()
 
-    if not focusedWindow then return nil end
+    if focusedWindow then
+      appStates:save()
+    end
 
     -- save the state of currently focused app
-    appStates:save()
 
-    dbgf('last: %s, current: %s', lastToggledApplication, applicationTitle)
+    dbgf('last: %s, current: %s', lastToggledApplication, title)
 
-    if lastToggledBundleID == applicationBundleID then
-      hs.eventtap.keyStroke({"cmd"}, "`")
+    if lastToggledTitle == title then
+      hs.eventtap.keyStroke({ "cmd" }, "`")
       nextWindow = hs.window.focusedWindow()
     else
-      hs.application.launchOrFocusByBundleID(applicationBundleID)
+      hs.application.launchOrFocus(title)
     end
 
     -- this blindly assumed that previous steps have been successful..
@@ -359,7 +354,7 @@ function launchOrCycleFocus(applicationBundleID)
     end
 
     if not targetWindow then
-      dbgf('failed finding a window for application: %s', applicationBundleID)
+      dbgf('failed finding a window for application: %s', title)
       return nil
     end
 
@@ -374,9 +369,6 @@ function launchOrCycleFocus(applicationBundleID)
     mouseHighlight()
   end
 end
-
-
-
 
 ---------------------------------------------------------
 -- KEYBOARD / MOUSE

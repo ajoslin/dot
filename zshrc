@@ -4,6 +4,7 @@ export HOMEBREW_REPOSITORY="/opt/homebrew";
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin${PATH+:$PATH}";
 export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:";
 export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}";
+export MINIO_CONFIG_ENV_FILE=/etc/default/minio
 
 if [[ -z $TMUX ]]; then
   tmux attach || tmux new-session -s main
@@ -31,7 +32,7 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export PATH="$HOME/.bin:/usr/local/opt/openssl/bin:/usr/local/bin:/opt/local/bin:$HOME/terraform:$GOPATH/bin:/usr/local/Cellar/logstash/2.3.2/bin:$HOME/.rvm/bin:$PIP_USER_BASE_PATH/bin:$HOME/flutter/bin:$HOME/tools/lua-language-server/bin:$PATH"
 
-export ANDROID_SDK_ROOT="/usr/local/share/android-sdk"
+export ANDROID_SDK_ROOT="/Users/andrew/Library/Android/sdk"
 export ANDROID_HOME=$ANDROID_SDK_ROOT/tools
 # export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 
@@ -48,11 +49,15 @@ alias bp=bundle-phobia
 alias tf=terraform
 alias subl="/Applications/Sublime\ Text.app/Contents/MacOS/sublime_text"
 alias gti=git
-alias sll=/usr/local/Cellar/sl/5.02/bin/sl
+alias sll=/opt/homebrew/bin/sl
 alias gitd='git daemon --base-path=. --export-all --enable=receive-pack --reuseaddr --informative-errors --verbose'
 alias pwine="source $HOME/wine/wine-prefix"
 alias FZF_DEFAULT_COMMAND='ag'
 alias vi=nvim
+alias sheets='open https://sheets.new'
+alias gp='git push'
+alias gcp='git cherry-pick'
+alias grph="echo 'git rev-parse HEAD | pbcopy' && git rev-parse HEAD | pbcopy"
 
 alias clocker="HOME=~/sync/andrew clocker"
 
@@ -73,9 +78,37 @@ export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
 
 export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
 
-alias pod='arch -x86_64 pod'
 
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
 
 
 alias luamake=/Users/andrew/tools/lua-language-server/3rd/luamake/luamake
+
+eval "$(direnv hook zsh)"
+export PATH="/opt/homebrew/opt/mongodb-community@4.4/bin:$PATH"
+
+# bun completions
+[ -s "/Users/andrew/.bun/_bun" ] && source "/Users/andrew/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="/Users/andrew/Library/Android/sdk/platform-tools":$PATH
+export PATH="$PATH:/Users/andrew/.foundry/bin"
+export PATH="$PATH:/Users/andrew/.cargo/bin"
+export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+export PATH=$ANDROID_HOME/emulator:$PATH
+export PATH=$ANDROID_HOME/platform-tools:$PATH
+
+export ANDROID_HOME="/Users/andrew/Library/Android/sdk"
+alias da='direnv allow'
+. "$HOME/.cargo/env"
+
+# Created by `pipx` on 2024-03-18 22:11:47
+export PATH="$PATH:/Users/andrew/.local/bin"
+
+# Added by Windsurf
+export PATH="/Users/andrew/.codeium/windsurf/bin:$PATH"
+
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+export PATH=~/.npm-global/bin:$PATH

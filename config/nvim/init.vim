@@ -44,65 +44,69 @@ set guicursor=a:blinkon100
 
 call plug#begin(stdpath('data') . '/plugged')
 
-Plug 'nvim-lua/popup.nvim'
 Plug 'tpope/vim-fugitive'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'akinsho/flutter-tools.nvim'
+Plug 'shinchu/lightline-gruvbox.vim'
+Plug 'ellisonleao/gruvbox.nvim'
 Plug 'nvim-telescope/telescope.nvim'
-Plug 'williamboman/nvim-lsp-installer'
-" plug 'williamboman/nvim-lsp-installer'
-Plug 'weilbith/nvim-code-action-menu'
+Plug 'MaximilianLloyd/tw-values.nvim'
+Plug 'nvim-neotest/nvim-nio'
+
+Plug 'HakonHarnes/img-clip.nvim'
+Plug 'stevearc/dressing.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'MunifTanjim/nui.nvim'
+Plug 'nvim-tree/nvim-web-devicons'
+Plug 'MeanderingProgrammer/render-markdown.nvim'
+Plug 'robitx/gp.nvim'
+
+Plug 'chottolabs/kznllm.nvim'
 
 Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'tami5/lspsaga.nvim'
-Plug 'github/copilot.vim'
-Plug 'norcalli/nvim-colorizer.lua'
-Plug 'tpope/vim-abolish'
+Plug 'gbprod/yanky.nvim'
+Plug 'yacineMTB/dingllm.nvim'
+" Plug 'github/copilot.vim'
+Plug 'supermaven-inc/supermaven-nvim'
+Plug 'pmizio/typescript-tools.nvim'
+Plug 'NvChad/nvim-colorizer.lua'
+
+Plug 'akinsho/git-conflict.nvim'
 
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
-Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'simrat39/rust-tools.nvim'
-Plug 'hrsh7th/cmp-vsnip'
-Plug 'JoosepAlviste/nvim-ts-context-commentstring'
-Plug 'jose-elias-alvarez/null-ls.nvim'
-Plug 'jose-elias-alvarez/typescript.nvim'
+" Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'folke/lsp-colors.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'onsails/lspkind-nvim'
-Plug 'RishabhRD/popfix'
-Plug 'RishabhRD/nvim-lsputils'
-Plug 'folke/trouble.nvim'
 Plug 'ruanyl/vim-gh-line'
 Plug 'williamboman/mason.nvim'
 Plug 'williamboman/mason-lspconfig.nvim'
-Plug 'MunifTanjim/prettier.nvim'
 Plug 'themaxmarchuk/tailwindcss-colors.nvim'
+Plug 'tpope/vim-abolish'
 
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'tpope/vim-commentary'
 Plug 'airblade/vim-rooter'
 
 Plug 'itchyny/lightline.vim'
-Plug 'phanviet/vim-monokai-pro'
 Plug 'sheerun/vim-polyglot'
-Plug 'preservim/nerdtree'
+Plug 'nvim-tree/nvim-tree.lua'
+Plug 'elentok/format-on-save.nvim'
 
-Plug 'Yggdroot/LeaderF' " , { 'do': ':LeaderfInstallCExtension' }
-Plug 'tamago324/LeaderF-filer'
 Plug 'tpope/vim-surround'
 Plug 'dhruvasagar/vim-open-url'
-Plug 'nvim-treesitter/nvim-treesitter'
+Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate', 'commit': '57a8acf0c4ed5e7f6dda83c3f9b073f8a99a70f9'}
 Plug 'kwkarlwang/bufjump.nvim'
-Plug 'phaazon/hop.nvim'
 Plug 'pantharshit00/vim-prisma'
-Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
-Plug 'edgedb/edgedb-vim'
 Plug 'junegunn/goyo.vim'
+Plug 'tzachar/highlight-undo.nvim'
+Plug 'antosha417/nvim-lsp-file-operations'
+Plug 'filipdutescu/renamer.nvim', { 'branch': 'master' }
+Plug 'stevearc/oil.nvim'
+Plug 'iibe/gruvbox-high-contrast'
 
 call plug#end()
 "End dein Scripts-------------------------
@@ -141,51 +145,42 @@ autocmd FileType clap_input inoremap <silent> <buffer> <Esc> <C-R>=clap#exit()<C
 nnoremap <leader>/ :Telescope live_grep<cr>
 " nnoremap <leader>/ :Telescope live_grep<cr>
 nnoremap <leader>* :Telescope grep_string<cr>
+nnoremap <leader>r :Telescope resume<cr>
 " nnoremap <leader>* :execute 'Clap grep2 ++query='.expand('<cword>')<cr>
-nnoremap <leader>pt :NERDTreeToggle<cr>
-nnoremap <leader>pv :NERDTreeVCS<cr>
-nnoremap <leader>ff :LeaderfFiler %:p:h<cr>
-nnoremap <leader>fn :NERDTreeFind<cr>
 
-nnoremap <leader>pg :Clap gfiles<cr>
-nnoremap <leader>pf :Telescope find_files<cr>
+nnoremap <leader>y :Telescope yank_history<cr>
+
+nnoremap <leader>pf <cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--files', '--hidden', '-g', '!.git' }})<cr>
 
 "lsp provider to find the cursor word definition and reference
-nnoremap <silent> <leader>ch <cmd>lua require('lspsaga.hover').render_hover_doc()<CR>
-nnoremap <silent> <leader>cp <cmd>lua require'lspsaga.provider'.preview_definition()<CR>
-nnoremap <silent> <leader>cv :TSLspRenameFile<CR>
-nnoremap <silent> <leader>ci :TSLspOrganize<CR>
-nnoremap <silent> <leader>ca :CodeActionMenu<CR>
-nnoremap <silent> <leader>cn :Lspsaga rename<CR>
+nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
+
+" nnoremap <silent> <leader>ch <cmd>lua require("hover").hover, {desc = "hover.nvim"})<CR>
+        " vim.keymap.set("n", "gK", require("hover").hover_select, {desc = "hover.nvim (select)"})
+
+nnoremap <silent> <leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
+nnoremap <silent> <leader>cn <cmd>lua require('renamer').rename()<CR>
 nnoremap <silent> <leader>cd :Telescope lsp_definitions<cr>
-nnoremap <silent> <leader>cs :TypescriptGoToSourceDefinition<cr>
+nnoremap <silent> <leader>cs <cmd>vim.lsp.buf.definition()<cr>
 nnoremap <silent> <leader>cr :Telescope lsp_references<cr>
 nnoremap <silent> <leader>cm :Telescope lsp_implementations<cr>
 nnoremap <silent> <leader>cw :Telescope lsp_dynamic_workspace_symbols<cr>
 nnoremap <silent> <leader>co :Telescope lsp_document_symbols<cr>
-nnoremap <silent> <leader>ce <cmd>lua require'lspsaga.diagnostic'.show_line_diagnostics()<CR>
-inoremap <silent> <C-s> <cmd>lua vim.lsp.buf.signature_help()<CR>
+" inoremap <silent> <C-s> <cmd>lua vim.lsp.buf.signature_help()<CR>
 
-nnoremap <silent> <leader>e <cmd>lua require'lspsaga.diagnostic'.show_line_diagnostics()<CR>
+nnoremap <silent> <leader>gr <cmd>:GpRewrite<CR>
+nnoremap <silent> <leader>gn <cmd>:GpChatToggle<CR>
 
-nnoremap <silent> <leader>gn <cmd>lua vim.lsp.diagnostic.goto_next()<CR>:CodeActionMenu<cr>
-nnoremap <silent> <leader>gp <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>:CodeActionMenu<cr>
+nnoremap <silent> <leader>e <cmd>lua vim.diagnostic.open_float()<CR>
+
+nnoremap <leader>ff :Oil<cr>:set ma<cr>
+
 nnoremap <silent> <leader>go :OpenURL <cfile><CR>
-
-nnoremap <silent> <leader>hf :HopPattern<cr>
-nnoremap <silent> <leader>hF <cmd>lua require'hop'.hint_words({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR })<cr>
 
 let g:open_url_default_mappings = 0
 let g:gh_line_map_default = 0
 let g:gh_line_blame_map_default = 1
 let g:gh_line_map = '<leader>gl'
-
-nnoremap <leader>xx <cmd>TroubleToggle<cr>
-nnoremap <leader>xw <cmd>TroubleToggle workspace_diagnostics<cr>
-nnoremap <leader>xd <cmd>TroubleToggle document_diagnostics<cr>
-nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
-nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
-nnoremap gR <cmd>TroubleToggle lsp_references<cr>
 
 "Buffers
 nnoremap <leader>bp :bp<cr>
@@ -193,15 +188,22 @@ nnoremap <leader>bn :bn<cr>
 nnoremap <leader>bb :Clap recent_files<cr>
 nnoremap <leader>bg :Clap bcommits<cr>
 
+:command X !git x &
+
 "Vimrc
 augroup reload_vimrc
 	autocmd!
 	autocmd! BufWritePost $MYVIMRC,$MYGVIMRC nested source %
 augroup END
 
-colorscheme monokai_pro
+set background=dark
+" let g:gruvbox_contrast_dark = 'hard'
+" colorscheme gruvbox-high-contrast
+colorscheme gruvbox
+
+"colorscheme catppuccin-latte
 let g:lightline = {
-      \ 'colorscheme': 'monokai_pro',
+      \ 'colorscheme': 'gruvbox',
       \ 'component_function': {
       \   'filename': 'LightlineFilename',
       \   'method': 'NearestMethodOrFunction'
@@ -218,86 +220,19 @@ set foldcolumn=0
 hi foldcolumn guibg=bg
 hi VertSplit guibg=bg guifg=#777777
 
-"---------------NerdTree
-autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
-let NERDTreeMapActivateNode='l'
-let NERDTreeMapJumpParent='h'
-let NERDTreeShowHidden=1
-"--------------- end nerdtree
 
 
 "----------LSP
 lua require('lsp-config')
 lua require('telescope-config')
 lua require('jump-config')
+lua require('tree-config')
 
 lua require'colorizer'.setup()
-lua require'hop'.setup()
 lua require('lspkind').init({ preset = 'codicons' })
 
 "Completion
 set completeopt=menu,menuone,noselect
-
-lua <<EOF
-  -- Setup nvim-cmp.
-  local cmp = require'cmp'
-
-  cmp.setup({
-    completion = {
-      completeopt = 'menu,menuone,noinsert'
-    },
-    formatting = {
-      format = require('lspkind').cmp_format(),
-    },
-    snippet = {
-      -- REQUIRED - you must specify a snippet engine
-      expand = function(args)
-        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-      end,
-    },
-    mapping = {
-      ['<C-j>'] = cmp.mapping.select_next_item(),
-      ['<C-k>'] = cmp.mapping.select_prev_item(),
-      ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
-      ['<C-l>'] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-      ['<Tab>'] = cmp.config.disable
-    },
-    sources = cmp.config.sources({
-      { name = 'nvim_lsp_signature_help' },
-      { name = 'nvim_lsp' },
-      -- { name = 'cmp_tabnine' }, -- For vsnip users.
-      { name = 'path' }, -- For vsnip users.
-      -- { name = 'luasnip' }, -- For luasnip users.
-      -- { name = 'ultisnips' }, -- For ultisnips users.
-      -- { name = 'snippy' }, -- For snippy users.
-    })
-  })
-EOF
-
-" lua << EOF
-"   require("flutter-tools").setup{} -- use defaults
-" EOF
-
-"LSP Saga
-
-"scroll the saga help windows
-nnoremap <silent> <C-n> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(1)<CR>
-nnoremap <silent> <C-p> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1)<CR>
-
-" vim.lsp.handlers['textDocument/references'] = require'lsputil.locations'.references_handler
-" vim.lsp.handlers['textDocument/definition'] = require'lsputil.locations'.definition_handler
-" vim.lsp.handlers['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
-lua <<EOF
-vim.lsp.handlers['textDocument/declaration'] = require'lsputil.locations'.declaration_handler
-vim.lsp.handlers['textDocument/typeDefinition'] = require'lsputil.locations'.typeDefinition_handler
-vim.lsp.handlers['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
-vim.lsp.handlers['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
-vim.lsp.handlers['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
-EOF
-"-----------end lsp
 
 "------filr.vim
     " let g:Lf_FilerNormalMap = {
