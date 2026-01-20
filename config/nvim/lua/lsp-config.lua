@@ -1,7 +1,5 @@
 require("lsp-file-operations").setup()
 
-local nvim_lsp = require('lspconfig')
-
 local formatters = require("format-on-save.formatters")
 require("nvim-treesitter.configs").setup({
   ensure_installed = { "markdown", "lua", "markdown_inline" },
@@ -44,6 +42,11 @@ local biome_formatter = formatters.shell({
   end
 })
 
+local sql_formatter = formatters.shell({
+  cmd = { "sql-formatter", "-l", "tsql", "%" },
+  expand_executable = false
+})
+
 local rustfmt_formatter = formatters.shell({
   cmd = { "rustfmt", "--emit=stdout" },
   expand_executable = false
@@ -57,7 +60,8 @@ local gofmt_formatter = formatters.shell({
 require("format-on-save").setup({
   formatter_by_ft = {
     css = formatters.prettierd,
-    -- html = biome_formatter,
+    html = formatters.prettierd,
+    ejs = formatters.prettierd,
     -- svg = formatters.prettierd,
     java = formatters.lsp,
     json = biome_formatter,
@@ -69,6 +73,7 @@ require("format-on-save").setup({
     scss = formatters.prettierd,
     terraform = formatters.lsp,
     go = gofmt_formatter,
+    -- sql = sql_formatter,
     -- yaml = formatters.prettierd,
     typescript = biome_formatter,
     typescriptreact = biome_formatter,
@@ -77,10 +82,6 @@ require("format-on-save").setup({
   },
 })
 
-require("mason").setup({})
-require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "tailwindcss" }
-})
 
 require("colorizer").setup()
 
@@ -148,36 +149,143 @@ cmp.setup({
 
 require('git-conflict').setup()
 
-require('typescript-tools').setup({
+-- ts_ls for TypeScript/JavaScript (stable, maintained)
+vim.lsp.config.ts_ls = {
+  cmd = { 'typescript-language-server', '--stdio' },
+  filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx' },
+  root_markers = { 'tsconfig.json', 'package.json', 'jsconfig.json', '.git' },
   capabilities = cmpCapabilities,
-  root_dir = nvim_lsp.util.root_pattern('.git'),
   on_attach = function(client, bufnr)
-    client.server_capabilities.document_formatting = false
+    client.server_capabilities.documentFormattingProvider = false
   end,
+}
+vim.lsp.enable('ts_ls')
+
+-- Custom code action function that sorts vtsls/TypeScript actions first, biome last
+_G.sorted_code_action = function()
+  local params = vim.lsp.util.make_range_params(nil, nil, 0)
+  local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local diagnostics = vim.diagnostic.get(0, { lnum = line })
+  params.context = { diagnostics = diagnostics }
+  
+  vim.lsp.buf_request_all(0, 'textDocument/codeAction', params, function(results)
+    if not results or vim.tbl_isempty(results) then
+      print("No code actions available")
+      return
+    end
+    
+    local actions = {}
+    for client_id, result in pairs(results) do
+      local client = vim.lsp.get_client_by_id(client_id)
+      if result and result.result then
+        for _, action in pairs(result.result) do
+          action.client_name = client.name
+          table.insert(actions, action)
+        end
+      end
+    end
+    
+    -- Sort: ts_ls first, then others, biome last
+    table.sort(actions, function(a, b)
+      local a_is_ts = a.client_name == "ts_ls"
+      local b_is_ts = b.client_name == "ts_ls"
+      local a_is_biome = a.client_name == "biome"
+      local b_is_biome = b.client_name == "biome"
+      
+      if a_is_ts and not b_is_ts then return true end
+      if b_is_ts and not a_is_ts then return false end
+      if a_is_biome and not b_is_biome then return false end
+      if b_is_biome and not a_is_biome then return true end
+      
+      return false
+    end)
+    
+    if #actions == 0 then
+      print("No code actions available")
+      return
+    end
+    
+    -- Present sorted actions to user
+    vim.ui.select(actions, {
+      prompt = "Code actions:",
+      format_item = function(action)
+        return (action.title or "") .. " [" .. action.client_name .. "]"
+      end,
+    }, function(selected)
+      if selected then
+        local action = selected
+        if action.edit then
+          vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
+        end
+        if action.command then
+          local command = type(action.command) == "table" and action.command or action
+          local fn = vim.lsp.commands[command.command]
+          if fn then
+            fn(command, { bufnr = 0, client_id = vim.lsp.get_client_by_id(action.client_id) })
+          else
+            vim.lsp.buf.execute_command(command)
+          end
+        end
+      end
+    end)
+  end)
+end
+
+vim.lsp.config.graphql = {
+  cmd = { 'graphql-lsp', 'server', '-m', 'stream' },
+  filetypes = { 'graphql', 'typescriptreact', 'javascriptreact' },
+  root_markers = { '.git', '.graphqlrc*', '.graphql.config.*', 'graphql.config.*' },
+}
+vim.lsp.enable('graphql')
+
+vim.lsp.config.prismals = {
+  cmd = { 'prisma-language-server', '--stdio' },
+  filetypes = { 'prisma' },
+  root_markers = { '.git', 'package.json' },
   settings = {
-    separate_diagnostic_server = true,
-    publish_diagnostic_on = "insert_leave",
-  }
-})
+    prisma = {
+      prismaFmtBinPath = '',
+    },
+  },
+}
+vim.lsp.enable('prismals')
 
--- require("lspconfig").tsserver.setup({
---   capabilities = cmpCapabilities,
---   root_dir = nvim_lsp.util.root_pattern('.git'),
---   on_attach = function(client)
---     client.server_capabilities.document_formatting = false
---   end,
--- })
+vim.lsp.config.gopls = {
+  cmd = { 'gopls' },
+  filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
+  root_markers = { 'go.work', 'go.mod', '.git' },
+}
+vim.lsp.enable('gopls')
 
-require("lspconfig").graphql.setup({})
-require("lspconfig").prismals.setup({})
-require("lspconfig").gopls.setup({})
-require("lspconfig").lua_ls.setup({})
-require("lspconfig").tailwindcss.setup({
-  root_dir = nvim_lsp.util.root_pattern('.git'),
+vim.lsp.config.lua_ls = {
+  cmd = { 'lua-language-server' },
+  filetypes = { 'lua' },
+  root_markers = { '.luarc.json', '.luarc.jsonc', '.luacheckrc', '.stylua.toml', 'stylua.toml', 'selene.toml', 'selene.yml', '.git' },
+}
+vim.lsp.enable('lua_ls')
+
+vim.lsp.config.jsonls = {
+  cmd = { 'vscode-json-language-server', '--stdio' },
+  filetypes = { 'json', 'jsonc' },
+  root_markers = { '.git' },
+  capabilities = cmpCapabilities,
+  settings = {
+    json = {
+      validate = { enable = true },
+    },
+  },
+}
+vim.lsp.enable('jsonls')
+
+vim.lsp.config.tailwindcss = {
+  cmd = { 'tailwindcss-language-server', '--stdio' },
+  filetypes = { 'aspnetcorerazor', 'astro', 'astro-markdown', 'blade', 'clojure', 'django-html', 'htmldjango', 'edge', 'eelixir', 'elixir', 'ejs', 'erb', 'eruby', 'gohtml', 'gohtmltmpl', 'haml', 'handlebars', 'hbs', 'html', 'htmlangular', 'html-eex', 'heex', 'jade', 'leaf', 'liquid', 'markdown', 'mdx', 'mustache', 'njk', 'nunjucks', 'php', 'razor', 'slim', 'twig', 'css', 'less', 'postcss', 'sass', 'scss', 'stylus', 'sugarss', 'javascript', 'javascriptreact', 'reason', 'rescript', 'typescript', 'typescriptreact', 'vue', 'svelte', 'templ' },
+  root_markers = { 'tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts', 'postcss.config.js', 'postcss.config.cjs', 'postcss.config.mjs', 'postcss.config.ts', '.git' },
   on_attach = function(client, bufnr)
     -- require("tailwindcss-colors").buf_attach(bufnr)
   end,
-})
+}
+vim.lsp.enable('tailwindcss')
 require("tw-values").setup({})
 require("tailwindcss-colors").setup({})
 require("renamer").setup({})
@@ -256,4 +364,56 @@ require('gp').setup({
   --     secret = os.getenv("ANTHROPIC_API_KEY"),
   --   },
   -- }
+})
+require("mason").setup({})
+require("mason-lspconfig").setup({
+  ensure_installed = { "lua_ls", "tailwindcss", "ts_ls", "jsonls" },
+  handlers = {
+    -- Default handler for auto-setup (keeps existing behavior)
+    function(server_name)
+      -- Skip vtsls if installed - we're using ts_ls instead
+      if server_name == "vtsls" then
+        return
+      end
+      -- Auto-setup everything else
+      require("lspconfig")[server_name].setup({})
+    end,
+  }
+})
+
+-- require('avante').setup({
+--   provider = 'claude',
+--   claude = {
+--     endpoint = "https://api.anthropic.com",
+--     model = "claude-sonnet-4-20250514",
+--     temperature = 0,
+--     max_tokens = 4096,
+--   },
+--   keys = {
+--     {
+--       "<leader>a+",
+--       function()
+--         local tree_ext = require("avante.extensions.nvim_tree")
+--         tree_ext.add_file()
+--       end,
+--       desc = "Select file in NvimTree",
+--       ft = "NvimTree",
+--     },
+--     {
+--       "<leader>a-",
+--       function()
+--         local tree_ext = require("avante.extensions.nvim_tree")
+--         tree_ext.remove_file()
+--       end,
+--       desc = "Deselect file in NvimTree",
+--       ft = "NvimTree",
+--     },
+--   },
+-- })
+
+-- require("claude-code").setup({
+-- })
+
+require('pretty-ts-errors').setup({
+  auto_open = false
 })

@@ -1,8 +1,8 @@
 
 font-family = "FiraCode Nerd Font Mono Light"
-font-style = "Regular"
+font-style = "Medium"
 font-size = 14
-font-feature = -liga
+font-feature = -liga -calt
 
 theme = ayu
 

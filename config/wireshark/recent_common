@@ -1,4 +1,4 @@
-# Common recent settings file for Wireshark 4.2.4.
+# Common recent settings file for Wireshark 4.6.0.
 #
 # This file is regenerated each time Wireshark is quit
 # and when changing configuration profile.
@@ -9,6 +9,9 @@
 
 ######## Recent capture filters (latest first), cannot be altered through command line ########
 
+recent.capture_filter: host nile.therealworld.ag
+recent.capture_filter.utun0: host nile.therealworld.ag
+recent.capture_filter.en0: host nile.therealworld.ag
 
 ######## Recent display filters (latest last), cannot be altered through command line ########
 
@@ -21,27 +24,31 @@ gui.geometry_main_width: 1800
 gui.geometry_main_height: 1051
 
 # Main window maximized.
-# TRUE or FALSE (case-insensitive).
-gui.geometry_main_maximized: TRUE
+# true or false (case-insensitive).
+gui.geometry_main_maximized: false
+
+# Main window geometry state.
+# Hex byte string.
+gui.geometry_main: 01d9d0cb00030000000000000000002c0000070700000462000000000000004800000707000004620000000000000000070800000000000000480000070700000462
 
 # Leftalign Action Buttons.
-# TRUE or FALSE (case-insensitive).
-gui.geometry_leftalign_actions: FALSE
+# true or false (case-insensitive).
+gui.geometry_leftalign_actions: false
 
 # Last used Configuration Profile.
 gui.last_used_profile: Default
 
-# WLAN statistics upper pane size.
-# Decimal number.
-gui.geometry_status_wlan_stats_pane: 200
+# Number of packets or events to check for automatic profile switching.
+# Decimal number. Zero disables switching.
+#gui.profile_switch_check_count: 1000
 
 # Warn if running with elevated permissions (e.g. as root).
-# TRUE or FALSE (case-insensitive).
-privs.warn_if_elevated: TRUE
+# true or false (case-insensitive).
+privs.warn_if_elevated: true
 
 # Warn if Wireshark is unable to capture.
-# TRUE or FALSE (case-insensitive).
-sys.warn_if_no_capture: TRUE
+# true or false (case-insensitive).
+sys.warn_if_no_capture: true
 
 # Find packet search in.
 # One of: PACKET_LIST, PACKET_DETAILS, PACKET_BYTES
@@ -52,8 +59,16 @@ gui.search_in: PACKET_LIST
 gui.search_char_set: NARROW_AND_WIDE
 
 # Find packet case sensitive search.
-# TRUE or FALSE (case-insensitive).
-gui.search_case_sensitive: FALSE
+# true or false (case-insensitive).
+gui.search_case_sensitive: false
+
+# Find packet search reverse direction.
+# true or false (case-insensitive).
+gui.search_reverse_dir: false
+
+# Find packet search multiple occurrences.
+# true or false (case-insensitive).
+gui.search_multiple_occurs: false
 
 # Find packet search type.
 # One of: DISPLAY_FILTER, HEX_VALUE, STRING, REGEX

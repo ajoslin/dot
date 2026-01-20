@@ -12,3 +12,10 @@ config/flutter
 config/gh
 config/github-copilot
 config/solana
+config/amp
+.tokens*
+tokens*
+.secret*
+.secrets*
+secrets*
+secret*

@@ -92,7 +92,7 @@ end)
 
 hs.hotkey.bind(hyper, "1", launchOrCycleFocus("1Password"))
 hs.hotkey.bind(hyper, "a", launchOrCycleFocus("Safari"))
-hs.hotkey.bind(hyper, "b", launchOrCycleFocus("Benji"))
+hs.hotkey.bind(hyper, "b", launchOrCycleFocus("Preview"))
 hs.hotkey.bind(hyper, "c", launchOrCycleFocus("Simulator"))
 hs.hotkey.bind(hyper, "d", launchOrCycleFocus("Google Chrome"))
 hs.hotkey.bind(hyper, "e", launchOrCycleFocus("Slack"))

@@ -1,3 +1,5 @@
+[rerere]
+  enabled = true
 [alias]
   p = push
   cp = cherry-pick
@@ -19,6 +21,7 @@
   log-file = log -p -M --follow --stat --
   rp = rev-parse
   x = !git add . && git commit --allow-empty -a -m 'x' && git push
+	ai = "!f() { MSG=$(~/.git-commit-ai); if [ $? -eq 0 ]; then echo \"\\nProposed commit message:\\n---\\n$MSG\\n---\\n\"; read -p \"Accept? (y/n/e to edit): \" choice; case \"$choice\" in y|Y) git commit -m \"$MSG\";; e|E) git commit -e -m \"$MSG\";; *) echo \"Commit cancelled.\";; esac; fi; }; f"
 [core]
 	excludesfile = /Users/andrew/.globalgitignore
 	editor = nvim
@@ -34,6 +37,7 @@
   prompt = false
 [diff]
   tool = vimdiff
+	ignoreSpaceChange = true
 [difftool]
   prompt = false
 [color]
@@ -42,6 +46,7 @@
 	browser = open
 [push]
 	default = current
+	autoSetupRemote = true
 [rebase]
 	autoStash = true
 [pull]

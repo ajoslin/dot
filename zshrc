@@ -1,16 +1,64 @@
+# Homebrew
 export HOMEBREW_PREFIX="/opt/homebrew";
 export HOMEBREW_CELLAR="/opt/homebrew/Cellar";
 export HOMEBREW_REPOSITORY="/opt/homebrew";
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin${PATH+:$PATH}";
 export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:";
 export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}";
 export MINIO_CONFIG_ENV_FILE=/etc/default/minio
 
-if [[ -z $TMUX ]]; then
-  tmux attach || tmux new-session -s main
+# ============================================================================
+# FAST ZSH SETUP - Replacing Zprezto for speed
+# ============================================================================
+
+# History configuration
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt EXTENDED_HISTORY          # Write timestamp to history file
+setopt INC_APPEND_HISTORY        # Append to history immediately
+setopt SHARE_HISTORY             # Share history across sessions
+setopt HIST_IGNORE_DUPS          # Don't record duplicates
+setopt HIST_FIND_NO_DUPS         # Don't display duplicates in search
+setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks
+
+# Vi keybindings
+bindkey -v
+export KEYTIMEOUT=1              # Faster mode switching
+
+# Better completion (optimized for speed)
+autoload -Uz compinit
+# Skip security check and only regenerate cache once per day
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit -i  # -i skips security check
+else
+  compinit -C  # -C skips check entirely, uses cache
 fi
 
-source ~/.zprezto/init.zsh
+# Completion styling
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # Case insensitive
+
+# Custom lightweight prompt (matching your "andrew" theme)
+setopt PROMPT_SUBST
+autoload -Uz vcs_info
+precmd() { vcs_info }
+zstyle ':vcs_info:git:*' formats '%F{grey}|%F{yellow}%b%f%F{grey}|%F{red}%u%c%f'
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' unstagedstr '*'
+zstyle ':vcs_info:git:*' stagedstr '+'
+PROMPT='%F{blue}%~${vcs_info_msg_0_} %f'
+
+# Fast syntax highlighting (direct load, no framework)
+source ~/.zprezto/modules/syntax-highlighting/external/zsh-syntax-highlighting.zsh
+
+# History substring search (up/down arrow to search)
+source ~/.zprezto/modules/history-substring-search/external/zsh-history-substring-search.zsh
+bindkey '^[[A' history-substring-search-up      # Up arrow
+bindkey '^[[B' history-substring-search-down    # Down arrow
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+
+# Z directory jumper
 source ~/.config/z/z.sh
 
 # zstyle ':completion:*:*:git:*' script ~/.config/git-completion.bash
@@ -18,7 +66,8 @@ source ~/.config/z/z.sh
 export EMAIL="andrew@ajoslin.com"
 export NAME="Andrew Joslin"
 
-export PIP_USER_BASE_PATH=$(python -m site --user-base)
+# Cache Python user base path (was running python on every shell startup)
+export PIP_USER_BASE_PATH="$HOME/Library/Python/3.11/bin"
 
 export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 export BOX="$ICLOUD_DIR/box"
@@ -30,15 +79,18 @@ export GOPATH=$HOME/gocode
 export AWS_REGION=us-west-2
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-export PATH="$HOME/.bin:/usr/local/opt/openssl/bin:/usr/local/bin:/opt/local/bin:$HOME/terraform:$GOPATH/bin:/usr/local/Cellar/logstash/2.3.2/bin:$HOME/.rvm/bin:$PIP_USER_BASE_PATH/bin:$HOME/flutter/bin:$HOME/tools/lua-language-server/bin:$PATH"
 
+# Android
 export ANDROID_SDK_ROOT="/Users/andrew/Library/Android/sdk"
-export ANDROID_HOME=$ANDROID_SDK_ROOT/tools
-# export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
 
-if [ -d "$HOME/Library/Python/3.6/bin/" ] ; then
-    PATH="$HOME/Library/Python/3.6/bin/:$PATH"
-fi
+# Other tools
+export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
+export BUN_INSTALL="$HOME/.bun"
+
+# Consolidated PATH - build once instead of multiple exports
+export PATH="$HOME/.bin:$HOME/.opencode/bin:$HOME/.codeium/windsurf/bin:$HOME/.local/bin:$HOME/.cache/lm-studio/bin:$HOME/.npm-global/bin:$BUN_INSTALL/bin:$HOME/.yarn/bin:$HOME/.cargo/bin:$HOME/.foundry/bin:$PIP_USER_BASE_PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$HOME/terraform:$GOPATH/bin:$HOME/flutter/bin:$HOME/tools/lua-language-server/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/opt/homebrew/opt/postgresql@10/bin:/opt/homebrew/opt/mongodb-community@4.4/bin:/usr/local/go/bin:/usr/local/opt/openssl/bin:/usr/local/bin:/usr/local/Cellar/logstash/2.3.2/bin:/opt/local/bin:$HOME/.rvm/bin:$PATH"
 
 # GPG
 # Remember to add `use-agent` to `~/.gnupg/gpg.conf`
@@ -70,45 +122,35 @@ unsetopt CORRECT
 
 export PATH="$HOME/.yarn/bin:$PATH"
 
+# Functions
 portgrep () {
   lsof -i :$1
 }
 
-export PATH="/usr/local/opt/postgresql@10/bin:$PATH"
-
-export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
-
-
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
-
-
+# Aliases (tool-specific)
 alias luamake=/Users/andrew/tools/lua-language-server/3rd/luamake/luamake
+alias da='direnv allow'
+alias tm=task-master
 
+# Lazy-load asdf (only load when actually using it)
+asdf() {
+  unfunction asdf
+  source /opt/homebrew/opt/asdf/libexec/asdf.sh
+  asdf "$@"
+}
+
+# Lazy-load direnv (faster startup)
 eval "$(direnv hook zsh)"
-export PATH="/opt/homebrew/opt/mongodb-community@4.4/bin:$PATH"
 
-# bun completions
+# Bun completions
 [ -s "/Users/andrew/.bun/_bun" ] && source "/Users/andrew/.bun/_bun"
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="/Users/andrew/Library/Android/sdk/platform-tools":$PATH
-export PATH="$PATH:/Users/andrew/.foundry/bin"
-export PATH="$PATH:/Users/andrew/.cargo/bin"
-export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-export PATH=$ANDROID_HOME/emulator:$PATH
-export PATH=$ANDROID_HOME/platform-tools:$PATH
+# Auto-attach to tmux (at end after PATH is set)
+if [[ -z $TMUX ]] && command -v tmux &> /dev/null; then
+  tmux attach || tmux new-session -s main
+fi
 
-export ANDROID_HOME="/Users/andrew/Library/Android/sdk"
-alias da='direnv allow'
-. "$HOME/.cargo/env"
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/andrew/.cache/lm-studio/bin"
+# End of LM Studio CLI section
 
-# Created by `pipx` on 2024-03-18 22:11:47
-export PATH="$PATH:/Users/andrew/.local/bin"
-
-# Added by Windsurf
-export PATH="/Users/andrew/.codeium/windsurf/bin:$PATH"
-
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
-export PATH=~/.npm-global/bin:$PATH

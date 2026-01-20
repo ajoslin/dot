@@ -6,6 +6,7 @@ set ignorecase
 set gdefault
 set termguicolors
 set nohlsearch
+set shada="NONE"
 
 " Allows you to change buffers even if the current on has unsaved changes
 set hidden
@@ -66,17 +67,18 @@ Plug 'gbprod/yanky.nvim'
 Plug 'yacineMTB/dingllm.nvim'
 " Plug 'github/copilot.vim'
 Plug 'supermaven-inc/supermaven-nvim'
-Plug 'pmizio/typescript-tools.nvim'
+" Plug 'pmizio/typescript-tools.nvim'  " Replaced with vtsls
+" Plug 'yioneko/nvim-vtsls'  " Not needed - using vtsls directly via vim.lsp.config
 Plug 'NvChad/nvim-colorizer.lua'
 
 Plug 'akinsho/git-conflict.nvim'
+Plug 'sindrets/diffview.nvim'
 
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
-Plug 'simrat39/rust-tools.nvim'
 " Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'folke/lsp-colors.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
@@ -107,6 +109,11 @@ Plug 'antosha417/nvim-lsp-file-operations'
 Plug 'filipdutescu/renamer.nvim', { 'branch': 'master' }
 Plug 'stevearc/oil.nvim'
 Plug 'iibe/gruvbox-high-contrast'
+Plug 'youyoumu/pretty-ts-errors.nvim'
+
+" OpenCode AI assistant
+Plug 'folke/snacks.nvim'
+Plug 'NickvanDyke/opencode.nvim'
 
 call plug#end()
 "End dein Scripts-------------------------
@@ -158,7 +165,7 @@ nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
 " nnoremap <silent> <leader>ch <cmd>lua require("hover").hover, {desc = "hover.nvim"})<CR>
         " vim.keymap.set("n", "gK", require("hover").hover_select, {desc = "hover.nvim (select)"})
 
-nnoremap <silent> <leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
+nnoremap <silent> <leader>ca <cmd>lua sorted_code_action()<CR>
 nnoremap <silent> <leader>cn <cmd>lua require('renamer').rename()<CR>
 nnoremap <silent> <leader>cd :Telescope lsp_definitions<cr>
 nnoremap <silent> <leader>cs <cmd>vim.lsp.buf.definition()<cr>
@@ -166,16 +173,53 @@ nnoremap <silent> <leader>cr :Telescope lsp_references<cr>
 nnoremap <silent> <leader>cm :Telescope lsp_implementations<cr>
 nnoremap <silent> <leader>cw :Telescope lsp_dynamic_workspace_symbols<cr>
 nnoremap <silent> <leader>co :Telescope lsp_document_symbols<cr>
+nnoremap <silent> <leader>cc <cmd>lua require("claude-code").toggle()<CR>
 " inoremap <silent> <C-s> <cmd>lua vim.lsp.buf.signature_help()<CR>
 
 nnoremap <silent> <leader>gr <cmd>:GpRewrite<CR>
 nnoremap <silent> <leader>gn <cmd>:GpChatToggle<CR>
 
-nnoremap <silent> <leader>e <cmd>lua vim.diagnostic.open_float()<CR>
+nnoremap <silent> <leader>e :PrettyTsError<cr>
 
 nnoremap <leader>ff :Oil<cr>:set ma<cr>
 
 nnoremap <silent> <leader>go :OpenURL <cfile><CR>
+
+" OpenCode keymaps (using <Leader>o prefix)
+" Define OpenCode commands with their descriptions
+let s:opencode_commands = [
+  \ {'key': 'oa', 'desc': 'Ask (submit @this:)', 'cmd': 'lua require("opencode").ask("@this: ", { submit = true })', 'modes': ['n', 'x']},
+  \ {'key': 'ox', 'desc': 'Select action', 'cmd': 'lua require("opencode").select()', 'modes': ['n', 'x']},
+  \ {'key': 'op', 'desc': 'Prompt (@this)', 'cmd': 'lua require("opencode").prompt("@this")', 'modes': ['n', 'x']},
+  \ {'key': 'ot', 'desc': 'Toggle panel', 'cmd': 'lua require("opencode").toggle()', 'modes': ['n', 't']},
+  \ {'key': 'ou', 'desc': 'Scroll up (half page)', 'cmd': 'lua require("opencode").command("session.half.page.up")', 'modes': ['n']},
+  \ {'key': 'od', 'desc': 'Scroll down (half page)', 'cmd': 'lua require("opencode").command("session.half.page.down")', 'modes': ['n']},
+  \ {'key': 'o/', 'desc': 'Show this help', 'cmd': 'call OpenCodeHelp()', 'modes': ['n']},
+  \ ]
+
+" Generate help text from commands
+function! OpenCodeHelp()
+  let help_text = [
+    \ '╔═══════════════════════════════════════╗',
+    \ '║       OpenCode Commands Help          ║',
+    \ '╠═══════════════════════════════════════╣',
+    \ ]
+  
+  for cmd in s:opencode_commands
+    let line = printf('║ <leader>%-3s - %-25s ║', cmd.key, cmd.desc)
+    call add(help_text, line)
+  endfor
+  
+  call add(help_text, '╚═══════════════════════════════════════╝')
+  echo join(help_text, "\n")
+endfunction
+
+" Dynamically create keybindings from commands
+for cmd in s:opencode_commands
+  for mode in cmd.modes
+    execute mode . 'noremap <leader>' . cmd.key . ' <cmd>' . cmd.cmd . '<CR>'
+  endfor
+endfor
 
 let g:open_url_default_mappings = 0
 let g:gh_line_map_default = 0
@@ -197,9 +241,11 @@ augroup reload_vimrc
 augroup END
 
 set background=dark
+" set background=light
 " let g:gruvbox_contrast_dark = 'hard'
-" colorscheme gruvbox-high-contrast
+let g:gruvbox_contrast_light = 'hard'
 colorscheme gruvbox
+" colorscheme gruvbox-high-contrast
 
 "colorscheme catppuccin-latte
 let g:lightline = {
@@ -227,6 +273,8 @@ lua require('lsp-config')
 lua require('telescope-config')
 lua require('jump-config')
 lua require('tree-config')
+lua require('opencode-config')
+lua require('diffview-config')
 
 lua require'colorizer'.setup()
 lua require('lspkind').init({ preset = 'codicons' })
@@ -250,45 +298,4 @@ set completeopt=menu,menuone,noselect
 "
 let g:rooter_patterns = ['.git']
 
-cabbrev wq execute "lua vim.lsp.buf.formatting_seq_sync()" <bar> wq
-
-" Configure LSP through rust-tools.nvim plugin.
-" rust-tools will configure and enable certain LSP features for us.
-" See https://github.com/simrat39/rust-tools.nvim#configuration
-lua <<EOF
-
--- nvim_lsp object
-local nvim_lsp = require'lspconfig'
-
-require('rust-tools').setup({
-    tools = {
-        runnables = {
-            use_telescope = true
-        },
-        inlay_hints = {
-            auto = true,
-            show_parameter_hints = false,
-            parameter_hints_prefix = "",
-            other_hints_prefix = "",
-        },
-    },
-
-    -- all the opts to send to nvim-lspconfig
-    -- these override the defaults set by rust-tools.nvim
-    -- see https://github.com/neovim/nvim-lspconfig/blob/master/CONFIG.md#rust_analyzer
-    server = {
-        -- on_attach is a callback called when the language server attachs to the buffer
-        -- on_attach = on_attach,
-        settings = {
-            -- to enable rust-analyzer settings visit:
-            -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
-            ["rust-analyzer"] = {
-                -- enable clippy on save
-                checkOnSave = {
-                    command = "clippy"
-                },
-            }
-        }
-    },
-})
-EOF
+cabbrev wq execute "lua vim.lsp.buf.format({ async = false })" <bar> wq
