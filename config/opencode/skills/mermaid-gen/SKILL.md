@@ -317,6 +317,7 @@ stateDiagram-v2
 - **Do NOT** use generic node IDs like `node1`, `node2` (use descriptive IDs)
 - **Do NOT** skip validation in Mermaid Live Editor before committing
 - **Do NOT** use deprecated Mermaid syntax (check version compatibility)
+- **Do NOT** output raw Mermaid code blocks unless explicitly requested
 
 ### Diagram Type Restrictions
 
@@ -354,14 +355,8 @@ stateDiagram-v2
 6. **Validate**: Test in Mermaid Live Editor
 
 **Result**:
-```mermaid
-flowchart TD
-    userInput[User: Submit Credentials] -->|POST /auth| validator{Validate Format}
-    validator -->|Invalid| errorResponse["Error Response<br/>Status: 400"]
-    validator -->|Valid| dbCheck[(Database<br/>Verify User)]
-    dbCheck -->|Not Found| errorResponse
-    dbCheck -->|Found| tokenService[Generate JWT Token]
-    tokenService -->|Return| successResponse["Success Response<br/>Token + Expiry"]
+```
+https://mermaid.live/edit#pako:ENCODED_DIAGRAM_HERE
 ```
 
 ### Example 2: Fix Parse Error
@@ -377,10 +372,8 @@ flowchart TD
 5. **Return fixed code**
 
 **Result**:
-```mermaid
-sequenceDiagram
-    User->>API: Request data
-    API-->>User: Response
+```
+https://mermaid.live/edit#pako:ENCODED_DIAGRAM_HERE
 ```
 
 **Explanation**: Edge labels between `|...|` or after `:` should not contain quotes.
@@ -402,16 +395,8 @@ sequenceDiagram
 6. **Validate**: Test in Mermaid Live Editor
 
 **Result**:
-```mermaid
-stateDiagram-v2
-    [*] --> Draft
-    Draft --> Submitted: User clicks Submit
-    Submitted --> Processing: Payment verified
-    Processing --> Completed: All items shipped
-    Processing --> Failed: Payment declined
-    Completed --> [*]
-    Failed --> Draft: Retry allowed
-    Failed --> [*]: Max retries exceeded
+```
+https://mermaid.live/edit#pako:ENCODED_DIAGRAM_HERE
 ```
 
 ## Common Patterns
@@ -549,6 +534,7 @@ When using the `mermaid-gen` skill, the primary output is:
 - Content: Syntactically valid Mermaid diagram rendered in the editor
 - Validation: Tested in Mermaid Live Editor before delivery
 - Structure: Includes comments, styling, and proper node/edge syntax
+- Return the link only; do not include the raw Mermaid code unless explicitly requested
 
 **Example Output**:
 ```
@@ -558,14 +544,14 @@ https://mermaid.live/edit#pako:ENCODED_DIAGRAM_HERE
 ### Integration with charts-flow Skill
 
 **Skill Relationship**:
-- **mermaid-gen**: Creates syntactically correct diagram code
+- **mermaid-gen**: Creates syntactically correct diagram code and outputs a Mermaid Live Editor link
 - **charts-flow**: Takes diagram code and manages file creation, SVG generation, document embedding
 
 **Typical Workflow**:
 1. User requests diagram for documentation
 2. `charts-flow` skill invoked for file management
 3. `charts-flow` internally calls `mermaid-gen` for diagram generation
-4. `mermaid-gen` returns validated Mermaid code
+4. `mermaid-gen` returns a Mermaid Live Editor link (diagram code is used internally)
 5. `charts-flow` creates diagram file, generates SVG, embeds in parent document
 
 **Standalone Usage**:
@@ -583,6 +569,7 @@ When user needs complete diagram file workflow:
 
 Every output from `mermaid-gen` must meet these criteria:
 - ✅ Link opens in Mermaid Live Editor without errors
+- ✅ Output contains only the Mermaid Live Editor link
 - ✅ No nested quotes in any labels
 - ✅ Subgraph IDs match style references
 - ✅ All node IDs are unique
