@@ -544,25 +544,16 @@ flowchart LR
 
 When using the `mermaid-gen` skill, the primary output is:
 
-**Mermaid Diagram Code Block**:
-- Format: Markdown code block with `mermaid` language identifier
-- Content: Syntactically valid Mermaid diagram code
+**Mermaid Live Editor Link**:
+- Format: URL to https://mermaid.live/edit with the diagram encoded
+- Content: Syntactically valid Mermaid diagram rendered in the editor
 - Validation: Tested in Mermaid Live Editor before delivery
 - Structure: Includes comments, styling, and proper node/edge syntax
 
 **Example Output**:
-````markdown
-```mermaid
-flowchart TD
-    %% Define nodes
-    Start[Start Process] --> Process[Execute Task]
-    Process --> End[Complete]
-
-    %% Apply styling
-    style Start fill:#e1f5ff
-    style End fill:#c8e6c9
 ```
-````
+https://mermaid.live/edit#pako:ENCODED_DIAGRAM_HERE
+```
 
 ### Integration with charts-flow Skill
 
@@ -578,10 +569,10 @@ flowchart TD
 5. `charts-flow` creates diagram file, generates SVG, embeds in parent document
 
 **Standalone Usage**:
-When user only needs diagram code (not file management):
+When user only needs a shareable diagram link (not file management):
 - Invoke `mermaid-gen` directly
-- Returns diagram code block
-- User manually embeds in documentation
+- Returns Mermaid Live Editor link only
+- User opens the link to view or export the diagram
 
 **Combined Usage**:
 When user needs complete diagram file workflow:
@@ -591,7 +582,7 @@ When user needs complete diagram file workflow:
 ### Output Validation Checklist
 
 Every output from `mermaid-gen` must meet these criteria:
-- ✅ Renders without errors in Mermaid Live Editor
+- ✅ Link opens in Mermaid Live Editor without errors
 - ✅ No nested quotes in any labels
 - ✅ Subgraph IDs match style references
 - ✅ All node IDs are unique
