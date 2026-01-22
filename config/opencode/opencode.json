@@ -5,10 +5,19 @@
 	"plugin": [
 		"opencode-antigravity-auth@latest",
 		"opencode-anthropic-auth@0.0.9",
-		"opencode-comments-plugin",
-		"opencode-librarian"
+		"opencode-comments-plugin"
 	],
 	"mcp": {
+		"context7": {
+			"type": "remote",
+			"url": "https://mcp.context7.com/mcp",
+			"enabled": true
+		},
+		"grep_app": {
+			"type": "remote",
+			"url": "https://mcp.grep.app",
+			"enabled": true
+		},
 		"opensrc": {
 			"enabled": true,
 			"type": "local",

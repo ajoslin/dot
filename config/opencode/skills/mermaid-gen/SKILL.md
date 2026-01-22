@@ -95,6 +95,7 @@ Follow this 5-step process to create or fix Mermaid diagrams:
 - **Keep edge labels simple** - no quotes unless necessary
 - **Use ID/label syntax** for subgraphs with special characters
 - **Separate node IDs from labels**: `NodeID[Display Label]`
+- **One statement per line**: never append or wrap extra tokens after a node/edge definition
 
 ### Step 4: Build Diagram with Template
 - Start with appropriate template (flowchart, sequence, state)
@@ -111,6 +112,9 @@ Follow this 5-step process to create or fix Mermaid diagrams:
 - Test in Mermaid Live Editor (https://mermaid.live)
 - Validate all relationships resolve correctly
 - Ensure rendering succeeds without errors
+- Scan for stray tokens after closing brackets `]` or `}` on each line
+- Generate Mermaid Live Editor link using `mermaid-gen/encode-link.ts`
+- Return the link only unless raw code is explicitly requested
 
 **Error Recovery**: If parse error occurs, see "Troubleshooting Guide" section below.
 
@@ -318,6 +322,7 @@ stateDiagram-v2
 - **Do NOT** skip validation in Mermaid Live Editor before committing
 - **Do NOT** use deprecated Mermaid syntax (check version compatibility)
 - **Do NOT** output raw Mermaid code blocks unless explicitly requested
+- **Do NOT** place extra text after a node/edge on the same line (stray tokens cause parse errors)
 
 ### Diagram Type Restrictions
 
@@ -539,6 +544,20 @@ When using the `mermaid-gen` skill, the primary output is:
 **Example Output**:
 ```
 https://mermaid.live/edit#pako:ENCODED_DIAGRAM_HERE
+```
+
+### Link Generation Script
+
+Use the sibling Bun script to generate the Mermaid Live Editor link:
+
+```bash
+bun mermaid-gen/encode-link.ts --file path/to/diagram.mmd
+```
+
+Or pipe Mermaid code via stdin:
+
+```bash
+printf '%s' "$MERMAID_CODE" | bun mermaid-gen/encode-link.ts
 ```
 
 ### Integration with charts-flow Skill

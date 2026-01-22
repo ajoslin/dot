@@ -1,0 +1,22 @@
+[
+  { "civ": "Aztecs", "file": "Aztecs_select_1.ogg" },
+  { "civ": "Britons", "file": "Britons_select_1.ogg" },
+  { "civ": "Byzantines", "file": "Byzantines_select_1.ogg" },
+  { "civ": "Celts", "file": "Celts_select_1.ogg" },
+  { "civ": "Chinese", "file": "Chinese_select_1.ogg" },
+  { "civ": "Franks", "file": "Franks_select_1.ogg" },
+  { "civ": "Goths", "file": "Goths_select_1.ogg" },
+  { "civ": "Indians", "file": "Indians_select_1.ogg" },
+  { "civ": "Italians", "file": "Italians_select_1.ogg" },
+  { "civ": "Japanese", "file": "Japanese_select_1.ogg" },
+  { "civ": "Koreans", "file": "Koreans_select_1.ogg" },
+  { "civ": "Mayans", "file": "Mayans_select_1.ogg" },
+  { "civ": "Mongols", "file": "Mongols_select_1.ogg" },
+  { "civ": "Persians", "file": "Persians_select_1.ogg" },
+  { "civ": "Portuguese", "file": "Portuguese_select_1.ogg" },
+  { "civ": "Saracens", "file": "Saracens_select_1.ogg" },
+  { "civ": "Spanish", "file": "Spanish_select_1.ogg" },
+  { "civ": "Teutons", "file": "Teutons_select_1.ogg" },
+  { "civ": "Turks", "file": "Turks_select_1.ogg" },
+  { "civ": "Vikings", "file": "Vikings_select_1.ogg" }
+]

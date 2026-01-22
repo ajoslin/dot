@@ -12,8 +12,8 @@ Execute the build-validate-review cycle for tracer bullet development.
 Before any flow, find the plan files:
 
 - Search `docs/tracers/**/state.json`
-- If multiple matches, list them and ask the user which feature to work on
-- If none, STOP: "Run plan-tracers first to create a plan"
+- If multiple matches, list them and use the ask question tool to ask questions about which feature to work on
+- If none, STOP: "Run prd-tracers first to create a plan"
 
 Two files per feature:
 - `state.json` - Machine state (task passes, commits, current tracer)
@@ -27,7 +27,7 @@ All state updates go to `state.json`. Learnings are appended to `PROGRESS.md`.
 Check state.json:
 │
 ├─ No state.json found
-│  └─ STOP: "Run plan-tracers first to create a plan"
+│  └─ STOP: "Run prd-tracers first to create a plan"
 │
 ├─ Current tracer has tasks with passes: false
 │  └─ → NEXT-TASK FLOW
@@ -55,6 +55,8 @@ Is lastReviewedTracer == currentTracer - 1?
 ```
 
 If feature `status` is `planning`, update it to `in_progress` in state.json before starting work.
+
+Proceed immediately to Step 1 without asking for confirmation once preconditions are satisfied.
 
 ## Step 1: Select Task
 
@@ -95,7 +97,7 @@ Key principles:
 
 Run ALL verification steps from the task's `steps` array. Also run project validation (typecheck, tests, lint).
 
-- Detect project scripts (package.json, Makefile) or ask user
+- Detect project scripts (package.json, Makefile) or use the ask question tool to ask questions if unclear
 - If a step cannot run, mark SKIPPED with reason
 - All steps must pass before proceeding
 
@@ -122,7 +124,7 @@ Project validation:
 - Tests: PASS or SKIPPED (reason)
 - Lint: PASS or SKIPPED (reason)
 
-Reply **"lgtm"** to approve, or provide feedback.
+Request approval inline (do not open question mode): reply **"lgtm"** to approve, or provide feedback.
 ```
 
 **WAIT FOR USER RESPONSE**
@@ -132,9 +134,13 @@ Reply **"lgtm"** to approve, or provide feedback.
 
 Loop until user says "lgtm".
 
-## Step 6: Commit
+After "lgtm", proceed immediately to commit, mark the task complete, and start the next task without asking for confirmation.
+
+## Step 6: Commit + State Update (Background Agent)
 
 After approval, **always commit** the task. This ensures the next task's review only shows new changes.
+
+Run the commit and state.json update using a background agent with `openrouter/z-ai/glm-4.7-flash`.
 
 ```bash
 git add -A && git commit -m "feat(<scope>): <task description>"
@@ -142,7 +148,7 @@ git add -A && git commit -m "feat(<scope>): <task description>"
 
 ## Step 7: Mark Task Complete
 
-Update state.json for the task:
+Update state.json for the task (handled by the background agent):
 ```json
 {
   "passes": true,
@@ -203,7 +209,7 @@ Please run:
 Expected result:
 <expected output from PROGRESS.md>
 
-Run the demo and reply "pass" to continue, or describe what went wrong.
+Request response inline (do not open question mode): run the demo and reply "pass" to continue, or describe what went wrong.
 ```
 
 **WAIT FOR USER RESPONSE**
@@ -215,7 +221,7 @@ Run the demo and reply "pass" to continue, or describe what went wrong.
 
 ## Step 3: Record Learnings
 
-Prompt user:
+Use the ask question tool to ask questions:
 ```
 What did we learn from this tracer?
 - Decisions made?
@@ -291,5 +297,5 @@ Tracer N complete!
 Progress: N/<total> tracers done
 Next: Tracer N+1 - <name>
 
-Ready to continue?
+Continuing to the next tracer.
 ```
