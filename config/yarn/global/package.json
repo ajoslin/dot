@@ -34,7 +34,7 @@
     "nodemon": "^2.0.19",
     "onesignal-push-icon": "^0.1.1",
     "openapi2schema": "^0.5.0",
-    "pnpm": "^8.6.2",
+    "pnpm": "^10.28.2",
     "prettier-plugin-rust": "^0.1.8",
     "pretty-bytes-cli": "^3.0.0",
     "redis-cli": "^2.1.2",
