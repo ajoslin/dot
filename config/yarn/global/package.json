@@ -18,7 +18,7 @@
     "create-next-app": "^12.2.4",
     "create-react-app": "^5.0.0",
     "create-vite": "^2.9.4",
-    "csvtojson": "^2.0.10",
+    "csvtojson": "^2.0.13",
     "diagnostic-languageserver": "^1.12.0",
     "dotenv": "^16.0.0",
     "dotenv-cli": "^5.1.0",
