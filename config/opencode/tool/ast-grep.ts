@@ -16,10 +16,7 @@ Examples:
 
   args: {
     pattern: tool.schema.string().describe("AST pattern to match"),
-    path: tool.schema
-      .string()
-      .optional()
-      .describe("Path to search (default: .)"),
+    path: tool.schema.string().optional().describe("Path to search (default: .)"),
     lang: tool.schema
       .enum([
         "typescript",
@@ -40,11 +37,11 @@ Examples:
         "html",
         "css",
         "json",
-        "yaml",
+        "yaml"
       ])
       .optional()
       .describe("Language (auto-detected if omitted)"),
-    json: tool.schema.boolean().optional().describe("Output as JSON"),
+    json: tool.schema.boolean().optional().describe("Output as JSON")
   },
 
   async execute(args) {
@@ -58,7 +55,7 @@ Examples:
       return `Error: ${result.stderr.toString()}`;
     }
     return result.stdout.toString() || "No matches found.";
-  },
+  }
 });
 
 export const rewrite = tool({
@@ -70,25 +67,13 @@ Example: pattern="console.log($MSG)" rewrite="logger.info($MSG)"`,
 
   args: {
     pattern: tool.schema.string().describe("AST pattern to match"),
-    rewrite: tool.schema
-      .string()
-      .describe("Replacement pattern (use same metavariables)"),
-    path: tool.schema
-      .string()
-      .optional()
-      .describe("Path to transform (default: .)"),
-    lang: tool.schema.string().optional().describe("Language hint"),
+    rewrite: tool.schema.string().describe("Replacement pattern (use same metavariables)"),
+    path: tool.schema.string().optional().describe("Path to transform (default: .)"),
+    lang: tool.schema.string().optional().describe("Language hint")
   },
 
   async execute(args) {
-    const cmd = [
-      "sg",
-      "--pattern",
-      args.pattern,
-      "--rewrite",
-      args.rewrite,
-      "--interactive",
-    ];
+    const cmd = ["sg", "--pattern", args.pattern, "--rewrite", args.rewrite, "--update-all"];
     if (args.lang) cmd.push("--lang", args.lang);
     cmd.push(args.path ?? ".");
 
@@ -97,5 +82,5 @@ Example: pattern="console.log($MSG)" rewrite="logger.info($MSG)"`,
       return `Error: ${result.stderr.toString()}`;
     }
     return result.stdout.toString() || "No changes needed.";
-  },
+  }
 });

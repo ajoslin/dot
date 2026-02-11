@@ -1,86 +1,164 @@
 ---
 name: tmux
-description: Manage tmux windows to run background processes, capture logs, and control long-running tasks without blocking the main shell.
+description: Manage long-running terminal jobs in a dedicated tmux-opencode session using wrapper scripts for run/wait, health checks, and crash-recovery cleanup.
+references:
+  - references/operations.md
 ---
 
 # Tmux
 
 ## Overview
 
-Use tmux to spawn background processes, inspect output, and control long-running tasks in dedicated windows. Prefer this skill when starting dev servers, watchers, or builds that must keep running while continuing other work.
+Use tmux to run background jobs while continuing other work. Keep all skill-managed windows in one session, `tmux-opencode`, so inspection and cleanup happen in one place. Default to wrapper scripts over manual command chaining. Do not block by default; opt in to blocking wait only when requested.
 
 ## Verify Environment
 
-Confirm tmux is available before issuing commands.
+Confirm tmux availability before using this skill.
 
 ```bash
-echo $TMUX
+tmux -V
 ```
 
-If empty, avoid tmux commands and run processes in the foreground instead.
+If tmux is unavailable, run commands in the foreground.
 
-List current windows for visibility before creating new ones.
+## Session Model
+
+Standardize on a single session.
 
 ```bash
-tmux list-windows
+SESSION="tmux-opencode"
+tmux new-session -d -s "$SESSION" -n "main" 2>/dev/null || true
+tmux list-windows -t "$SESSION"
 ```
 
-## Spawn a Background Process
+`scripts/tmux_run_job.py` auto-creates this session when missing.
 
-Create a detached window with a descriptive name.
+## First-Time Setup
+
+Install managed cron cleanup once per machine/user.
 
 ```bash
-tmux new-window -n "server-log" -d
+python3 scripts/tmux_healthcheck_cron.py --action install
 ```
 
-Send the command to that window and execute it.
+Verify installation.
 
 ```bash
-tmux send-keys -t "server-log" "npm start" C-m
+python3 scripts/tmux_healthcheck_cron.py --action status
 ```
 
-Replace the window name and command with task-specific values.
+## Run Jobs (Wrapper First)
 
-## Inspect Output
-
-Capture the visible screen output for quick checks.
+Run a command in the background (default behavior).
 
 ```bash
-tmux capture-pane -p -t "server-log"
+python3 scripts/tmux_run_job.py --command "npm start"
 ```
 
-Capture full scrollback history when output may have scrolled off.
+Run in a named window (auto-normalized to `oc-*`).
 
 ```bash
-tmux capture-pane -p -S - -t "server-log"
+python3 scripts/tmux_run_job.py --window server --command "npm start"
 ```
 
-## Control the Process
-
-Send an interrupt (Ctrl+C) to stop the running process.
+Block until completion only when requested.
 
 ```bash
-tmux send-keys -t "server-log" C-c
+python3 scripts/tmux_run_job.py --window build --command "npm run build" --wait
 ```
 
-Kill the entire window when cleanup is needed.
+Wait later for an already-started job by target.
 
 ```bash
-tmux kill-window -t "server-log"
+python3 scripts/tmux_run_job.py --wait-target "tmux-opencode:oc-build"
 ```
 
-## Chain Commands
-
-Chain tmux commands in a single invocation when efficiency matters.
+Use wait timeout when blocking behavior needs a guardrail.
 
 ```bash
-tmux new-window -n "server-log" -d ';' send-keys -t "server-log" "npm start" C-m
+python3 scripts/tmux_run_job.py --window build --command "npm run build" --wait --wait-timeout-seconds 1800
+```
+
+Auto-close successful windows when waiting.
+
+```bash
+python3 scripts/tmux_run_job.py --window lint --command "npm run lint" --wait --close-window success
+```
+
+## Inspect Output and Control Jobs
+
+Capture visible output.
+
+```bash
+tmux capture-pane -p -t "tmux-opencode:oc-server"
+```
+
+Capture full scrollback.
+
+```bash
+tmux capture-pane -p -S - -t "tmux-opencode:oc-server"
+```
+
+Interrupt a running command.
+
+```bash
+tmux send-keys -t "tmux-opencode:oc-server" C-c
+```
+
+Kill one window.
+
+```bash
+tmux kill-window -t "tmux-opencode:oc-server"
+```
+
+## Cleanup and Healthcheck
+
+Show window health (idle minutes, active state).
+
+```bash
+python3 scripts/tmux_healthcheck.py
+```
+
+Dry-run stale window cleanup.
+
+```bash
+python3 scripts/tmux_healthcheck.py --cleanup --max-idle-minutes 240 --dry-run
+```
+
+Run cleanup for stale windows and legacy sessions after interruptions or crashes.
+
+```bash
+python3 scripts/tmux_healthcheck.py --cleanup --max-idle-minutes 240 --cleanup-legacy-sessions
+```
+
+Install or update automatic periodic cleanup cron (idempotent managed entry).
+
+```bash
+python3 scripts/tmux_healthcheck_cron.py --action install
+```
+
+Preview cron line without writing.
+
+```bash
+python3 scripts/tmux_healthcheck_cron.py --action install --dry-run
+```
+
+Check installed cron status.
+
+```bash
+python3 scripts/tmux_healthcheck_cron.py --action status
+```
+
+Remove the managed cron entry.
+
+```bash
+python3 scripts/tmux_healthcheck_cron.py --action remove
 ```
 
 ## Quick Pattern
 
-Use this three-step flow for most tasks.
-
-1. `tmux new-window -n "ID" -d`
-2. `tmux send-keys -t "ID" "CMD" C-m`
-3. `tmux capture-pane -p -t "ID"`
+1. Start jobs with `scripts/tmux_run_job.py` (background by default).
+2. Inspect output with `tmux capture-pane` when needed.
+3. Add `--wait` for immediate blocking, or `--wait-target` for wait-after-start.
+4. Run `scripts/tmux_healthcheck.py --cleanup` periodically or at session end.
+5. Prefer `scripts/tmux_healthcheck_cron.py --action install` for automatic recovery cleanup.

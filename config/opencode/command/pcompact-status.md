@@ -2,12 +2,15 @@
 description: Check preemptive compaction status
 ---
 
-Check preemptive compaction state.
+Check if preemptive compaction is enabled and view current settings.
 
-```
-pcompact_status()
-```
+Usage: /pcompact-status
 
-<user-request>
+Shows:
+- Enabled/disabled state
+- Trigger threshold (80%)
+- Context limit
+- Cooldown period
+- Active compactions
+
 $ARGUMENTS
-</user-request>

@@ -19,3 +19,4 @@ tokens*
 .secrets*
 secrets*
 secret*
+config/graphite/user_config

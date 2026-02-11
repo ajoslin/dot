@@ -1,50 +1,47 @@
 {
 	"$schema": "https://opencode.ai/config.json",
 	"theme": "opencode",
-	"model": "openai/gpt-5.2-codex",
+	"model": "openai/gpt-5.3-codex",
+	"tui": {
+		"scroll_acceleration": {
+			"enabled": true
+		}
+	},
 	"plugin": [
-		"opencode-antigravity-auth@latest",
-		"opencode-anthropic-auth@0.0.9",
-		"opencode-comments-plugin"
+		"opencode-anthropic-auth@0.0.13",
+		"opencode-comments-plugin",
+		"file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
+		"file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js"
 	],
 	"mcp": {
+		"opensrc": {
+			"enabled": true,
+			"type": "local",
+			"command": ["bunx", "-y", "opensrc-mcp"]
+		},
+		"overseer": {
+			"type": "local",
+			"command": ["npx", "-y", "@dmmulroy/overseer", "mcp"],
+			"enabled": true
+		},
+		"websearch": {
+			"type": "remote",
+			"url": "https://mcp.exa.ai/mcp?tools=web_search_exa",
+			"enabled": true
+		},
 		"context7": {
 			"type": "remote",
 			"url": "https://mcp.context7.com/mcp",
 			"enabled": true
 		},
-		"grep_app": {
-			"type": "remote",
-			"url": "https://mcp.grep.app",
-			"enabled": true
-		},
-		"opensrc": {
-			"enabled": true,
+		"playwriter": {
 			"type": "local",
-			"command": ["bunx", "-y", "opensrc-mcp"]
+			"command": ["bunx", "playwriter@latest"],
+			"enabled": true,
+			"environment": {}
 		}
 	},
 	"provider": {
-		"google": {
-			"models": {
-				"gemini-3-flash": {
-					"name": "Gemini 3 Flash (Antigravity)",
-					"limit": { "context": 1048576, "output": 65536 },
-					"modalities": {
-						"input": ["text", "image", "pdf"],
-						"output": ["text"]
-					}
-				},
-				"claude-opus-4-5-thinking": {
-					"name": "Claude Opus 4.5 Thinking (Antigravity)",
-					"limit": { "context": 200000, "output": 64000 },
-					"modalities": {
-						"input": ["text", "image", "pdf"],
-						"output": ["text"]
-					}
-				}
-			}
-		},
 		"lmstudio": {
 			"npm": "@ai-sdk/openai-compatible",
 			"name": "LM Studio (local)",
