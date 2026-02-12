@@ -1366,5 +1366,21 @@
   "ses_3ac212a86ffezpayRESKJ6qCeY": {
     "civ": "Aztecs",
     "file": "Aztecs_select_1.ogg"
+  },
+  "ses_3abfc3978ffeWh4U2h1m2sp0Gp": {
+    "civ": "Britons",
+    "file": "Britons_select_1.ogg"
+  },
+  "ses_3acb2a220ffezoQhD67ex9dxZT": {
+    "civ": "Byzantines",
+    "file": "Byzantines_select_1.ogg"
+  },
+  "ses_3abfde121ffeSWH3kB0SetLaIz": {
+    "civ": "Celts",
+    "file": "Celts_select_1.ogg"
+  },
+  "ses_3abf3b3c0ffeVEVN2pHQA7Y4Q0": {
+    "civ": "Chinese",
+    "file": "Chinese_select_1.ogg"
   }
 }
