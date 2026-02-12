@@ -16,7 +16,7 @@ You are the OpenCode Configuration Expert, specialized in helping users configur
 Fetch the repo first, then use the returned `source.name` for reads and searches:
 
 ```javascript
-const [{ source }] = await opensrc.fetch("opencode-ai/opencode");
+const [{ source }] = await opensrc.fetch("anomalyco/opencode");
 const files = await opensrc.files(source.name, "packages/opencode/src/**/*");
 ```
 

@@ -1,166 +1,173 @@
 # Flow Implementation
 
-Complete implementation details for `overseer_orchestrate` skill.
+Hard-retry orchestration details for `/overseer_orchestrate` with TodoWrite mirroring, parent/subagent task-list seeding, and interruption-safe resume.
 
-## Main Execution Flow
+## Main Flow
 
 ```javascript
-async function overseerOrchestrate(taskRef) {
-  // 1. Find parent task
-  const parent = await findTask(taskRef);
-
-  // 2. Set session display name: "overseer_orchestrate: {task description}"
-  // Implementation depends on OpenCode's session management system
-  
-  // 3. Setup context directory
+async function overseerOrchestrate(taskRef, chatTodos = []) {
+  const parent = await resolveParent(taskRef, chatTodos);
   const ctxDir = `.overseer/${parent.id}`;
   await fs.mkdir(ctxDir, { recursive: true });
-  
-  // 4. Get children (depth=1 only, not grandchildren), filter out completed
-  const allChildren = await tasks.list({ parentId: parent.id, depth: 1 });
-  const pendingChildren = allChildren.filter(c => !c.completed);
-  const completedCount = allChildren.length - pendingChildren.length;
-  
-  if (completedCount > 0) {
-    console.log(`⏩ Resuming: ${completedCount} already complete, ${pendingChildren.length} remaining`);
-  }
-  
-  // 5. Execute each pending child via subagent
-  for (const child of pendingChildren) {
-    const agent = detectAgent(child) || 'build';
-    const ctxFile = await writeContext(child, parent, ctxDir);
-    
-    // Spawn and wait
+
+  const state = await loadRunState(parent.id);
+  const policy = buildFailurePolicy();
+  const children = await tasks.list({ parentId: parent.id, depth: 1 });
+  const pending = children.filter(c => !c.completed && !c.cancelled);
+  const childSubtasks = await listChildSubtasks(children);
+
+  await syncTodoMirror({ parent, children, activeChildId: null, chatTodos });
+  await seedParentRunTodos({ parent, children, activeChildId: null, chatTodos });
+
+  for (const child of pending) {
     await tasks.start(child.id);
-    const result = await spawnSubagent({
-      type: agent,
-      prompt: `Execute this task by reading @file ${ctxFile}. Implement everything described. Call overseer tasks.complete() when done.`,
-      context: { taskId: child.id, ctxFile }
-    });
-    
-    // Subagent is responsible for calling tasks.complete()
-    // We just verify it happened
-    const updated = await tasks.get(child.id);
-    if (!updated.completed) {
-      // Force complete if subagent didn't
-      await tasks.complete(child.id, { result: result.summary || 'Completed by subagent' });
+    await syncTodoMirror({ parent, children, activeChildId: child.id, chatTodos });
+    await seedParentRunTodos({ parent, children, activeChildId: child.id, chatTodos });
+
+    while (true) {
+      const attempt = recordAttempt(state, child.id);
+      const agent = detectAgent(child) || "build";
+      const ctxFile = await writeContext(child, parent, ctxDir, { attempt, agent });
+      const seedTodos = buildSubagentSeedTodos(child, childSubtasks.get(child.id) || []);
+
+      try {
+        const result = await task({
+          subagent_type: agent,
+          description: `Execute ${child.id}`,
+          prompt: buildSubagentPrompt({ child, ctxFile, attempt, seedTodos })
+        });
+
+        await verifyChildCompleted(child.id, result);
+        await tasks.complete(child.id, { result: result.summary || `Completed after ${attempt} attempt(s)` });
+
+        child.completed = true;
+        state.lastProgressAt = new Date().toISOString();
+        setChildState(state, child.id, { completed: true, attempts: attempt, lastError: null, classification: null, lastAgent: agent });
+        await saveRunState(parent.id, state);
+        await syncTodoMirror({ parent, children, activeChildId: null, chatTodos });
+        await seedParentRunTodos({ parent, children, activeChildId: null, chatTodos });
+        break;
+      } catch (err) {
+        const classification = classifyError(err, { state, policy });
+        setChildState(state, child.id, { completed: false, attempts: attempt, lastError: String(err), classification, lastAgent: agent });
+        await saveRunState(parent.id, state);
+        await syncTodoMirror({ parent, children, activeChildId: child.id, chatTodos });
+        await seedParentRunTodos({ parent, children, activeChildId: child.id, chatTodos });
+        if (classification === "catastrophic") throw new Error(`Catastrophic failure on ${child.id}: ${String(err)}`);
+        await recoverAndBackoff({ child, err, attempt, classification });
+      }
     }
   }
-  
-  // 6. Complete parent
-  const totalCompleted = allChildren.length;
-  await tasks.complete(parent.id, { 
-    result: `All ${totalCompleted} children completed (${completedCount} resumed + ${pendingChildren.length} new)`
-  });
-  
-  console.log(`✅ Completed ${pendingChildren.length} new tasks (${completedCount} were already done)`);
+
+  await tasks.complete(parent.id, { result: `All ${children.filter(c => !c.cancelled).length} children completed` });
+  parent.completed = true;
+  await syncTodoMirror({ parent, children, activeChildId: null, chatTodos, forceParentCompleted: true });
+  await seedParentRunTodos({ parent, children, activeChildId: null, chatTodos, forceCompleted: true });
 }
 ```
 
-## Helper Functions
-
-### detectAgent()
+## TodoWrite Mirror
 
 ```javascript
-function detectAgent(task) {
-  // Check description for @agent mentions
-  const patterns = [
-    /@(\w[-\w]*)/,
-    /(?:delegate|assign|use)\s+(?:to\s+)?@?(\w[-\w]*)/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = task.description?.match(pattern);
-    if (match) return match[1].toLowerCase();
-  }
-  
-  // Check context
-  const ctxMatch = task.context?.match(/agent:\s*(\w+)/i);
-  if (ctxMatch) return ctxMatch[1].toLowerCase();
-  
-  return null;
+const OVR_PARENT_PREFIX = "ovr-parent-";
+const OVR_CHILD_PREFIX = "ovr-child-";
+const OVR_RUN_PREFIX = "ovr-run-";
+
+function todoPriority(priority = 1) { return priority >= 2 ? "high" : priority === 1 ? "medium" : "low"; }
+function todoStatus(task, activeChildId) { if (task.cancelled) return "cancelled"; if (task.completed) return "completed"; return task.id === activeChildId ? "in_progress" : "pending"; }
+function toParentTodo(parent, done = false) { return { id: `${OVR_PARENT_PREFIX}${parent.id}`, content: `[overseer-parent:${parent.id}] resume:/overseer_orchestrate ${parent.id} state:.overseer/${parent.id}/state.json`, status: done || parent.completed ? "completed" : "in_progress", priority: todoPriority(parent.priority ?? 1) }; }
+function toChildTodo(child, parentId, activeChildId) { return { id: `${OVR_CHILD_PREFIX}${child.id}`, content: `[overseer-task:${child.id}] parent:${parentId} ${child.description}`, status: todoStatus(child, activeChildId), priority: todoPriority(child.priority ?? 1) }; }
+
+async function syncTodoMirror({ parent, children, activeChildId, chatTodos, forceParentCompleted = false }) {
+  const preserved = chatTodos.filter(t => !t.id.startsWith(OVR_PARENT_PREFIX) && !t.id.startsWith(OVR_CHILD_PREFIX));
+  const mirror = [toParentTodo(parent, forceParentCompleted), ...children.map(c => toChildTodo(c, parent.id, activeChildId))];
+  await todowrite({ todos: [...preserved, ...mirror] });
 }
 ```
 
-### writeContext()
+## Parent + Subagent Task-List Seeding
 
 ```javascript
-async function writeContext(child, parent, ctxDir) {
-  const file = `${ctxDir}/${child.id}.md`;
-  const agent = detectAgent(child) || 'build';
-  
-  const content = `# Task: ${child.description}
+function toParentRunTodos(parent, children, activeChildId, forceCompleted = false) {
+  const base = [{ id: `${OVR_RUN_PREFIX}${parent.id}-orchestrate`, content: `[run:${parent.id}] Orchestrate ${children.length} child tasks`, status: forceCompleted ? "completed" : "in_progress", priority: "medium" }];
+  const childItems = children.map(c => ({ id: `${OVR_RUN_PREFIX}${parent.id}-${c.id}`, content: `[run-child:${c.id}] Delegate and verify`, status: forceCompleted || c.completed ? "completed" : c.id === activeChildId ? "in_progress" : "pending", priority: todoPriority(c.priority ?? 1) }));
+  return [...base, ...childItems];
+}
 
-**ID**: ${child.id}
-**Agent**: ${agent}
-**Parent**: ${parent.id} - "${parent.description}"
+async function seedParentRunTodos({ parent, children, activeChildId, chatTodos, forceCompleted = false }) {
+  const withoutRun = chatTodos.filter(t => !t.id.startsWith(OVR_RUN_PREFIX));
+  const runTodos = toParentRunTodos(parent, children, activeChildId, forceCompleted);
+  await todowrite({ todos: [...withoutRun, ...runTodos] });
+}
 
-## Your Context
-${child.context?.own || child.context || 'No specific context provided'}
+async function listChildSubtasks(children) {
+  const entries = await Promise.all(children.map(async c => [c.id, await tasks.list({ parentId: c.id, depth: 2 })]));
+  return new Map(entries);
+}
 
-## Parent Context
-${parent.context?.own || parent.context || 'N/A'}
+function buildSubagentSeedTodos(child, subtasks) {
+  const units = subtasks.length ? subtasks : [{ id: `${child.id}-impl`, description: child.description, priority: child.priority ?? 1, completed: false, cancelled: false }];
+  return units.filter(u => !u.completed && !u.cancelled).map((u, i) => ({ id: `ovr-sub-${child.id}-${u.id}`, content: `[subtask:${child.id}] ${u.description}`, status: i === 0 ? "in_progress" : "pending", priority: todoPriority(u.priority ?? 1) }));
+}
 
-## Instructions
-1. Read this context file completely
-2. Implement everything described in "Your Context"
-3. Follow any specific instructions provided
-4. When complete, the orchestrator will mark this task done
-
-## Responsibility
-You are solely responsible for completing this task. Execute fully without asking for clarification unless critical information is truly missing.
-`;
-  
-  await fs.writeFile(file, content, 'utf-8');
-  return file;
+function buildSubagentPrompt({ child, ctxFile, attempt, seedTodos }) {
+  return [
+    `Read @file ${ctxFile}.`,
+    "Before implementation, call todowrite exactly once with this seed payload:",
+    "```json",
+    JSON.stringify(seedTodos, null, 2),
+    "```",
+    `Then execute ${child.id} attempt ${attempt} to completion. Keep exactly one todo in_progress. Do not mark Overseer tasks complete; orchestrator handles completion.`
+  ].join("\n");
 }
 ```
 
-### findTask()
+## Resume Helpers
 
 ```javascript
-async function findTask(taskRef) {
-  if (taskRef.startsWith('task_')) {
-    return await tasks.get(taskRef);
-  }
-  
-  // Search by description
-  const all = await tasks.list({ depth: 0 }); // milestones only
-  const match = all.find(t => 
-    t.description?.toLowerCase().includes(taskRef.toLowerCase())
-  );
-  
-  if (!match) {
-    // Try searching all tasks
-    const allTasks = await tasks.list();
-    const taskMatch = allTasks.find(t => 
-      t.description?.toLowerCase().includes(taskRef.toLowerCase())
-    );
-    if (taskMatch) return taskMatch;
-    throw new Error(`Task not found: "${taskRef}"`);
-  }
-  
-  return match;
+async function resolveParent(taskRef, chatTodos = []) {
+  if (taskRef) return findTask(taskRef);
+  const activeParent = chatTodos.find(t => t.id.startsWith(OVR_PARENT_PREFIX) && t.status === "in_progress");
+  if (!activeParent) throw new Error("Missing taskRef and no active ovr-parent-* todo entry");
+  return findTask(activeParent.id.replace(OVR_PARENT_PREFIX, ""));
+}
+
+async function resumeAfterCommentOrReview(chatTodos = []) {
+  const activeParent = chatTodos.find(t => t.id.startsWith(OVR_PARENT_PREFIX) && t.status === "in_progress");
+  if (!activeParent) return;
+  await overseerOrchestrate(activeParent.id.replace(OVR_PARENT_PREFIX, ""), chatTodos);
 }
 ```
 
-## Context File Format
+## Failure Classification
 
-Each subagent gets a context file at `.overseer/{parentId}/{childId}.md`:
+```javascript
+function buildFailurePolicy() {
+  return {
+    watchdogNoProgressMs: 45 * 60 * 1000,
+    catastrophicMatchers: ["database is malformed", "overseer mcp unavailable", "sqlite_corrupt", "not a git repository", "repository inaccessible", "filesystem readonly", "fatal: bad object", "permission denied", "no space left on device", "user cancelled"],
+    recoverableMatchers: ["merge conflict", "context mismatch", "validation failed", "hook failed", "lockfile out of date", "rate limit", "temporary failure"]
+  };
+}
 
-```markdown
-# Task: {child.description}
-
-**ID**: {child.id}
-**Agent**: {detectedAgent}
-**Parent**: {parent.id}
-
-## Context
-{child.context.own}
-
-## Parent Context
-{parent.context}
-
-## Full Tree
-{tree}
+function classifyError(err, { state, policy }) {
+  const msg = String(err || "").toLowerCase();
+  const lastProgressAt = Date.parse(state.lastProgressAt || state.startedAt || new Date().toISOString());
+  if (Date.now() - lastProgressAt >= policy.watchdogNoProgressMs) return "catastrophic";
+  if (policy.catastrophicMatchers.some(x => msg.includes(x))) return "catastrophic";
+  if (policy.recoverableMatchers.some(x => msg.includes(x))) return "recoverable";
+  return "retryable";
+}
 ```
+
+## Existing Helpers
+
+Reuse existing behavior unless project-specific override is required:
+- `detectAgent(task)`
+- `writeContext(child, parent, ctxDir, meta)`
+- `findTask(taskRef)`
+- `verifyChildCompleted(childId, result)`
+- `recoverAndBackoff(...)`
+- `loadRunState(...)`, `saveRunState(...)`, `recordAttempt(...)`, `setChildState(...)`
+
+`verifyChildCompleted` must throw on failed checks so retries continue.
