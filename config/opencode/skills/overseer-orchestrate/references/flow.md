@@ -23,6 +23,7 @@ async function overseerOrchestrate(taskRef, chatTodos = []) {
     await tasks.start(child.id);
     await syncTodoMirror({ parent, children, activeChildId: child.id, chatTodos });
     await seedParentRunTodos({ parent, children, activeChildId: child.id, chatTodos });
+    const childStartCommit = await getHeadCommit();
 
     while (true) {
       const attempt = recordAttempt(state, child.id);
@@ -38,6 +39,7 @@ async function overseerOrchestrate(taskRef, chatTodos = []) {
         });
 
         await verifyChildCompleted(child.id, result);
+        await verifyChildCommitCheckpoint({ child, startCommit: childStartCommit });
         await tasks.complete(child.id, { result: result.summary || `Completed after ${attempt} attempt(s)` });
 
         child.completed = true;
@@ -146,7 +148,7 @@ function buildFailurePolicy() {
   return {
     watchdogNoProgressMs: 45 * 60 * 1000,
     catastrophicMatchers: ["database is malformed", "overseer mcp unavailable", "sqlite_corrupt", "not a git repository", "repository inaccessible", "filesystem readonly", "fatal: bad object", "permission denied", "no space left on device", "user cancelled"],
-    recoverableMatchers: ["merge conflict", "context mismatch", "validation failed", "hook failed", "lockfile out of date", "rate limit", "temporary failure"]
+    recoverableMatchers: ["merge conflict", "context mismatch", "validation failed", "hook failed", "lockfile out of date", "rate limit", "temporary failure", "commit checkpoint failed", "no commit produced", "working tree dirty without commit"]
   };
 }
 
@@ -160,6 +162,42 @@ function classifyError(err, { state, policy }) {
 }
 ```
 
+## Commit Checkpoint Helpers
+
+```javascript
+async function getHeadCommit() {
+  try {
+    return (await bash("git rev-parse HEAD")).trim();
+  } catch {
+    return null;
+  }
+}
+
+async function hasUncommittedChanges() {
+  try {
+    const out = await bash("git status --porcelain");
+    return out.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function verifyChildCommitCheckpoint({ child, startCommit }) {
+  const endCommit = await getHeadCommit();
+  const dirty = await hasUncommittedChanges();
+
+  if (startCommit && endCommit && startCommit !== endCommit) {
+    return;
+  }
+
+  if (dirty) {
+    throw new Error(`Commit checkpoint failed for ${child.id}: working tree dirty without commit`);
+  }
+
+  throw new Error(`Commit checkpoint failed for ${child.id}: no commit produced`);
+}
+```
+
 ## Existing Helpers
 
 Reuse existing behavior unless project-specific override is required:
@@ -167,6 +205,8 @@ Reuse existing behavior unless project-specific override is required:
 - `writeContext(child, parent, ctxDir, meta)`
 - `findTask(taskRef)`
 - `verifyChildCompleted(childId, result)`
+- `verifyChildCommitCheckpoint({ child, startCommit })`
+- `getHeadCommit()`, `hasUncommittedChanges()`
 - `recoverAndBackoff(...)`
 - `loadRunState(...)`, `saveRunState(...)`, `recordAttempt(...)`, `setChildState(...)`
 

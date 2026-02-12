@@ -1187,8 +1187,184 @@
     "civ": "Portuguese",
     "file": "Portuguese_select_1.ogg"
   },
-  "ses_3adbfea8bffedtUvfdrdnsbFxs": {
+  "ses_3ad643f02ffeOmp7G1P7GOr47i": {
     "civ": "Saracens",
     "file": "Saracens_select_1.ogg"
+  },
+  "ses_3ad60e8ecffei3B4KB2zkKK8y0": {
+    "civ": "Spanish",
+    "file": "Spanish_select_1.ogg"
+  },
+  "ses_3ad61cc42ffeGMnm9hYf1r5OIT": {
+    "civ": "Teutons",
+    "file": "Teutons_select_1.ogg"
+  },
+  "ses_3ad5b49e0ffe57yomCzGDIHx34": {
+    "civ": "Turks",
+    "file": "Turks_select_1.ogg"
+  },
+  "ses_3ad5b4987ffeoJQk9Ny29nlyq7": {
+    "civ": "Vikings",
+    "file": "Vikings_select_1.ogg"
+  },
+  "ses_3ad5906caffedHtrdIo7Mpbt7J": {
+    "civ": "Aztecs",
+    "file": "Aztecs_select_1.ogg"
+  },
+  "ses_3ad590746ffeTXdrwFH7FMN2Ph": {
+    "civ": "Britons",
+    "file": "Britons_select_1.ogg"
+  },
+  "ses_3ad56b395ffefR3HeIQqJQ45mU": {
+    "civ": "Byzantines",
+    "file": "Byzantines_select_1.ogg"
+  },
+  "ses_3ad545c27ffe8haIxJCy8T5cN9": {
+    "civ": "Celts",
+    "file": "Celts_select_1.ogg"
+  },
+  "ses_3ad50bd77ffeSL5hiqgmAmN5n8": {
+    "civ": "Chinese",
+    "file": "Chinese_select_1.ogg"
+  },
+  "ses_3ad51b0afffeBeDmYSqNK1KSUJ": {
+    "civ": "Franks",
+    "file": "Franks_select_1.ogg"
+  },
+  "ses_3ad4bd401ffew7u4O0PSZ7u38Q": {
+    "civ": "Goths",
+    "file": "Goths_select_1.ogg"
+  },
+  "ses_3ad4df613ffemk3KsIMxXkoIFE": {
+    "civ": "Indians",
+    "file": "Indians_select_1.ogg"
+  },
+  "ses_3ad4b2d8bffedqhyMWtgZiJE91": {
+    "civ": "Italians",
+    "file": "Italians_select_1.ogg"
+  },
+  "ses_3ad479febffenoCWmOs3xR1pWg": {
+    "civ": "Japanese",
+    "file": "Japanese_select_1.ogg"
+  },
+  "ses_3ad4799f0ffeQoZlL0hHJF7KYG": {
+    "civ": "Koreans",
+    "file": "Koreans_select_1.ogg"
+  },
+  "ses_3ad48889bffeEI58rQeKOyCsFe": {
+    "civ": "Mayans",
+    "file": "Mayans_select_1.ogg"
+  },
+  "ses_3ad454491ffeRpwmTEBJPXf1qy": {
+    "civ": "Mongols",
+    "file": "Mongols_select_1.ogg"
+  },
+  "ses_3ad42f473ffefkh9i6wVVjkvvx": {
+    "civ": "Persians",
+    "file": "Persians_select_1.ogg"
+  },
+  "ses_3ad116cc9ffeP6c5htM4AuYoKG": {
+    "civ": "Saracens",
+    "file": "Saracens_select_1.ogg"
+  },
+  "ses_3ad0485c6ffenSeDArysbSM0ek": {
+    "civ": "Spanish",
+    "file": "Spanish_select_1.ogg"
+  },
+  "ses_3ad01a74effeLyJeBQyWu4CSXk": {
+    "civ": "Teutons",
+    "file": "Teutons_select_1.ogg"
+  },
+  "ses_3acfe1bd8ffesm71V3380WaFpB": {
+    "civ": "Turks",
+    "file": "Turks_select_1.ogg"
+  },
+  "ses_3acfb27f9ffeno639StfHpR86G": {
+    "civ": "Vikings",
+    "file": "Vikings_select_1.ogg"
+  },
+  "ses_3acfebf92ffejQzOCVidTWuuPR": {
+    "civ": "Aztecs",
+    "file": "Aztecs_select_1.ogg"
+  },
+  "ses_3acf88ba4ffeUEOZCMFPhNSuMv": {
+    "civ": "Britons",
+    "file": "Britons_select_1.ogg"
+  },
+  "ses_3acf512e8ffenJ2eqUIrFUMHT6": {
+    "civ": "Byzantines",
+    "file": "Byzantines_select_1.ogg"
+  },
+  "ses_3acf5cfcbffewuCqbjcS1zB3lr": {
+    "civ": "Celts",
+    "file": "Celts_select_1.ogg"
+  },
+  "ses_3acf23363ffejjt0r5B091aTKN": {
+    "civ": "Chinese",
+    "file": "Chinese_select_1.ogg"
+  },
+  "ses_3acf16bf2ffeWqzzKEcrpe5fJZ": {
+    "civ": "Franks",
+    "file": "Franks_select_1.ogg"
+  },
+  "ses_3acefa082ffeyInwDscGQexHyT": {
+    "civ": "Goths",
+    "file": "Goths_select_1.ogg"
+  },
+  "ses_3aced00c4ffe4zY5O3YCAXlPha": {
+    "civ": "Indians",
+    "file": "Indians_select_1.ogg"
+  },
+  "ses_3acea36aaffemvgH0gj3NksaOa": {
+    "civ": "Italians",
+    "file": "Italians_select_1.ogg"
+  },
+  "ses_3ace68d8bffeY5h0aU6NCZ6uPT": {
+    "civ": "Japanese",
+    "file": "Japanese_select_1.ogg"
+  },
+  "ses_3ace68d98ffeEFdMzoj1Vrmp12": {
+    "civ": "Koreans",
+    "file": "Koreans_select_1.ogg"
+  },
+  "ses_3ace7d343ffeGVnhmAvzI19JBa": {
+    "civ": "Mayans",
+    "file": "Mayans_select_1.ogg"
+  },
+  "ses_3acb8f899ffeCwcGqzh3vZQEIl": {
+    "civ": "Mongols",
+    "file": "Mongols_select_1.ogg"
+  },
+  "ses_3acb7dbe7ffewmOzSN298AuVzA": {
+    "civ": "Persians",
+    "file": "Persians_select_1.ogg"
+  },
+  "ses_3acb5e5cdffeEJiS93YE5g0q9e": {
+    "civ": "Portuguese",
+    "file": "Portuguese_select_1.ogg"
+  },
+  "ses_3acb56613ffeSPKfKaPWIpVx7N": {
+    "civ": "Saracens",
+    "file": "Saracens_select_1.ogg"
+  },
+  "ses_3acaf2db1ffeOPu7yq19MPTMkB": {
+    "civ": "Spanish",
+    "file": "Spanish_select_1.ogg"
+  },
+  "ses_3acae8dc9ffe3cyQHsH9lT0ZqG": {
+    "civ": "Teutons",
+    "file": "Teutons_select_1.ogg"
+  },
+  "ses_3acaf1fddffegeC9G9dIOrIu3V": {
+    "civ": "Turks",
+    "file": "Turks_select_1.ogg"
+  },
+  "ses_3aca3a30bffepqmsNDiEkJa8ta": {
+    "civ": "Vikings",
+    "file": "Vikings_select_1.ogg"
+  },
+  "ses_3ac212a86ffezpayRESKJ6qCeY": {
+    "civ": "Aztecs",
+    "file": "Aztecs_select_1.ogg"
   }
 }

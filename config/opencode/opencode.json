@@ -11,7 +11,8 @@
 		"opencode-anthropic-auth@0.0.13",
 		"opencode-comments-plugin",
 		"file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
-		"file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js"
+		"file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js",
+		"file:///Users/andrew/.config/opencode/plugin/overseer-orchestrate-autocontinue.js"
 	],
 	"mcp": {
 		"opensrc": {
@@ -38,7 +39,9 @@
 			"type": "local",
 			"command": ["bunx", "playwriter@latest"],
 			"enabled": true,
-			"environment": {}
+			"environment": {
+				"PLAYWRITER_AUTO_ENABLE": "1"
+			}
 		}
 	},
 	"provider": {

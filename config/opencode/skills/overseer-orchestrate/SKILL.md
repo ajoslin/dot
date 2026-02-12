@@ -29,7 +29,7 @@ Execute an Overseer parent task to completion by delegating each child task to a
 3. Fetch all depth=1 children for the parent and depth=2 subtasks for each child.
 4. Upsert TodoWrite mirror entries for parent and every child while preserving unrelated todos.
 5. Pre-seed parent session todos that reflect orchestration work planned for this run.
-6. For each incomplete child: start task, write context, detect agent, build subagent todo seed from child+subtasks, spawn subagent via `task`, retry until verified completion.
+6. For each incomplete child: start task, write context, detect agent, build subagent todo seed from child+subtasks, spawn subagent via `task`, retry until verified completion and commit checkpoint validation.
 7. Persist attempt history and last error after every failed attempt.
 8. Refresh mirror and parent session todo statuses after every state change (start, retry, completion, catastrophic abort).
 9. Mark parent complete only after all children complete; then mark mirrored parent todo complete.
@@ -71,6 +71,17 @@ The third form resumes from an active mirror entry in TodoWrite.
 - Spawn subagents with the `task` tool prompt that includes explicit `todowrite` seed payload.
 - Preserve unrelated todos in every `todowrite` write; only replace orchestrate-managed IDs.
 
+## Commit Hardening Rules
+
+- Treat commit cadence as mandatory verification, not optional hygiene.
+- For each child task, require at least one new commit authored during that child's execution window.
+- Require checkpoint commits during long-running child execution:
+  - at least every 20-30 minutes, or
+  - after each meaningful green checkpoint (tests/build/typecheck passing).
+- If code changed but no commit was produced, classify as recoverable failure and retry the child with a commit-first instruction.
+- If commit is blocked by hooks or failing checks, subagent must fix the blocker and create a new commit before claiming completion.
+- If a child is genuinely blocked and cannot commit, persist the blocker in run state and keep that child incomplete.
+
 ## Task Spawn Prompt Template
 
 Use this shape when delegating each child via `task` so subagent todo seeding is deterministic:
@@ -85,7 +96,7 @@ await task({
     "```json",
     JSON.stringify(seedTodos, null, 2),
     "```",
-    `Then execute ${child.id} attempt ${attempt} to completion. Keep exactly one todo in_progress. Do not mark Overseer tasks complete; orchestrator handles completion.`
+    `Then execute ${child.id} attempt ${attempt} to completion. Keep exactly one todo in_progress. Commit at meaningful checkpoints (at least every 20-30 minutes) and include at least one commit for this child before declaring done. Do not mark Overseer tasks complete; orchestrator handles completion.`
   ].join("\\n")
 });
 ```
@@ -153,6 +164,7 @@ Each subagent:
 - Calls `todowrite` first to install the seeded `ovr-sub-*` list from orchestrator prompt payload.
 - Reads the context file via `@file`
 - Implements everything described
+- Commits frequently during execution and produces at least one commit tied to the delegated child task
 - Does not pause for questions; makes reasonable assumptions
 - Executes to completion with retries on transient/recoverable failure
 - Leaves completion marking to the orchestrator
