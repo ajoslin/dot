@@ -13,7 +13,7 @@ Before any flow, find the plan files:
 
 - Search `docs/tracers/**/state.json`
 - If multiple matches, list them and use the ask question tool to ask questions about which feature to work on
-- If none, STOP: "Run prd-tracers first to create a plan"
+- If none, STOP: "Run spec-planner to create docs/specs/<slug>/SPEC.md, then run /overseer-plan to create executable tasks"
 
 Two files per feature:
 - `state.json` - Machine state (task passes, commits, current tracer)
@@ -27,7 +27,7 @@ All state updates go to `state.json`. Learnings are appended to `PROGRESS.md`.
 Check state.json:
 │
 ├─ No state.json found
-│  └─ STOP: "Run prd-tracers first to create a plan"
+│  └─ STOP: "Run spec-planner then /overseer-plan first to create a plan"
 │
 ├─ Current tracer has tasks with passes: false
 │  └─ → NEXT-TASK FLOW

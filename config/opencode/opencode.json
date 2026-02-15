@@ -1,61 +1,81 @@
 {
-	"$schema": "https://opencode.ai/config.json",
-	"theme": "opencode",
-	"model": "openai/gpt-5.3-codex",
-	"tui": {
-		"scroll_acceleration": {
-			"enabled": true
-		}
-	},
-	"plugin": [
-		"opencode-anthropic-auth@0.0.13",
-		"opencode-comments-plugin",
-		"file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
-		"file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js",
-		"file:///Users/andrew/.config/opencode/plugin/overseer-orchestrate-autocontinue.js"
-	],
-	"mcp": {
-		"opensrc": {
-			"enabled": true,
-			"type": "local",
-			"command": ["bunx", "-y", "opensrc-mcp"]
-		},
-		"overseer": {
-			"type": "local",
-			"command": ["npx", "-y", "@dmmulroy/overseer", "mcp"],
-			"enabled": true
-		},
-		"websearch": {
-			"type": "remote",
-			"url": "https://mcp.exa.ai/mcp?tools=web_search_exa",
-			"enabled": true
-		},
-		"context7": {
-			"type": "remote",
-			"url": "https://mcp.context7.com/mcp",
-			"enabled": true
-		},
-		"playwriter": {
-			"type": "local",
-			"command": ["bunx", "playwriter@latest"],
-			"enabled": true,
-			"environment": {
-				"PLAYWRITER_AUTO_ENABLE": "1"
-			}
-		}
-	},
-	"provider": {
-		"lmstudio": {
-			"npm": "@ai-sdk/openai-compatible",
-			"name": "LM Studio (local)",
-			"options": {
-				"baseURL": "http://localhost:1234/v1"
-			},
-			"models": {
-				"qwen/qwen3-30b-a3b-2507": {
-					"name": "Qwen 3 30B a3b (local)"
-				}
-			}
-		}
-	}
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "opencode",
+  "model": "openai/gpt-5.3-codex",
+  "tui": {
+    "scroll_acceleration": {
+      "enabled": true
+    }
+  },
+  "plugin": [
+    "opencode-anthropic-auth@0.0.13",
+    "opencode-comments-plugin",
+    "file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
+    "file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js",
+    "file:///Users/andrew/dot/config/opencode/plugin/overseer-orchestrate-autocontinue.js"
+  ],
+  "mcp": {
+    "opensrc": {
+      "enabled": true,
+      "type": "local",
+      "command": ["bunx", "-y", "opensrc-mcp"]
+    },
+    "overseer": {
+      "type": "local",
+      "command": ["npx", "-y", "@dmmulroy/overseer", "mcp"],
+      "enabled": true
+    },
+    "websearch": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp?tools=web_search_exa",
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "playwriter": {
+      "type": "local",
+      "command": ["bunx", "playwriter@latest"],
+      "enabled": true,
+      "environment": {
+        "PLAYWRITER_AUTO_ENABLE": "1"
+      }
+    }
+  },
+  "permission": {
+    "external_directory": {
+      "*": "ask",
+      "/tmp": "allow",
+      "/tmp/*": "allow",
+      "/private/tmp": "allow",
+      "/private/tmp/*": "allow",
+      "env:$TMPDIR": "allow",
+      "env:$TMPDIR/*": "allow"
+    }
+  },
+  "provider": {
+    "openai": {
+      "models": {
+        "gpt-5.3-codex": {
+          "options": {
+            "reasoningEffort": "medium"
+          }
+        }
+      }
+    },
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (local)",
+      "options": {
+        "baseURL": "http://localhost:1234/v1"
+      },
+      "models": {
+        "qwen/qwen3-30b-a3b-2507": {
+          "name": "Qwen 3 30B a3b (local)"
+        }
+      }
+    }
+  }
 }

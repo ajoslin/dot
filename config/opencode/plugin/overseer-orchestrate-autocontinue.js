@@ -3,10 +3,10 @@ import { execFileSync } from "node:child_process";
 const AUTO_CONTINUE_DELAY_MS = 2000;
 const AUTO_CONTINUE_COOLDOWN_MS = 10000;
 const ABORT_GRACE_MS = 3000;
+const OVERSEER_SESSION_TTL_MS = 30 * 60 * 1000;
 
-const PARENT_TODO_ID_PREFIX = "ovr-parent-";
-const RESUME_MARKER = "resume:/overseer_orchestrate";
-const PARENT_ID_REGEX = /(task_[A-Za-z0-9]+)/;
+const ORCHESTRATE_CMD = "/overseer_orchestrate";
+const TASK_ID_REGEX = /(task_[A-Za-z0-9]+)/;
 
 function getSessionId(event) {
   return event?.properties?.sessionID;
@@ -17,9 +17,7 @@ function getSessionIdFromMessage(event) {
 }
 
 function isSessionIdleEvent(event) {
-  if (event?.type === "session.idle") {
-    return true;
-  }
+  if (event?.type === "session.idle") return true;
   return (
     event?.type === "session.status" &&
     event?.properties?.status?.type === "idle" &&
@@ -35,52 +33,46 @@ function isActivityEvent(event) {
   );
 }
 
-function parseParentId(todo) {
-  if (!todo || typeof todo !== "object") {
-    return null;
+function collectStrings(value, out = []) {
+  if (typeof value === "string") {
+    out.push(value);
+    return out;
   }
-
-  if (typeof todo.id === "string" && todo.id.startsWith(PARENT_TODO_ID_PREFIX)) {
-    const idMatch = todo.id.slice(PARENT_TODO_ID_PREFIX.length).match(PARENT_ID_REGEX);
-    if (idMatch) {
-      return idMatch[1];
-    }
+  if (!value || typeof value !== "object") {
+    return out;
   }
-
-  if (typeof todo.content === "string" && todo.content.includes(RESUME_MARKER)) {
-    const contentMatch = todo.content.match(/resume:\/overseer_orchestrate\s+(task_[A-Za-z0-9]+)/);
-    if (contentMatch) {
-      return contentMatch[1];
-    }
+  if (Array.isArray(value)) {
+    for (const item of value) collectStrings(item, out);
+    return out;
   }
+  for (const v of Object.values(value)) collectStrings(v, out);
+  return out;
+}
 
+function normalizeResumeCommand(raw) {
+  if (typeof raw !== "string") return null;
+  const line = raw.trim();
+  if (!line.startsWith(ORCHESTRATE_CMD)) return null;
+  if (line === ORCHESTRATE_CMD) return null;
+  return line;
+}
+
+function extractResumeCommandFromText(text) {
+  if (typeof text !== "string") return null;
+  const match = text.match(/\/overseer_orchestrate[^\n\r]*/);
+  return normalizeResumeCommand(match?.[0] ?? null);
+}
+
+function extractResumeCommandFromEvent(event) {
+  const direct = normalizeResumeCommand(event?.properties?.command);
+  if (direct) return direct;
+
+  const strings = collectStrings(event?.properties);
+  for (const text of strings) {
+    const cmd = extractResumeCommandFromText(text);
+    if (cmd) return cmd;
+  }
   return null;
-}
-
-function isOverseerOrchestrateParentTodo(todo) {
-  if (!todo || todo.status !== "in_progress") {
-    return false;
-  }
-
-  const hasParentIdPrefix =
-    typeof todo.id === "string" && todo.id.startsWith(PARENT_TODO_ID_PREFIX);
-  const hasResumeMarker =
-    typeof todo.content === "string" && todo.content.includes(RESUME_MARKER);
-
-  return hasParentIdPrefix || hasResumeMarker;
-}
-
-function getActiveOverseerParentId(todos) {
-  if (!Array.isArray(todos)) {
-    return null;
-  }
-
-  const parentTodo = todos.find(isOverseerOrchestrateParentTodo);
-  if (!parentTodo) {
-    return null;
-  }
-
-  return parseParentId(parentTodo);
 }
 
 function readGitHead(directory) {
@@ -108,6 +100,12 @@ function hasDirtyWorkingTree(directory) {
   }
 }
 
+function parentFromCommand(command) {
+  if (!command) return null;
+  const id = command.match(TASK_ID_REGEX);
+  return id ? id[1] : null;
+}
+
 async function safeShowToast(client, message, variant = "info") {
   try {
     await client.tui.showToast({
@@ -131,47 +129,34 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
   const taskCallStartCommit = new Map();
   const commitBlockedSessions = new Set();
   const lastCommitReminderAt = new Map();
+  const activeResumeCommand = new Map();
+  const lastOverseerActivityAt = new Map();
 
   function callKey(sessionID, callID) {
     return `${sessionID}:${callID}`;
   }
 
-  async function getSessionTodos(sessionID) {
-    try {
-      const response = await ctx.client.session.todo({ path: { id: sessionID } });
-      return response?.data ?? response ?? [];
-    } catch {
-      return [];
-    }
-  }
-
-  async function getActiveParentForSession(sessionID) {
-    const todos = await getSessionTodos(sessionID);
-    return getActiveOverseerParentId(todos);
-  }
-
-  function cancelCountdown(sessionID) {
-    const existing = countdownTimers.get(sessionID);
-    if (!existing) {
-      return;
-    }
-    clearTimeout(existing);
-    countdownTimers.delete(sessionID);
-  }
-
   function clearSessionState(sessionID) {
-    cancelCountdown(sessionID);
+    const timer = countdownTimers.get(sessionID);
+    if (timer) clearTimeout(timer);
+    countdownTimers.delete(sessionID);
     lastInjectedAt.delete(sessionID);
     inFlightTaskCalls.delete(sessionID);
     abortDetectedAt.delete(sessionID);
     commitBlockedSessions.delete(sessionID);
     lastCommitReminderAt.delete(sessionID);
-
+    activeResumeCommand.delete(sessionID);
+    lastOverseerActivityAt.delete(sessionID);
     for (const key of taskCallStartCommit.keys()) {
-      if (key.startsWith(`${sessionID}:`)) {
-        taskCallStartCommit.delete(key);
-      }
+      if (key.startsWith(`${sessionID}:`)) taskCallStartCommit.delete(key);
     }
+  }
+
+  function cancelCountdown(sessionID) {
+    const timer = countdownTimers.get(sessionID);
+    if (!timer) return;
+    clearTimeout(timer);
+    countdownTimers.delete(sessionID);
   }
 
   function getTaskCallCount(sessionID) {
@@ -179,8 +164,7 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
   }
 
   function incrementTaskCallCount(sessionID) {
-    const next = getTaskCallCount(sessionID) + 1;
-    inFlightTaskCalls.set(sessionID, next);
+    inFlightTaskCalls.set(sessionID, getTaskCallCount(sessionID) + 1);
   }
 
   function decrementTaskCallCount(sessionID) {
@@ -192,33 +176,42 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
     inFlightTaskCalls.set(sessionID, next);
   }
 
-  async function maybeInjectContinuation(sessionID) {
-    if (!sessionID) {
-      return;
-    }
+  function updateOverseerSession(sessionID, command) {
+    if (!sessionID || !command) return;
+    activeResumeCommand.set(sessionID, command);
+    lastOverseerActivityAt.set(sessionID, Date.now());
+  }
 
-    if (getTaskCallCount(sessionID) > 0) {
-      return;
+  function getActiveResumeCommand(sessionID) {
+    const cmd = activeResumeCommand.get(sessionID);
+    if (!cmd) return null;
+    const last = lastOverseerActivityAt.get(sessionID) ?? 0;
+    if (Date.now() - last > OVERSEER_SESSION_TTL_MS) {
+      activeResumeCommand.delete(sessionID);
+      lastOverseerActivityAt.delete(sessionID);
+      return null;
     }
+    return cmd;
+  }
+
+  async function maybeInjectContinuation(sessionID) {
+    if (!sessionID) return;
+    if (getTaskCallCount(sessionID) > 0) return;
 
     const abortAt = abortDetectedAt.get(sessionID) ?? 0;
-    if (abortAt > 0 && Date.now() - abortAt < ABORT_GRACE_MS) {
-      return;
-    }
+    if (abortAt > 0 && Date.now() - abortAt < ABORT_GRACE_MS) return;
 
     const last = lastInjectedAt.get(sessionID) ?? 0;
-    if (Date.now() - last < AUTO_CONTINUE_COOLDOWN_MS) {
-      return;
-    }
+    if (Date.now() - last < AUTO_CONTINUE_COOLDOWN_MS) return;
 
-    const parentId = await getActiveParentForSession(sessionID);
-    if (!parentId) {
-      return;
-    }
+    const resumeCommand = getActiveResumeCommand(sessionID);
+    if (!resumeCommand) return;
 
     if (commitBlockedSessions.has(sessionID) && hasDirtyWorkingTree(ctx.directory)) {
       const lastReminder = lastCommitReminderAt.get(sessionID) ?? 0;
       if (Date.now() - lastReminder >= AUTO_CONTINUE_COOLDOWN_MS) {
+        const parent = parentFromCommand(resumeCommand);
+        const statusLine = parent ? `Parent: ${parent}` : "Parent: (unknown from command)";
         try {
           await ctx.client.session.prompt({
             path: { id: sessionID },
@@ -230,7 +223,8 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
                     "[overseer-orchestrate commit checkpoint]",
                     "Auto-resume paused: working tree has uncommitted changes.",
                     "Create a commit now, then continue orchestration.",
-                    `Resume command: /overseer_orchestrate ${parentId}`,
+                    statusLine,
+                    `Resume command: ${resumeCommand}`,
                   ].join("\n"),
                 },
               ],
@@ -238,7 +232,7 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
             query: { directory: ctx.directory },
           });
           lastCommitReminderAt.set(sessionID, Date.now());
-          await safeShowToast(ctx.client, `Commit required before resume (${parentId})`, "warning");
+          await safeShowToast(ctx.client, "Commit required before auto-resume", "warning");
         } catch {
           // Ignore prompt failures; keep pause behavior.
         }
@@ -251,27 +245,20 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
     try {
       await ctx.client.session.prompt({
         path: { id: sessionID },
-        body: {
-          parts: [{ type: "text", text: `/overseer_orchestrate ${parentId}` }],
-        },
+        body: { parts: [{ type: "text", text: resumeCommand }] },
         query: { directory: ctx.directory },
       });
       lastInjectedAt.set(sessionID, Date.now());
-      await safeShowToast(ctx.client, `Auto-resume injected for ${parentId}`, "warning");
+      lastOverseerActivityAt.set(sessionID, Date.now());
+      await safeShowToast(ctx.client, "Overseer auto-resume injected", "warning");
     } catch {
-      // Session may be gone or unavailable.
+      // Session may be unavailable.
     }
   }
 
   function scheduleContinuation(sessionID) {
-    if (!sessionID) {
-      return;
-    }
-
-    if (getTaskCallCount(sessionID) > 0) {
-      return;
-    }
-
+    if (!sessionID) return;
+    if (getTaskCallCount(sessionID) > 0) return;
     cancelCountdown(sessionID);
     const timer = setTimeout(() => {
       countdownTimers.delete(sessionID);
@@ -284,104 +271,82 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
     event: async ({ event }) => {
       if (event?.type === "session.deleted") {
         const sessionID = event?.properties?.info?.id;
-        if (sessionID) {
-          clearSessionState(sessionID);
-        }
+        if (sessionID) clearSessionState(sessionID);
         return;
       }
 
+      const sessionID =
+        getSessionId(event) ?? getSessionIdFromMessage(event) ?? event?.properties?.sessionID;
+
       if (event?.type === "session.error") {
-        const sessionID = getSessionId(event);
         const errorName = event?.properties?.error?.name;
-        if (
-          sessionID &&
-          (errorName === "MessageAbortedError" || errorName === "AbortError")
-        ) {
+        if (sessionID && (errorName === "MessageAbortedError" || errorName === "AbortError")) {
           abortDetectedAt.set(sessionID, Date.now());
           cancelCountdown(sessionID);
         }
       }
 
-      if (isActivityEvent(event)) {
-        const sessionID =
-          getSessionId(event) ?? getSessionIdFromMessage(event) ?? event?.properties?.sessionID;
-        if (sessionID) {
-          cancelCountdown(sessionID);
-        }
+      const resumeCommand = extractResumeCommandFromEvent(event);
+      if (sessionID && resumeCommand) {
+        updateOverseerSession(sessionID, resumeCommand);
       }
 
-      if (!isSessionIdleEvent(event)) {
-        return;
+      if (isActivityEvent(event) && sessionID) {
+        cancelCountdown(sessionID);
       }
 
-      const sessionID = getSessionId(event);
+      if (!isSessionIdleEvent(event)) return;
       scheduleContinuation(sessionID);
     },
 
     "tool.execute.before": async (input) => {
-      if (!input?.sessionID) {
-        return;
-      }
+      if (!input?.sessionID) return;
       cancelCountdown(input.sessionID);
       if (input.tool === "task") {
         incrementTaskCallCount(input.sessionID);
-        const parentId = await getActiveParentForSession(input.sessionID);
-        if (parentId && input.callID) {
+        if (input.callID && getActiveResumeCommand(input.sessionID)) {
           taskCallStartCommit.set(callKey(input.sessionID, input.callID), readGitHead(ctx.directory));
         }
       }
     },
 
     "tool.execute.after": async (input, output) => {
-      if (!input?.sessionID) {
-        return;
-      }
+      if (!input?.sessionID) return;
       cancelCountdown(input.sessionID);
-      if (input.tool === "task") {
-        decrementTaskCallCount(input.sessionID);
+      if (input.tool !== "task") return;
 
-        const parentId = await getActiveParentForSession(input.sessionID);
-        if (!parentId) {
-          return;
-        }
+      decrementTaskCallCount(input.sessionID);
 
-        const key = input.callID ? callKey(input.sessionID, input.callID) : null;
-        const startCommit = key ? taskCallStartCommit.get(key) : null;
-        if (key) {
-          taskCallStartCommit.delete(key);
-        }
+      const resumeCommand = getActiveResumeCommand(input.sessionID);
+      if (!resumeCommand) return;
 
-        const endCommit = readGitHead(ctx.directory);
-        const dirty = hasDirtyWorkingTree(ctx.directory);
-        const commitAdvanced = Boolean(startCommit && endCommit && startCommit !== endCommit);
+      const key = input.callID ? callKey(input.sessionID, input.callID) : null;
+      const startCommit = key ? taskCallStartCommit.get(key) : null;
+      if (key) taskCallStartCommit.delete(key);
 
-        if (commitAdvanced || !dirty) {
-          commitBlockedSessions.delete(input.sessionID);
-        }
+      const endCommit = readGitHead(ctx.directory);
+      const dirty = hasDirtyWorkingTree(ctx.directory);
+      const commitAdvanced = Boolean(startCommit && endCommit && startCommit !== endCommit);
 
-        if (commitAdvanced) {
-          return;
-        }
-
-        if (dirty) {
-          commitBlockedSessions.add(input.sessionID);
-        }
-
-        const reason = dirty
-          ? "working tree has uncommitted changes"
-          : "no new commit detected";
-
-        const warning = [
-          "[overseer-orchestrate commit checkpoint]",
-          `Parent: ${parentId}`,
-          `Status: FAILED (${reason})`,
-          "Required next action: commit now, then continue orchestration.",
-          `Resume command: /overseer_orchestrate ${parentId}`,
-        ].join("\n");
-
-        output.output = `${output.output ?? ""}\n\n${warning}`.trim();
-        await safeShowToast(ctx.client, `Commit checkpoint failed for ${parentId}`, "warning");
+      if (commitAdvanced || !dirty) {
+        commitBlockedSessions.delete(input.sessionID);
       }
+
+      if (commitAdvanced) return;
+      if (dirty) commitBlockedSessions.add(input.sessionID);
+
+      const parent = parentFromCommand(resumeCommand);
+      const reason = dirty ? "working tree has uncommitted changes" : "no new commit detected";
+      const warning = [
+        "[overseer-orchestrate commit checkpoint]",
+        parent ? `Parent: ${parent}` : "Parent: (unknown from command)",
+        `Status: FAILED (${reason})`,
+        "Required next action: commit now, then continue orchestration.",
+        `Resume command: ${resumeCommand}`,
+      ].join("\n");
+
+      output.output = `${output.output ?? ""}\n\n${warning}`.trim();
+      await safeShowToast(ctx.client, "Commit checkpoint failed", "warning");
     },
   };
 };

@@ -23,15 +23,9 @@ Think: "Would someone understand the what, why, and how from this task alone AND
 
 **Never reference task IDs in external artifacts** (commits, PRs, docs). Task IDs like `task_01JQAZ...` become meaningless once tasks complete. Describe the work itself, not the task that tracked it.
 
-## Overseer vs OpenCode's TodoWrite
+## Overseer as Source of Truth
 
-|                 | Overseer                              | TodoWrite              |
-| --------------- | ------------------------------------- | ---------------------- |
-| **Persistence** | SQLite database                       | Session-only           |
-| **Context**     | Rich (description + context + result) | Basic                  |
-| **Hierarchy**   | 3-level (milestone -> task -> subtask)| Flat                   |
-
-Use **Overseer** for persistent work. Use **TodoWrite** for ephemeral in-session tracking only.
+When Overseer is in use, keep all task tracking in Overseer. Do not mirror the same work into OpenCode's session task list.
 
 ## When to Use Overseer
 
@@ -45,7 +39,6 @@ Use **Overseer** for persistent work. Use **TodoWrite** for ephemeral in-session
 - Work is a single atomic action
 - Everything fits in one message exchange
 - Overhead exceeds value
-- TodoWrite is sufficient
 
 ## Finding Work
 
