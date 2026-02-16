@@ -188,7 +188,6 @@ install_casks() {
 		1password
 		ghostty
 		google-chrome
-		google-chrome-canary
 		slack
 		spotify
 		telegram

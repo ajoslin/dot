@@ -1,7 +1,7 @@
 ---
 description: Code reviewer using Claude Opus 4.5 for deep bug and risk analysis
 mode: subagent
-model: anthropic/claude-opus-4-6
+model: anthropic/claude-opus-4.6
 temperature: 0.1
 options:
   thinking:
