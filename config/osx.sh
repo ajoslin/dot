@@ -92,6 +92,7 @@ install_formulae() {
 	log "Installing CLI formulae"
 
 	run brew tap koekeishiya/formulae
+	run brew tap mongodb/brew
 
 	local formulae=(
 		git
@@ -183,8 +184,6 @@ setup_rcup() {
 install_casks() {
 	log "Installing desktop apps (casks)"
 
-	run brew tap homebrew/cask-fonts
-
 	local casks=(
 		1password
 		ghostty
@@ -197,16 +196,11 @@ install_casks() {
 		discord
 		droplr
 		superhuman
-		iris
 		postico
 		raycast
 		hammerspoon
-		visual-studio-code
 		zed
-		cursor
 		docker
-		datadog-agent
-		font-fira-code-nerd-font
 	)
 
 	for cask in "${casks[@]}"; do
