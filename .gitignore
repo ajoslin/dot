@@ -21,3 +21,6 @@ tokens*
 secrets*
 secret*
 config/graphite/user_config
+config/planetscale/access-token
+config/wireshark/
+config/yarn/
