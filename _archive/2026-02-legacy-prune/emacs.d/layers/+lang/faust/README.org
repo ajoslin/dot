@@ -1,0 +1,33 @@
+#+TITLE: faust layer
+
+#+TAGS: dsl|layer|programming
+
+[[file:img/faust.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+- [[#key-bindings][Key bindings]]
+
+* Description
+This layer adds support for the [[https://en.wikipedia.org/wiki/FAUST_(programming_language)][faust language]] to Spacemacs.
+
+** Features:
+- Syntax highlighting
+- Auto-completion
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =faust= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+* Key bindings
+
+| Key binding | Description                           |
+|-------------+---------------------------------------|
+| ~SPC m c f~ | Compile to SVG and open in Firefox    |
+| ~SPC m c g~ | Compile a jack-gtk program and run it |
+| ~SPC m c q~ | Compile a jack-qt program and run it  |
+| ~SPC m g b~ | Jump back to previous location        |
+| ~SPC m g g~ | Jump to definition around point       |

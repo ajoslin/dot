@@ -1,0 +1,104 @@
+#+TITLE: Search Engine layer
+
+#+TAGS: layer|web service
+
+[[file:img/searchengine.jpg]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#supported-search-engines][Supported search engines]]
+- [[#install][Install]]
+- [[#key-bindings][Key bindings]]
+- [[#customize-it][Customize it!]]
+
+* Description
+This layer adds support for the [[https://github.com/hrs/engine-mode][Search Engine]] package.
+
+** Features:
+- Browser search integration
+
+* Supported search engines
+- Amazon
+- Bing
+- Duck Duck Go
+- Ecosia
+- Google
+- Google Images
+- GitHub
+- Google Maps
+- Twitter
+- Project Gutenberg
+- YouTube
+- Stack Overflow
+- Spacemacs Issues
+- Spacemacs Pull Requests
+- Wikipedia
+- Wolfram Alpha
+- Maven Central
+- Npm
+- Hoogle 5
+- Hackage Package Search
+- Clojure-doc
+- Python Package Index
+- Python Docs
+- C++ Reference
+- Melpa
+- Debian Packages
+- Ubuntu Packages
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =search-engine= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+* Key bindings
+
+| Evil        | Holy    | Command                                   |
+|-------------+---------+-------------------------------------------|
+| ~SPC a w /~ | ~C-c /~ | Summon a Helm buffer to select any engine |
+
+* Customize it!
+If you'd rather have emacs use chrome, or firefox or any other thing (=eww=) you
+can have that customization. For example for google chrome you can put this in
+your =dotspacemacs/user-config=:
+
+#+BEGIN_SRC emacs-lisp
+  (setq browse-url-browser-function 'browse-url-generic
+        engine/browser-function 'browse-url-generic
+        browse-url-generic-program "google-chrome")
+#+END_SRC
+
+The Amazon search engine defaults to use the =.com= [[https://en.wikipedia.org/wiki/TLD][TLD]]. If you want it to search on
+another country's website, you can specify a different one:
+
+#+BEGIN_SRC emacs-lisp
+  ;; Use amazon.es site (Spain)
+  (setq-default search-engine-amazon-tld "es")
+#+END_SRC
+
+If you want more control of how various search engines are handled
+or you want to add additional ones you can do so by setting the
+following datastructure to =search-engine-config-list= in your =dotspacemacs/user-config=.
+
+The datastructure consists of a key and:
+- name -> the name displayed in the search prompt.
+- url -> the url to query against, search parameter must be set as =%s=.
+- keywords -> a list of =engine-mode= keywords like a specific browser to use
+  or a specific transformation to make. You can find a detailed
+  list of all supported features [[https://github.com/hrs/engine-mode][here]].
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers
+    '((search-engine :variables
+                     search-engine-config-list '((custom1
+                                                  :name "Custom Search Engine 1"
+                                                  :url "http://www.domain.com/s/stuff_sutff_remember_to_replace_search_candidate_with_%s"
+                                                  :keywords (:docstring "My custom string"
+                                                                        :browser 'eww-browse-url))))))
+#+END_SRC
+
+If you'd rather not use helm but would want a specific search engine, remember
+the function generated is always =engine/search-(the name of the search engine
+lower-case and hyphen instead-of-spaces-for-separation)= so you can bind that to
+any key binding you want.

@@ -1,0 +1,220 @@
+#+TITLE: Java layer
+
+#+TAGS: general|layer|multi-paradigm|programming
+
+[[file:img/java.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#layer-installation][Layer Installation]]
+  - [[#layer][Layer]]
+  - [[#choosing-a-backend][Choosing a backend]]
+- [[#backends][Backends]]
+  - [[#lsp-java][LSP Java]]
+    - [[#installation][Installation]]
+  - [[#meghanada][Meghanada]]
+    - [[#installation-1][Installation]]
+    - [[#about-maven][About Maven]]
+- [[#key-bindings][Key bindings]]
+  - [[#lsp-java-1][LSP Java]]
+    - [[#code-completion][Code completion]]
+    - [[#debugger][Debugger]]
+  - [[#meghanada-1][Meghanada]]
+    - [[#server][Server]]
+    - [[#navigation][Navigation]]
+    - [[#compilation][Compilation]]
+    - [[#tests-junit][Tests (junit)]]
+    - [[#refactoring][Refactoring]]
+    - [[#tasks][Tasks]]
+  - [[#maven][Maven]]
+
+* Description
+This layer adds support for the Java language.
+
+** Features:
+- Support for the following backends:
+  - [[https://github.com/emacs-lsp/lsp-java][LSP Java]] client/server (default)
+  - [[https://github.com/mopemope/meghanada-emacs][Meghanada]] client/server
+- Auto-completion using company
+- Linting using flycheck integration
+- Maven integration
+- Interactive debugger using [[https://github.com/emacs-lsp/dap-mode][dap-mode]]
+
+* Layer Installation
+** Layer
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =java= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+** Choosing a backend
+To choose a default backend set the layer variable =java-backend=:
+
+#+BEGIN_SRC elisp
+  (java :variables java-backend 'meghanada)
+#+END_SRC
+
+Alternatively the =lsp= backend will be automatically chosen if the layer =lsp=
+is used and you did not specify any value for =java-backend=.
+
+Backend can be chosen on a per project basis using directory local variables
+(files named =.dir-locals.el= at the root of a project), an example to use the
+=lsp= backend:
+
+#+BEGIN_SRC elisp
+  ;;; Directory Local Variables
+  ;;; For more information see (info "(emacs) Directory Variables")
+
+  ((java-mode (java-backend . lsp)))
+#+END_SRC
+
+*Note:* you can easily add a directory local variable with ~SPC f v d~.
+
+* Backends
+** LSP Java
+LSP Java is the Java adapter for [[https://github.com/emacs-lsp/lsp-mode][LSP Mode]] which is the Emacs client for [[https://github.com/Microsoft/language-server-protocol][Language Server Protocol]].
+
+It integrates with =company= and =flycheck=. In addition it also provides
+full graphical debugging support via =DAP mode=.
+
+LSP is the default backend used by this layer, see [[#choosing-a-backend][Choosing a backend]] in
+order to learn how to select a different backend.
+
+*** Installation
+The lsp server will be installed automatically whenever a Java file
+is opened.
+
+** Meghanada
+Meghanada is composed of a lightweight server and an Emacs minor mode. It
+is unintrusive and integrates with =company= and =flycheck=.
+
+Both =Gradle= and =Maven= projects are compatible with Meghanada.
+
+*** Installation
+The Meghanada server will be installed automatically whenever a Java file
+is opened.
+
+If you get issues with the auto-installation you can either download the last
+version of the server manually [[https://dl.bintray.com/mopemope/meghanada/][there]] or build from source hosted on [[https://github.com/mopemope/meghanada-server][the GitHub
+repository]] and copy the =jar= file to =.emacs.d/.cache/meghanada= folder.
+
+No additional configuration is necessary!
+
+*** About Maven
+Maven is not fully supported by Meghanada (but should still work fine for most
+projects). If you encounter disconnection from the server then run =mvn install=
+at the root of your project first.
+
+* Key bindings
+** LSP Java
+*** Code completion
+
+| Key binding   | Description                              |
+|---------------+------------------------------------------|
+| ~SPC m g g~   | Go to definition                         |
+| ~SPC m g r~   | Find references                          |
+| ~SPC m g R~   | Peek references using ~lsp-ui~           |
+| ~SPC m g d~   | Goto type definition                     |
+| ~SPC m g a~   | Search type in project                   |
+| ~SPC m g A~   | Search type in project using ~lsp-ui~    |
+| ~SPC m h h~   | Describe thing at point                  |
+| ~SPC m e l~   | List project errors/warnings             |
+| ~SPC m p u~   | Refresh user settings                    |
+| ~SPC m e a~   | Execute code action                      |
+| ~SPC m q r~   | Restart workspace                        |
+| ~SPC m r o i~ | Organize imports                         |
+| ~SPC m r r~   | Rename symbol                            |
+| ~SPC m r a i~ | Add import                               |
+| ~SPC m r a m~ | Add unimplemented methods                |
+| ~SPC m r c p~ | Create parameter                         |
+| ~SPC m r c f~ | Create field                             |
+| ~SPC m r e c~ | Extract constant                         |
+| ~SPC m r e l~ | Extract local                            |
+| ~SPC m r e m~ | Extract method                           |
+| ~SPC m r c i~ | Convert to static import                 |
+| ~SPC m r a t~ | Add throws exception                     |
+| ~SPC m r a a~ | Assign all parameters to fields          |
+| ~SPC m r a F~ | Assign statement to field                |
+| ~SPC m r a l~ | Assign statement to local                |
+| ~SPC m r a f~ | Assign parameter to field                |
+| ~SPC m r g g~ | Generate getters/setters                 |
+| ~SPC m r g e~ | Generate =equals= and =hashCode= methods |
+| ~SPC m r g t~ | Generate =toString= method               |
+| ~SPC m r g o~ | Generate method overrides                |
+| ~SPC m c c~   | Build project                            |
+| ~SPC m c p~   | Create spring boot project               |
+| ~SPC m a n~   | Actionable notifications                 |
+| ~SPC m =~     | Format code                              |
+
+*** Debugger
+Using the =dap= layer you'll get access to all the DAP key bindings, see the
+complete list of key bindings on the [[https://github.com/syl20bnr/spacemacs/tree/develop/layers/%2Btools/dap#key-bindings][dap layer description]].
+
+** Meghanada
+*** Server
+
+| Key binding | Description                                  |
+|-------------+----------------------------------------------|
+| ~SPC m D c~ | Connect to server                            |
+| ~SPC m D d~ | Disconnect from server                       |
+| ~SPC m D i~ | Install server (should be done automatically |
+| ~SPC m D k~ | Kill server                                  |
+| ~SPC m D l~ | Clear server cache                           |
+| ~SPC m D p~ | Ping server                                  |
+| ~SPC m D r~ | Restart server                               |
+| ~SPC m D s~ | Start server                                 |
+| ~SPC m D u~ | Update server                                |
+| ~SPC m D v~ | Print version of the server                  |
+
+*** Navigation
+
+| Key binding | Description                    |
+|-------------+--------------------------------|
+| ~SPC m g b~ | Jump back to previous location |
+| ~SPC m g g~ | Jump to declaration            |
+
+*** Compilation
+
+| Key binding | Description           |
+|-------------+-----------------------|
+| ~SPC m c b~ | Compile file (buffer) |
+| ~SPC m c c~ | Compile project       |
+
+*** Tests (junit)
+
+| Key binding | Description                 |
+|-------------+-----------------------------|
+| ~SPC m t a~ | Run all tests               |
+| ~SPC m t c~ | Run test class around point |
+| ~SPC m t l~ | Run last tests              |
+| ~SPC m t t~ | Run test cause around point |
+
+*** Refactoring
+
+| Key binding | Description                            |
+|-------------+----------------------------------------|
+| ~SPC m =~   | Beautify code                          |
+| ~SPC m r i~ | Optimize imports                       |
+| ~SPC m r I~ | Import all                             |
+| ~SPC m r n~ | Create a new class, interface, or enum |
+
+*** Tasks
+
+| Key binding | Description |
+|-------------+-------------|
+| ~SPC m x :~ | Run task    |
+
+** Maven
+
+| Key binding     | Description                                          |
+|-----------------+------------------------------------------------------|
+| ~SPC m m c c~   | Compile                                              |
+| ~SPC m m c C~   | Clean                                                |
+| ~SPC m m c r~   | Clean and compile                                    |
+| ~SPC m m g a~   | Switch between class and test file                   |
+| ~SPC m m g A~   | Switch between class and test file in another window |
+| ~SPC m m t a~   | Run all tests                                        |
+| ~SPC m m t C-a~ | Clean and run all tests                              |
+| ~SPC m m t b~   | Run current buffer tests                             |
+| ~SPC m m t i~   | Test and install                                     |
+| ~SPC m m t t~   | Run a specific test                                  |

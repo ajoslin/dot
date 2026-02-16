@@ -1,0 +1,1 @@
+/Users/andrew/dot/zprezto/modules/syntax-highlighting/external/highlighters/pattern/pattern-highlighter.zsh

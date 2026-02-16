@@ -1,0 +1,50 @@
+#+TITLE: Extra Languages
+
+#+TAGS: dsl|layer|programming
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#key-bindings][Key bindings]]
+  - [[#arch-linux-pkgbuilds][Arch Linux PKGBUILDs]]
+  - [[#gentoo-ebuilds][Gentoo ebuilds]]
+
+* Description
+This layer adds a number of packages for less common languages and major modes.
+
+** Features:
+- Support for:
+  - Arch Linux PKGBUILDs
+  - Arduino
+  - Android Logcat (not associated with any file types by default)
+  - Gentoo ebuilds
+  - Hoon
+  - MATLAB
+  - QML
+  - OpenScad
+  - Stan
+  - Thrift
+  - Vala
+  - Wolfram Language / Mathematica
+
+* Key bindings
+** Arch Linux PKGBUILDs
+
+| Key binding | Description                |
+|-------------+----------------------------|
+| ~SPC m b~   | Run makepkg                |
+| ~SPC m r~   | Increase the pkgrel number |
+| ~SPC m u~   | Browse URL                 |
+| ~SPC m m~   | Update package sums        |
+| ~SPC m s~   | Update .SRCINFO file       |
+| ~SPC m e~   | Build ETAGS file           |
+| ~SPC m a~   | Make a source tarball      |
+
+** Gentoo ebuilds
+
+| Key binding | Description            |
+|-------------+------------------------|
+| ~SPC m n~   | Insert skeleton ebuild |
+| ~SPC m k~   | Edit keywords          |
+| ~SPC m e~   | Run ebuild command     |
+| ~SPC m a~   | Add ChangeLog entry    |

@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+## Shared script part for CircleCI
+##
+## Copyright (c) 2012-2014 Sylvain Benner
+## Copyright (c) 2014-2021 Sylvain Benner & Contributors
+##
+## Author: Eugene Yaremenko
+## URL: https://github.com/syl20bnr/spacemacs
+##
+## This file is not part of GNU Emacs.
+##
+## License: GPLv3
+
+# Vars
+prj_owner="${PRJ_OWNER}"
+prj_repo="${PRJ_REPO}"
+api_URL_root="https://api.github.com"
+
+upstream_data_URL_root="${api_URL_root}/"
+upstream_data_URL_root+="repos/"
+upstream_data_URL_root+="${prj_owner}/"
+upstream_data_URL_root+="${prj_repo}"
+
+CIRCLE_PR_NUMBER="${CIRCLE_PR_NUMBER:-${CIRCLE_PULL_REQUEST##*/}}"
+pr_data_URL="${upstream_data_URL_root}/pulls/${CIRCLE_PR_NUMBER}"
+upstream_data_URL="${upstream_data_URL_root}/branches/develop"
+
+pr_file_list_URL="${api_URL_root}/"
+pr_file_list_URL+="repos/"
+pr_file_list_URL+="${prj_owner}/"
+pr_file_list_URL+="${prj_repo}/"
+pr_file_list_URL+="pulls/"
+pr_file_list_URL+="${CIRCLE_PR_NUMBER}/"
+pr_file_list_URL+="files"
+
+# Helpers
+echo_headline () {
+	printf '=%.0s' {1..80}
+	printf "\n$1\n"
+	printf '=%.0s' {1..80}
+	echo
+}
+
+exit_if_no_changes () {
+    if [ ! -f "/tmp/${PUBLISH}.patch" ]; then
+        echo "\"/tmp/${PUBLISH}.patch\" file doesn't exists. Exiting."
+        exit 0
+    fi
+    if [[ -z $(grep '[^[:space:]]' "/tmp/${PUBLISH}.patch") ]]; then
+        echo "\"/tmp/${PUBLISH}.patch\" file is empty. Exiting."
+        exit 0
+    fi
+}
+
+select_changed_orgs () {
+    changed_f_as_args=()
+    while read p
+    do
+        if [ -f "$p" ]; then
+            if [ ${p: -4} == ".org" ]; then
+                changed_f_as_args+=("${p}")
+            fi
+        fi
+    done </tmp/changed_files
+}
+
+fail_when_undefined_pr_number () {
+    if [[ -z "${CIRCLE_PR_NUMBER// }" ]]; then
+        echo "CircleCI didn't set CIRCLE_PR_NUMBER"
+        echo "nor CIRCLE_PULL_REQUEST."
+        echo "Job restart sometimes helps."
+        exit 1
+    fi
+}

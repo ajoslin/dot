@@ -90,7 +90,7 @@ export const NotificationPlugin = async ({ $, client }) => {
     }
 
     const soundPath = join(soundsDir, civEntry.file);
-    await $`ffplay -nodisp -autoexit -loglevel quiet ${soundPath}`;
+    await $`ffplay -nodisp -autoexit -loglevel quiet -af volume=0.7 ${soundPath}`;
   };
 
   // Check if a session is a main (non-subagent) session

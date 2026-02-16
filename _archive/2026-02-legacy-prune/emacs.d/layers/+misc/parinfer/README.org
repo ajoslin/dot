@@ -1,0 +1,42 @@
+#+TITLE: Parinfer layer
+
+#+TAGS: layer|misc
+
+[[file:img/parinfer.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+- [[#configuration][Configuration]]
+- [[#key-bindings][Key bindings]]
+
+* Description
+This layer provides an implementation of [[https://shaunlebron.github.io/parinfer/][parinfer]], a lisp editing paradigm that
+controls indentation based on parentheses or vice versa.
+
+** Features:
+- Automatic management of parenthesis in clojure, emacs lisp, common-lisp and scheme following the parinfer editing paradigm.
+- Powered by a native library in the background
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =parinfer= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+* Configuration
+This package comes preconfigured to auto install the native library in your cache
+directory. If this is not desired set the variables =parinfer-auto-download= to =nil=
+and set =parinfer-library= to the path of your local installation.
+This mode uses the new =smart-mode= instead of the =indent-mode= traditionally
+used with =parinfer=. For the autoinstallation =curl= is required to be in your
+path.
+
+If you still want to manually configure it please check the respective package
+repo [[https://github.com/justinbarclay/parinfer-rust-mode][here]].
+
+* Key bindings
+
+| Key binding | Description                                         |
+|-------------+-----------------------------------------------------|
+| ~SPC t P~   | Toggle between parinfer smart indent and paren mode |

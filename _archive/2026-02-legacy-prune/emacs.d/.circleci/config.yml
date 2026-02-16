@@ -1,0 +1,23 @@
+#### Config generator for CircleCI.
+version: 2.1
+setup: true
+orbs:
+  continuation: circleci/continuation@0.1.0
+jobs:
+  "Generate config":
+    executor: continuation/default
+    steps:
+      - checkout
+      - run: 
+          name: "Render config_tmpl.yml"
+          command: |
+            cd .circleci/
+            cp config_tmpl.yml circleci.yml
+            sed -i "s/{{ IS_BRANCH_UDATE }}/${IS_BRANCH_UPDATE}/g" circleci.yml
+      - continuation/continue:
+          parameters: '{}'
+          configuration_path: ".circleci/circleci.yml"
+workflows:
+  setup-workflow:
+    jobs:
+      - "Generate config"

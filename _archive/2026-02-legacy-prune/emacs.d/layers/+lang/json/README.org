@@ -1,0 +1,130 @@
+#+TITLE: JSON layer
+
+#+TAGS: dsl|layer|markup|programming
+
+[[file:img/json.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+- [[#configuration][Configuration]]
+  - [[#web-beautify][web-beautify]]
+  - [[#prettier][prettier]]
+  - [[#choosing-a-formatter][Choosing a formatter]]
+  - [[#formatting-on-save][Formatting on save]]
+  - [[#lsp][LSP]]
+- [[#usage][Usage]]
+  - [[#reformat][Reformat]]
+  - [[#display-navigable-hierarchy][Display navigable hierarchy]]
+- [[#key-bindings][Key bindings]]
+  - [[#json-hierarchy][JSON hierarchy]]
+
+* Description
+This layer adds support for JSON files with [[https://github.com/joshwnj/json-mode][json-mode]]
+
+** Features:
+- Syntax highlighting
+- Auto-completion
+- Get the path to a JSON value with [[https://github.com/Sterlingg/json-snatcher][json-snatcher]]
+- Navigate JSON hierarchy with [[https://github.com/DamienCassou/json-navigator][json-nagivator]]
+- Formatting with [[https://github.com/yasuyk/web-beautify][web-beautify]] or [[https://github.com/prettier/prettier][prettier]]
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =json= to the existing =dotspacemacs-configuration-layers= list in this file.
+
+* Configuration
+To define the default indentation set the variable =js-indent-level=.
+
+** web-beautify
+See [[file:../../+tools/web-beautify/README.org][web-beautify layer]] documentation.
+
+** prettier
+See [[file:../../+tools/prettier/README.org][prettier layer]] documentation.
+
+** Choosing a formatter
+To choose a formatter, set the layer variable =json-fmt-tool=:
+
+#+BEGIN_SRC elisp
+  (json :variables json-fmt-tool 'web-beautify)
+#+END_SRC
+
+The formatter can be chosen on a per project basis using directory local variables
+(files named =.dir-locals.el= at the root of a project), an example to use the
+=prettier= formatter:
+
+#+BEGIN_SRC elisp
+  ;;; Directory Local Variables
+  ;;; For more information see (info "(emacs) Directory Variables")
+
+  ((json-mode (json-fmt-tool . prettier)))
+#+END_SRC
+
+*Note:* you can easily add a directory local variable with ~SPC f v d~.
+
+** Formatting on save
+To enable using the selected formatter on save, set the layer variable =json-fmt-on-save=:
+
+#+BEGIN_SRC elisp
+  (json :variables json-fmt-on-save t)
+#+END_SRC
+
+** LSP
+To enable LSP, install the lsp server via npm,
+then set the layer variable =json-backend= to ='lsp= like shown below:
+
+#+BEGIN_SRC emacs-lisp
+  (json :variables json-backend 'lsp)
+#+END_SRC
+
+Alternatively you can also keep the variable on nil, then lsp will be used if lsp
+layer is loaded.
+
+Installing the lsp server dependency can be done like this:
+
+#+BEGIN_SRC sh
+  npm install -g vscode-json-languageserver
+#+END_SRC
+
+* Usage
+** Reformat
+~SPC m = =~ will reformat the whole buffer or the active region. Use numerical
+prefix argument to specify a different indentation than =js-indent-level=.
+Use the universal prefix argument to print decoded strings, for instance:
+
+#+BEGIN_SRC json
+  {"name":"foo\"bar","nick":"foo \u00e4 bar","description":"<pre>\nbaz\n</pre>","home":"/home/foobar"}
+
+  Will be reformatted:
+
+  {
+    "name": "foo\"bar",
+    "nick": "foo ä bar",
+    "description": "<pre>
+    baz
+    </pre>",
+    "home": "/home/foobar"
+  }
+#+END_SRC
+
+** Display navigable hierarchy
+~SPC m T h~ toggle the display of a hierarchy for the whole JSON document or the active
+region. Use the universal prefix argument ~SPC u SPC m T h~ to create the
+hierarchy for the JSON *after* the point.
+
+* Key bindings
+
+| Key binding | Description                                    |
+|-------------+------------------------------------------------|
+| ~SPC m = =~ | Reformat thing under point                     |
+| ~SPC m h p~ | Print the path to the json element under point |
+| ~SPC m T h~ | Toggle graphical JSON hierarchy                |
+
+** JSON hierarchy
+
+| Key binding | Description          |
+|-------------+----------------------|
+| ~RET~       | Expand/Collapse node |
+| ~TAB~       | Select next node     |
+| ~S-TAB~     | Select previous node |

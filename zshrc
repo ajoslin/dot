@@ -48,15 +48,19 @@ zstyle ':vcs_info:git:*' unstagedstr '*'
 zstyle ':vcs_info:git:*' stagedstr '+'
 PROMPT='%F{blue}%~${vcs_info_msg_0_} %f'
 
-# Fast syntax highlighting (direct load, no framework)
-source ~/.zprezto/modules/syntax-highlighting/external/zsh-syntax-highlighting.zsh
+# Fast syntax highlighting (Homebrew package)
+if [[ -r /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
 
-# History substring search (up/down arrow to search)
-source ~/.zprezto/modules/history-substring-search/external/zsh-history-substring-search.zsh
-bindkey '^[[A' history-substring-search-up      # Up arrow
-bindkey '^[[B' history-substring-search-down    # Down arrow
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
+# History substring search (Homebrew package)
+if [[ -r /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh ]]; then
+  source /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+  bindkey '^[[A' history-substring-search-up      # Up arrow
+  bindkey '^[[B' history-substring-search-down    # Down arrow
+  bindkey -M vicmd 'k' history-substring-search-up
+  bindkey -M vicmd 'j' history-substring-search-down
+fi
 
 # Z directory jumper
 source ~/.config/z/z.sh
@@ -89,8 +93,41 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
 export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
 export BUN_INSTALL="$HOME/.bun"
 
-# Consolidated PATH - build once instead of multiple exports
-export PATH="$HOME/.bin:$HOME/.opencode/bin:$HOME/.codeium/windsurf/bin:$HOME/.local/bin:$HOME/.cache/lm-studio/bin:$HOME/.npm-global/bin:$BUN_INSTALL/bin:$HOME/.yarn/bin:$HOME/.cargo/bin:$HOME/.foundry/bin:$PIP_USER_BASE_PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$HOME/terraform:$GOPATH/bin:$HOME/flutter/bin:$HOME/tools/lua-language-server/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/opt/homebrew/opt/postgresql@10/bin:/opt/homebrew/opt/mongodb-community@4.4/bin:/usr/local/go/bin:/usr/local/opt/openssl/bin:/usr/local/bin:/usr/local/Cellar/logstash/2.3.2/bin:/opt/local/bin:$HOME/.rvm/bin:$PATH"
+# Consolidated PATH (active directories only)
+typeset -a path_entries new_path
+path_entries=(
+  "$HOME/.bin"
+  "$HOME/.opencode/bin"
+  "$HOME/.codeium/windsurf/bin"
+  "$HOME/.local/bin"
+  "$HOME/.cache/lm-studio/bin"
+  "$HOME/.npm-global/bin"
+  "$BUN_INSTALL/bin"
+  "$HOME/.yarn/bin"
+  "$HOME/.cargo/bin"
+  "$HOME/.foundry/bin"
+  "$PIP_USER_BASE_PATH"
+  "$ANDROID_SDK_ROOT/platform-tools"
+  "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin"
+  "$ANDROID_SDK_ROOT/emulator"
+  "$GOPATH/bin"
+  "$HOME/flutter/bin"
+  "$HOME/tools/lua-language-server/bin"
+  "/opt/homebrew/bin"
+  "/opt/homebrew/sbin"
+  "/usr/local/go/bin"
+  "/usr/local/bin"
+  "/opt/local/bin"
+  "$HOME/.rvm/bin"
+)
+
+new_path=()
+for p in "${path_entries[@]}"; do
+  [[ -d "$p" ]] && new_path+=("$p")
+done
+
+path=("${new_path[@]}" "${path[@]}")
+typeset -U path
 
 # GPG
 # Remember to add `use-agent` to `~/.gnupg/gpg.conf`
@@ -104,7 +141,7 @@ alias gti=git
 alias sll=/opt/homebrew/bin/sl
 alias gitd='git daemon --base-path=. --export-all --enable=receive-pack --reuseaddr --informative-errors --verbose'
 alias pwine="source $HOME/wine/wine-prefix"
-alias FZF_DEFAULT_COMMAND='ag'
+alias FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 alias vi=nvim
 alias sheets='open https://sheets.new'
 alias gp='git push'
@@ -119,8 +156,6 @@ unsetopt CORRECT
 
 # This file is not in source control
 [ -f $HOME/.tokens ] && source ~/.tokens
-
-export PATH="$HOME/.yarn/bin:$PATH"
 
 # Functions
 portgrep () {
@@ -146,11 +181,6 @@ eval "$(direnv hook zsh)"
 [ -s "/Users/andrew/.bun/_bun" ] && source "/Users/andrew/.bun/_bun"
 
 # Auto-attach to tmux (at end after PATH is set)
-if [[ -z $TMUX ]] && command -v tmux &> /dev/null; then
+if [[ -z ${TMUX:-} ]] && [[ -z ${SSH_TTY:-} ]] && [[ -z ${MOSH_IP:-} ]] && command -v tmux &> /dev/null; then
   tmux attach || tmux new-session -s main
 fi
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/andrew/.cache/lm-studio/bin"
-# End of LM Studio CLI section
-

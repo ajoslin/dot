@@ -9,6 +9,7 @@
   },
   "plugin": [
     "opencode-anthropic-auth@0.0.13",
+    "opencode-rate-limit-fallback",
     "opencode-comments-plugin",
     "file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
     "file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js",
@@ -18,11 +19,20 @@
     "opensrc": {
       "enabled": true,
       "type": "local",
-      "command": ["bunx", "-y", "opensrc-mcp"]
+      "command": [
+        "bunx",
+        "-y",
+        "opensrc-mcp"
+      ]
     },
     "overseer": {
       "type": "local",
-      "command": ["npx", "-y", "@dmmulroy/overseer", "mcp"],
+      "command": [
+        "npx",
+        "-y",
+        "@dmmulroy/overseer",
+        "mcp"
+      ],
       "enabled": true
     },
     "websearch": {
@@ -37,11 +47,23 @@
     },
     "playwriter": {
       "type": "local",
-      "command": ["bunx", "playwriter@latest"],
+      "command": [
+        "bunx",
+        "playwriter@latest"
+      ],
       "enabled": true,
       "environment": {
         "PLAYWRITER_AUTO_ENABLE": "1"
       }
+    },
+    "overdo": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "node",
+        "/Users/andrew/dev/overdo/scripts/overdo.mjs",
+        "mcp"
+      ]
     }
   },
   "permission": {

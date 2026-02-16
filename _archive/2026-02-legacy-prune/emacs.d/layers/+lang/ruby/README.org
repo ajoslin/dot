@@ -1,0 +1,308 @@
+#+TITLE: Ruby layer
+
+#+TAGS: general|layer|multi-paradigm|programming
+
+[[file:img/ruby.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+  - [[#choosing-a-backend][Choosing a backend]]
+    - [[#robe][Robe]]
+    - [[#language-server-protocol][Language Server Protocol]]
+  - [[#prerequisites][Prerequisites]]
+  - [[#ruby-version-management][Ruby version management]]
+  - [[#test-runner][Test runner]]
+  - [[#formatting][Formatting]]
+- [[#key-bindings][Key bindings]]
+  - [[#ruby-enh-ruby-mode-robe-inf-ruby-ruby-tools][Ruby (enh-ruby-mode, robe, inf-ruby, ruby-tools)]]
+  - [[#debugger][Debugger]]
+  - [[#bundler][Bundler]]
+  - [[#rubocop][RuboCop]]
+  - [[#tests][Tests]]
+    - [[#rspec-mode][RSpec-mode]]
+    - [[#ruby-test-mode][Ruby-test-mode]]
+    - [[#minitest-mode][minitest-mode]]
+  - [[#toggles][Toggles]]
+  - [[#rake][Rake]]
+  - [[#refactor][Refactor]]
+  - [[#seeing-is-believing][Seeing is believing]]
+- [[#configuration][Configuration]]
+  - [[#layer-options][Layer options]]
+  - [[#disabling-the-automatic-insertion-of-encoding-comment][Disabling the automatic insertion of encoding comment]]
+
+* Description
+This layer provides support for the Ruby programming language.
+
+** Features:
+- Version manager (rbenv, rvm or chruby)
+- Integration with bundler
+- Test runner (ruby-test and rspec)
+- Rake runner
+- Linter (rubocop)
+- Formatter (prettier)
+- Interactive REPL and code navigation (robe)
+- Interactive debugger using [[https://github.com/emacs-lsp/dap-mode][dap-mode]]
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =ruby= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+This layer supports two different Ruby modes: Emacs's built-in Ruby Mode and
+[[https://github.com/zenspider/enhanced-ruby-mode][enh-ruby-mode]]. By default the built-in Ruby mode is enabled. To switch to the
+=enh-ruby-mode= set =ruby-enable-enh-ruby-mode= to t:
+
+#+BEGIN_SRC emacs-lisp
+  (defun dotspacemacs-configuration-layers ()
+     '((ruby :variables ruby-enable-enh-ruby-mode t)))
+#+END_SRC
+
+** Choosing a backend
+To choose a default backend set the layer variable =ruby-backend=:
+
+#+BEGIN_SRC elisp
+  (ruby :variables ruby-backend 'robe)
+#+END_SRC
+
+Alternatively the =lsp= backend will be automatically chosen if the layer =lsp=
+is used and you did not specify any value for =ruby-backend=.
+
+Backend can be chosen on a per project basis using directory local variables
+(files named =.dir-locals.el= at the root of a project), an example to use the
+=lsp= backend:
+
+#+BEGIN_SRC elisp
+  ;;; Directory Local Variables
+  ;;; For more information see (info "(emacs) Directory Variables")
+
+  ((ruby-mode (ruby-backend . lsp)))
+#+END_SRC
+
+*Note:* you can easily add a directory local variable with ~SPC f v d~.
+
+*** Robe
+The default Ruby-mode backend. See Prerequisites for the necessary Gems to support Robe.
+
+*** Language Server Protocol
+IDE-like backend for Ruby. The only prerequisite gem is =solargraph= which can be
+installed globally with:
+
+#+BEGIN_SRC sh
+  gem install solargraph
+#+END_SRC
+
+LSP also supports the DAP debugger which will be automatically configured upon
+using the LSP backend. Dap-mode can be setup here:
+[[https://github.com/emacs-lsp/dap-mode#ruby]]
+
+** Prerequisites
+Some of the advanced features supported by this layer depend on external gems
+that need to be installed in the context of your project (see below for guidance
+based on your version manager):
+- =pry= and =pry-doc= are required for *jump to definition* and *code documentation* (=robe-mode=)
+- =ruby_parser= is required for *goto-step_definition* in =feature-mode=
+- =rubocop= is required for rubocop integration
+- =prettier= is required for formatter
+- =seeing_is_believing= helps you evaluate code inline
+- =solargraph= is required for using the language server protocol in =ruby-mode=
+
+You can install the gems in the context of your current project by
+adding them to the =Gemfile=, e.g.:
+
+#+BEGIN_SRC ruby
+  gem 'pry'
+#+END_SRC
+
+or on the command line (please refer to your ruby version manager
+specific documentation for details and caveats):
+
+#+BEGIN_SRC sh
+  gem install pry
+#+END_SRC
+
+** Ruby version management
+This layer supports [[https://rvm.io/][RVM]], [[https://github.com/rbenv/rbenv][Rbenv]], and [[https://github.com/postmodern/chruby][Chruby]]. You can choose the default version
+manager by setting the variable =ruby-version-manager= in your dotfile, for
+example:
+
+#+BEGIN_SRC emacs-lisp
+  (defun dotspacemacs-configuration-layers ()
+     '((ruby :variables ruby-version-manager 'rvm)))
+#+END_SRC
+
+When a version manager is enabled it will use the currently activated ruby
+except if a =.ruby-version= file exists in which case the ruby version of
+this file is used.
+=rvm= will also try to look for a =.rvmrc= and =gemfile=, the priority order is
+=.rvmrc= then =.ruby-version= then =gemfile=.
+
+Note: Only one version manager at a time can be enabled.
+
+** Test runner
+This layer supports =RSpec=, =ruby-test= and =minitest= test runners
+(frameworks). By default =ruby-test= is used, to change to another frameworks
+set the layer variable =ruby-test-runner=.
+
+Example to set the test runner to =RSpec=:
+
+#+BEGIN_SRC emacs-lisp
+  (defun dotspacemacs-configuration-layers ()
+     '((ruby :variables ruby-test-runner 'rspec)))
+#+END_SRC
+
+=Tip:= You can enable different test runners for different projects by using
+directory local variables.
+
+** Formatting
+If you'd like to use [[https://github.com/prettier/plugin-ruby][prettier/plugin-ruby]] to format on save:
+
+#+BEGIN_SRC emacs-lisp
+  (defun dotspacemacs-configuration-layers ()
+     '((ruby :variables ruby-prettier-on-save t)))
+#+END_SRC
+
+Note that the =prettier= binary must be available in the project's
+=node_modules/.bin/= or on =exec-path=.
+
+* Key bindings
+** Ruby (enh-ruby-mode, robe, inf-ruby, ruby-tools)
+
+| Key binding | Description                                       |
+|-------------+---------------------------------------------------|
+| ~SPC m g g~ | go to definition (robe-jump)                      |
+| ~SPC m h h~ | show documentation for method at point (robe-doc) |
+| ~SPC m s b~ | send buffer                                       |
+| ~SPC m s B~ | send buffer and switch to REPL                    |
+| ~SPC m s f~ | send function definition                          |
+| ~SPC m s F~ | send function definition and switch to REPL       |
+| ~SPC m s i~ | start REPL                                        |
+| ~SPC m s l~ | send line                                         |
+| ~SPC m s L~ | send line and switch to REPL                      |
+| ~SPC m s r~ | send region                                       |
+| ~SPC m s R~ | send region and switch to REPL                    |
+| ~SPC m s s~ | switch to REPL                                    |
+| ~SPC m x '​~ | Change symbol or ="= string to ='=                |
+| ~SPC m x "​~ | Change symbol or ='= string to ="=                |
+| ~SPC m x :~ | Change string to symbol                           |
+| ~SPC m x h~ | toggle hash syntax in active region               |
+| ~SPC m = =~ | format buffer using prettier                      |
+| ~%~         | [[https://github.com/redguardtoo/evil-matchit][evil-matchit]] jumps between blocks                 |
+
+** Debugger
+Using the =dap= layer you'll get access to all the DAP key bindings, see the
+complete list of key bindings on the [[https://github.com/syl20bnr/spacemacs/tree/develop/layers/%2Btools/dap#key-bindings][dap layer description]].
+
+** Bundler
+
+| Key binding | Description        |
+|-------------+--------------------|
+| ~SPC m b c~ | run bundle check   |
+| ~SPC m b i~ | run bundle install |
+| ~SPC m b s~ | run bundle console |
+| ~SPC m b u~ | run bundle update  |
+| ~SPC m b x~ | run bundle exec    |
+| ~SPC m b o~ | run bundle open    |
+
+** RuboCop
+
+| Key binding   | Description                                          |
+|---------------+------------------------------------------------------|
+| ~SPC m = r~   | Format the current buffer using RuboCop              |
+| ~SPC m R r f~ | Runs RuboCop on the currently visited file           |
+| ~SPC m R r F~ | Runs auto-correct on the currently visited file      |
+| ~SPC m R r d~ | Prompts from a directory on which to run RuboCop     |
+| ~SPC m R r D~ | Prompts for a directory on which to run auto-correct |
+| ~SPC m R r p~ | Runs RuboCop on the entire project                   |
+| ~SPC m R r P~ | Runs auto-correct on the project                     |
+
+** Tests
+*** RSpec-mode
+When =ruby-test-runner= equals =rspec=.
+
+| Key binding   | Description                                            |
+|---------------+--------------------------------------------------------|
+| ~SPC m t a~   | run all specs                                          |
+| ~SPC m t b~   | run current spec file                                  |
+| ~SPC m t c~   | run the current spec file and subsequent ones          |
+| ~SPC m t d~   | run tests in a directory                               |
+| ~SPC m t e~   | mark example as pending                                |
+| ~SPC m t f~   | run method                                             |
+| ~SPC m t l~   | run last failed spec                                   |
+| ~SPC m t m~   | run specs related to the current buffer                |
+| ~SPC m t r~   | re-run last spec                                       |
+| ~SPC m t t~   | run spec at pointer                                    |
+| ~SPC m t TAB~ | toggle between spec's and target's buffer              |
+| ~SPC m t ~~   | toggle between spec's and target's buffer find example |
+
+*** Ruby-test-mode
+When =ruby-test-runner= equals =ruby-test=.
+
+| Key binding | Description         |
+|-------------+---------------------|
+| ~SPC m t b~ | run test file       |
+| ~SPC m t t~ | run test at pointer |
+
+*** minitest-mode
+When =ruby-test-runner= equals =minitest=.
+
+| Key binding | Description               |
+|-------------+---------------------------|
+| ~SPC m t a~ | run all tests             |
+| ~SPC m t b~ | run current file          |
+| ~SPC m t r~ | repeat last test command  |
+| ~SPC m t s~ | run test for current file |
+
+** Toggles
+
+| Key binding | Description                                          |
+|-------------+------------------------------------------------------|
+| ~SPC m T '~ | Toggle quotes of current string (only built-in mode) |
+| ~SPC m T {~ | Toggle style of current block (only built-in mode)   |
+
+** Rake
+
+| Key binding | Description                     |
+|-------------+---------------------------------|
+| ~SPC m k k~ | Runs rake                       |
+| ~SPC m k r~ | Re-runs the last rake task      |
+| ~SPC m k R~ | Regenerates the rake cache      |
+| ~SPC m k f~ | Finds definition of a rake task |
+
+** Refactor
+
+| Key binding   | Description            |
+|---------------+------------------------|
+| ~SPC m r e m~ | Extract to method      |
+| ~SPC m r e v~ | Extract local variable |
+| ~SPC m r e c~ | Extract constant       |
+| ~SPC m r e l~ | Extract to let (rspec) |
+
+** Seeing is believing
+
+| Key binding   | Description                      |
+|---------------+----------------------------------|
+| ~<SPC> m @ @~ | Run seeing is believing          |
+| ~<SPC> m @ c~ | Clear seeing is believing output |
+
+* Configuration
+** Layer options
+
+| Variable                           | Default value | Description                                                                                  |
+|------------------------------------+---------------+----------------------------------------------------------------------------------------------|
+| =ruby-enable-enh-ruby-mode=        | =nil=         | If non-nil, use =enh-ruby-mode= package instead of the built-in Ruby Mode.                   |
+| =ruby-version-manager=             | =nil=         | If non nil, defines the Ruby version manager.Possible values are =rbenv=, =rvm= or =chruby=. |
+| =ruby-test-runner=                 | =ruby-test=   | Test runner to use. Possible values are =ruby-test=, =minitest= or =rspec=.                  |
+| =ruby-highlight-debugger-keywords= | =t=           | If non-nil, enable highlight for debugger keywords.                                          |
+| =ruby-backend=                     | =robe=        | Defines the backend for IDE feature. Possible values are =robe= or =lsp=.                    |
+
+** Disabling the automatic insertion of encoding comment
+Note that =ruby-mode= and =enh-ruby-mode= will automatically insert the encoding comment ~# coding: utf-8~ at the top of a =`.rb= file, if it contains UTF-8 characters. This might not be desired in Ruby 2.0+, since UTF-8 has become the default encoding. In fact, this will trigger [[https://www.rubydoc.info/github/bbatsov/RuboCop/RuboCop/Cop/Style/Encoding][an error]] with Robocop.
+
+[[https://stackoverflow.com/questions/6453955/how-do-i-prevent-emacs-from-adding-coding-information-in-the-first-line][The fix]] is to set the variable =ruby-insert-encoding-magic-comment= (=ruby-mode=) or =enh-ruby-add-encoding-comment-on-save= (=enh-ruby-mode=) to =nil=, e.g.
+
+#+BEGIN_SRC emacs-lisp
+  (defun dotspacemacs-configuration-layers ()
+     '((ruby :variables ruby-insert-encoding-magic-comment nil)))
+#+END_SRC

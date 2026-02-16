@@ -26,7 +26,7 @@ export const QuestionSoundPlugin = async ({ $, client }) => {
 
       const sessionID = event.properties?.sessionID;
       if (await isMainSession(sessionID)) {
-        await $`ffplay -nodisp -autoexit -loglevel quiet ${soundPath}`;
+        await $`ffplay -nodisp -autoexit -loglevel quiet -af volume=0.7 ${soundPath}`;
       }
     },
   };

@@ -1,0 +1,95 @@
+#+TITLE: Shell Scripts layer
+
+#+TAGS: dsl|layer|programming|script
+
+[[file:img/fish.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+  - [[#layer][Layer]]
+  - [[#linting][Linting]]
+  - [[#style-checking][Style checking]]
+  - [[#backends][Backends]]
+    - [[#shell-script-mode][Shell-script-mode]]
+    - [[#lsp][LSP]]
+- [[#key-bindings][Key bindings]]
+
+* Description
+This simple layer adds support for shell scripting.
+
+Supported scripting files:
+- =.sh=
+- =.fish=: [[https://github.com/fish-shell/fish-shell][fish shell]]
+
+*Note:* For Windows scripting see the layer =windows-scripts=
+
+** Features:
+- Auto-completion using [[https://github.com/Alexander-Miller/company-shell][company-shell]]
+- =Sh= scripts linting using [[https://www.shellcheck.net/][shellcheck]]
+- =Sh= scripts style checking using [[https://github.com/openstack-dev/bashate][bashate]]
+- Support for the [[https://langserver.org/][Language Server Protocol]] (experimental)
+
+* Install
+** Layer
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =shell-scripts= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+** Linting
+In order to enable =sh= scripts linting, install [[https://www.shellcheck.net/][shellcheck]].
+
+** Style checking
+In order to enable =sh= scripts style checking, install [[https://github.com/openstack-dev/bashate][bashate]].
+
+** Backends
+You have the choice between two different backends
+with different setup instructions and different capabilities.
+
+*** Shell-script-mode
+This is the recommended way for working with shell scripts in emacs. It works
+by using an emacs major mode.
+
+It supports =bash= and =fish= shell scripts.
+
+No additional setup is necessary.
+
+*** LSP
+This backend uses an external server to provide the various IDE integrations
+and a more modern UI integration in =spacemacs=.
+
+However it only supports working with =bash= scripts.
+
+It requires installing the external server via:
+
+#+BEGIN_SRC sh
+  npm i -g bash-language-server
+#+END_SRC
+
+Enable the =lsp= layer to activate this backend as well as setting the layer
+variable =shell-scripts-backend=:
+
+#+BEGIN_SRC elisp
+  (shell-scripts :variables shell-scripts-backend 'lsp)
+#+END_SRC
+
+You can find further information about the project at its [[https://github.com/mads-hartmann/bash-language-server][GitHub page]].
+
+* Key bindings
+
+| Key binding | Description                                               |
+|-------------+-----------------------------------------------------------|
+| ~SPC m \~   | insert end-of-line backslashes to the lines in the region |
+| ~SPC i !~   | insert shebang in a script file                           |
+| ~SPC m i !~ | insert shebang in a script file                           |
+| ~SPC m i c~ | insert switch case statement if supported by shell        |
+| ~SPC m i i~ | insert if statement if supported by shell                 |
+| ~SPC m i f~ | insert function definition if supported by shell          |
+| ~SPC m i o~ | insert for loop if supported by shell                     |
+| ~SPC m i e~ | insert an indexed for loop if supported by shell          |
+| ~SPC m i w~ | insert while loop if supported by shell                   |
+| ~SPC m i r~ | insert repeat loop if supported by shell                  |
+| ~SPC m i s~ | insert select loop if supported by shell                  |
+| ~SPC m i u~ | insert until loop if supported by shell                   |
+| ~SPC m i g~ | insert a getopts while loop if supported by shell         |

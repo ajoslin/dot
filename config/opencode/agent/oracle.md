@@ -1,11 +1,7 @@
 ---
 description: Principal engineering advisor for code reviews, architecture decisions, complex debugging, and planning. Invoke when you need deeper analysis before acting.
 mode: subagent
-model: anthropic/claude-opus-4-5
-options:
-  thinking:
-    type: enabled
-    budgetTokens: 31999
+model: opencode/gpt-5.2
 permission:
   "*": deny
   read: allow

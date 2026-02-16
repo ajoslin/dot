@@ -1,0 +1,1 @@
+/Users/andrew/dot/zprezto/modules/syntax-highlighting/external/highlighters/main/test-data/path-tilde-named.zsh

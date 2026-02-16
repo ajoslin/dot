@@ -1,0 +1,154 @@
+#+TITLE: DAP layer
+
+#+TAGS: layer|tool
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#layer-installation][Layer installation]]
+- [[#configuration][Configuration]]
+  - [[#dap-configuration-in-supported-layers][DAP configuration in supported layers]]
+  - [[#variables][Variables]]
+- [[#key-bindings][Key bindings]]
+  - [[#declared-prefixes][Declared prefixes]]
+  - [[#transient-state][Transient state]]
+  - [[#startstop][Start/Stop]]
+  - [[#breakpoints][Breakpoints]]
+  - [[#navigation][Navigation]]
+  - [[#evaluation-and-repl][Evaluation and REPL]]
+  - [[#inspection][Inspection]]
+- [[#references][References]]
+
+* Description
+Experimental integrated visual debugger using [[https://code.visualstudio.com/docs/extensionAPI/api-debugging][Debug Adapter Protocol]].
+
+[[https://code.visualstudio.com/docs/extensionAPI/api-debugging][Debug Adapter Protocol]] is a wire protocol for communication between client and
+Debug Server. It similar to the [[https://github.com/Microsoft/language-server-protocol][LSP]] but providers integration with debug
+server.
+
+** Features:
+Fully featured IDE-like debugger providing:
+- Launch/Attach
+- Breakpoints
+- Exceptions
+- Pause & Continue
+- Step In/Out/Over
+- Callstacks
+- Threads
+- Multiple simultaneous debug sessions
+- Evaluating statements
+- Debug/Run configurations
+- Debug REPL
+
+* Layer installation
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =dap= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+* Configuration
+** DAP configuration in supported layers
+By default ~dap~ layer registers global key binding defined under ~SPC d~. If you
+want to have debug bindings under major mode leader you may do the following:
+
+For instance the =java= layer:
+
+#+BEGIN_SRC emacs-lisp
+  (defun java/pre-init-dap-mode ()
+    (when (eq java-backend 'lsp)
+       (add-to-list 'spacemacs--dap-supported-modes 'java-mode))
+    (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-dap))
+#+END_SRC
+
+See the =java= layer for further example on how to setup =dap-mode= correctly
+
+** Variables
+
+| Variable name              | Default | Description                  |
+|----------------------------+---------+------------------------------|
+| =dap-enable-mouse-support= | t       | Enable/disable mouse support |
+
+* Key bindings
+** Declared prefixes
+The following prefixes have been declared:
+
+| prefix    | name              |
+|-----------+-------------------|
+| ~SPC d~   | debug             |
+| ~SPC d b~ | breakpoints       |
+| ~SPC d d~ | debugging         |
+| ~SPC d e~ | eval              |
+| ~SPC d I~ | inspect           |
+| ~SPC d w~ | debug windows     |
+| ~SPC d S~ | context switching |
+| ~SPC d T~ | toggles           |
+
+** Transient state
+Most of the DAP functions can be easily repeated using the built-in DAP
+transient state which can be initiate with ~SPC m d .~.
+
+| Key binding | Description           |
+|-------------+-----------------------|
+| ~SPC m d .~ | debug transient state |
+
+** Start/Stop
+
+| Key binding | Description                |
+|-------------+----------------------------|
+| ~SPC d A~   | abandon all process        |
+| ~SPC d a~   | abandon current session    |
+| ~SPC d d d~ | start debugging            |
+| ~SPC d d e~ | edit debug template        |
+| ~SPC d d l~ | debug last configuration   |
+| ~SPC d d r~ | debug recent configuration |
+
+** Breakpoints
+
+| Key binding | Description                     |
+|-------------+---------------------------------|
+| ~SPC d b b~ | toggle a breakpoint             |
+| ~SPC d b c~ | change breakpoint condition     |
+| ~SPC d b l~ | change breakpoint log condition |
+| ~SPC d b h~ | change breakpoint hit count     |
+| ~SPC d b a~ | add a breakpoint                |
+| ~SPC d b d~ | delete a breakpoint             |
+| ~SPC d b D~ | clear all breakpoints           |
+| ~SPC d w b~ | list breakpoints                |
+
+** Navigation
+
+| Key binding | Description                   |
+|-------------+-------------------------------|
+| ~SPC d c~   | continue                      |
+| ~SPC d i~   | step in                       |
+| ~SPC d o~   | step out                      |
+| ~SPC d s~   | next step                     |
+| ~SPC d r~   | restart frame                 |
+| ~SPC d S f~ | switch frame                  |
+| ~SPC d S s~ | switch session                |
+| ~SPC d S t~ | switch thread                 |
+| ~SPC d w o~ | goto output buffer if present |
+| ~SPC d w s~ | list sessions                 |
+
+** Evaluation and REPL
+
+| Key binding | Description         |
+|-------------+---------------------|
+| ~SPC d '_~  | Run debug REPL      |
+| ~SPC d e e~ | eval                |
+| ~SPC d e r~ | eval region         |
+| ~SPC d e t~ | eval value at point |
+
+** Inspection
+
+| Key binding | Description                               |
+|-------------+-------------------------------------------|
+| ~SPC d I i~ | inspect                                   |
+| ~SPC d I r~ | inspect region                            |
+| ~SPC d I t~ | inspect value at point                    |
+| ~SPC d v~   | inspect value at point                    |
+| ~SPC d w l~ | list local variables                      |
+| ~SPC d T m~ | toggle mouse support for value inspection |
+
+* References
+- [[https://github.com/yyoncho/dap-mode][dap-mode repo]]
+- [[https://github.com/emacs-lsp/lsp-mode][lsp-mode repo]]

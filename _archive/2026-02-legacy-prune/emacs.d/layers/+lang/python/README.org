@@ -1,0 +1,574 @@
+#+TITLE: Python layer
+
+#+TAGS: general|layer|multi-paradigm|programming
+
+[[file:img/python.png]]
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+  - [[#layer][Layer]]
+  - [[#choosing-a-backend][Choosing a backend]]
+- [[#backends][Backends]]
+  - [[#anaconda][Anaconda]]
+  - [[#language-server-protocol][Language Server Protocol]]
+    - [[#python-lsp-server][python-lsp-server]]
+    - [[#microsoft-python-language-server][Microsoft python language server]]
+    - [[#microsoft-pyright-language-server][Microsoft pyright language server]]
+- [[#additional-tools][Additional tools]]
+  - [[#syntax-checking][Syntax checking]]
+  - [[#test-runner][Test runner]]
+  - [[#buffer-formatting][Buffer formatting]]
+  - [[#automatic-buffer-formatting-on-save][Automatic buffer formatting on save]]
+  - [[#automatic-save-of-buffer-when-testing][Automatic save of buffer when testing]]
+  - [[#autoflake][autoflake]]
+  - [[#pylookup][pylookup]]
+  - [[#dap-mode-debugger-only-for-lsp-backend][dap-mode debugger (only for lsp backend)]]
+- [[#configuration][Configuration]]
+  - [[#fill-column][Fill column]]
+  - [[#sort-imports][Sort imports]]
+  - [[#importmagic][Importmagic]]
+  - [[#pyvenv-pyenv-pipenv-and-poetry][Pyvenv, pyenv, pipenv and poetry]]
+- [[#management-of-python-versions-and-virtual-environments][Management of Python versions and virtual environments]]
+  - [[#manage-virtual-environments-with-pyvenv][Manage virtual environments with pyvenv]]
+    - [[#automatic-activation-of-local-virtual-environment][Automatic activation of local virtual environment]]
+  - [[#manage-multiple-python-versions-with-pyenv][Manage multiple Python versions with pyenv]]
+    - [[#automatic-activation-of-local-pyenv-version][Automatic activation of local pyenv version]]
+  - [[#manage-environments-and-packages-with-pipenv][Manage environments and packages with pipenv]]
+  - [[#manage-environments-and-packages-with-poetry][Manage environments and packages with Poetry]]
+- [[#key-bindings][Key bindings]]
+  - [[#inferior-repl-process][Inferior REPL process]]
+  - [[#running-python-script-in-shell][Running Python Script in shell]]
+  - [[#testing][Testing]]
+  - [[#refactoring][Refactoring]]
+  - [[#pip-package-management][Pip package management]]
+  - [[#live-coding][Live coding]]
+  - [[#other-python-commands][Other Python commands]]
+  - [[#debugger][Debugger]]
+
+* Description
+This layer adds support for the Python language.
+
+** Features:
+- Support for the following backends:
+  - [[https://github.com/proofit404/anaconda-mode][anaconda]] (default),
+  - [[https://github.com/emacs-lsp/lsp-python-ms][Language Server Protocol]] (experimental - 2 implementations),
+    - python-lsp-server
+    - Microsoft python language server
+- Auto-completion
+- Code Navigation
+- Documentation Lookup using [[https://github.com/proofit404/anaconda-mode][anaconda-mode]] and [[https://github.com/tsgates/pylookup][pylookup]]
+- Test Runners using [[https://github.com/syl20bnr/nose.el][nose.el]] or [[https://github.com/ionrock/pytest-el][pytest]]
+- Virtual Environment using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] and [[https://github.com/yyuu/pyenv][pyenv]] as well as [[https://github.com/pypa/pipenv][pipenv]] and [[https://github.com/galaunay/poetry.el][poetry]]
+- semantic mode is enabled
+- PEP8 compliant formatting via [[https://github.com/google/yapf][YAPF]] or [[https://github.com/ambv/black][black]]
+- PEP8 checks with [[https://pypi.python.org/pypi/flake8][flake8]] or [[https://pypi.python.org/pypi/pylint/1.6.4][pylint]]
+- Suppression of unused import with [[https://github.com/myint/autoflake][autoflake]]
+- Use the ~%~ key to jump between blocks with [[https://github.com/redguardtoo/evil-matchit][evil-matchit]]
+- Sort imports with [[https://pypi.python.org/pypi/isort][isort]]
+- Fix a missing import statement with [[https://github.com/anachronic/importmagic.el][importmagic]]
+- Pip package manager with [[https://github.com/brotzeit/pippel][pippel]]
+- Interactive debugger using [[https://github.com/emacs-lsp/dap-mode][dap-mode]]
+
+* Install
+** Layer
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =python= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+
+** Choosing a backend
+To choose a default backend set the layer variable =python-backend=:
+
+#+BEGIN_SRC elisp
+  (python :variables python-backend 'anaconda)
+#+END_SRC
+
+Alternatively the =lsp= backend will be automatically chosen if the layer =lsp=
+is used and you did not specify any value for =python-backend=.
+
+Backend can be chosen on a per project basis using directory local variables
+(files named =.dir-locals.el= at the root of a project), an example to use the
+=lsp= backend:
+
+#+BEGIN_SRC elisp
+  ;;; Directory Local Variables
+  ;;; For more information see (info "(emacs) Directory Variables")
+
+  ((python-mode (python-backend . lsp)))
+#+END_SRC
+
+*Note:* you can easily add a directory local variable with ~SPC f v d~.
+
+The available options are:
+
+| symbol    | description               |
+|-----------+---------------------------|
+| 'anaconda | Default                   |
+| 'lsp      | python-lsp-server package |
+
+* Backends
+** Anaconda
+=anaconda-mode= tries to install the dependencies itself but sometimes
+it does not work and you may encounter the following message when
+opening a python buffer:
+
+#+BEGIN_EXAMPLE
+  Blocking call to accept-process-output with quit inhibited!!
+#+END_EXAMPLE
+
+To fix this, install the =anaconda-mode= [[https://github.com/proofit404/anaconda-mode/wiki][anaconda-deps]] by hand:
+
+#+BEGIN_SRC sh
+  pip install --upgrade "jedi>=0.13.0" "json-rpc>=1.8.1" "service_factory>=0.1.5"
+#+END_SRC
+
+If you encounter problems with Jedi 1.0 consider downgrading to 0.13.0. See [[https://github.com/davidhalter/jedi/issues/873][this
+issue]] for details.
+
+Source: [[https://github.com/proofit404/anaconda-mode#issues]]
+
+If you are facing errors such as "Unable to run anaconda-mode server", try
+setting your =PYTHONPATH= as explained at
+[[https://github.com/proofit404/anaconda-mode#pythonpath]]
+
+** Language Server Protocol
+The =lsp= backend can use either of the following language server implementations:
+
+| symbol   | description                         |
+|----------+-------------------------------------|
+| 'pylsp   | [[https://pypi.org/project/python-lsp-server/][python-lsp-server package]] (default) |
+| 'mspyls  | [[https://github.com/emacs-lsp/lsp-python-ms][Microsoft python language server]]    |
+| 'pyright | [[https://github.com/emacs-lsp/lsp-pyright][Microsoft pyright language server]]   |
+
+=pylsp= is used by default - to use the Microsoft python language server, set the
+=python-lsp-server= layer variable as follows:
+
+#+BEGIN_SRC elisp
+  (python :variables python-backend 'lsp python-lsp-server 'mspyls)
+#+END_SRC
+
+To setup the pyright language server instead, use:
+
+#+BEGIN_SRC elisp
+  (python :variables python-backend 'lsp python-lsp-server 'pyright)
+#+END_SRC
+
+*** python-lsp-server
+You just have to install python language server package:
+
+#+BEGIN_SRC sh
+  pip install 'python-language-server[all]'
+#+END_SRC
+
+Additionally you can install the following other packages:
+
+#+BEGIN_SRC sh
+  # for import sorting
+  pip install pyls-isort
+  # for mypy checking (python 3.4+ is needed)
+  pip install pyls-mypy
+  # for formating with black
+  pip install pyls-black
+  # for detecting the use of deprecated apis
+  pip install pyls-memestra
+#+END_SRC
+
+If you've installed the language server and related packages as development
+dependencies in a pipenv environment, you'll want to set the ~python-pipenv-activate~
+config variable to ~t~. This activates your pipenv before enabling the
+lsp backend. The same applies for ~python-poetry-activate~.
+
+*** Microsoft python language server
+Paraphrasing the instructions provided by the author of the =lsp-python-ms= package:
+
+#+BEGIN_SRC sh
+  git clone https://github.com/Microsoft/python-language-server.git
+  cd python-language-server/src/LanguageServer/Impl
+  dotnet build -c Release
+  dotnet publish -c Release -r <RUNTIME>
+#+END_SRC
+
+where ~<RUNTIME>~ is one of the [[https://docs.microsoft.com/en-us/dotnet/core/rid-catalog][runtime IDs supported by dotnet core]]. One of ~linux-x64~, ~osx-x64~, ~win10-x64~ should
+cover most use cases.
+
+The default package configuration assumes the executable is located in a folder included in your system path.
+To use the latest built version in a cloned git repo, use the ~python-lsp-git-root~ config variable, e.g.:
+
+#+BEGIN_SRC elisp
+  (setq-default dotspacemacs-configuration-layers
+    '((python :variables
+              python-backend 'lsp
+              python-lsp-server 'mspyls
+              python-lsp-git-root "~/dev/python/python-language-server")))
+#+END_SRC
+
+N.B. If you're using Arch linux or a derivative distribution, you can install the =microsoft-python-language-server=
+package from the AUR.
+
+*** Microsoft pyright language server
+[[https://github.com/microsoft/pyright][Pyright]] is a new language server by Microsoft rewritten from scratch. Microsoft
+python language server is planned to be deprecated in favor of pyright. Pyright
+offers improved performance and better features compared to the old
+implementation. It can be installed via yarn or npm as follows:
+
+#+BEGIN_SRC sh
+  # via yarn
+  yarn global add pyright
+  # or via npm
+  npm install -g pyright
+#+END_SRC
+
+* Additional tools
+** Syntax checking
+Syntax checking uses =flake8= package:
+
+#+BEGIN_SRC sh
+  pip install flake8
+#+END_SRC
+
+** Test runner
+Both =nose= and =pytest= are supported. By default =nose= is used.
+To choose your test runner set the layer variable =python-test-runner= to
+either =nose= or =pytest=.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers
+    '((python :variables python-test-runner 'pytest)))
+#+END_SRC
+
+If you need both then you can set =python-test-runner= to a list like this:
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers
+    '((python :variables python-test-runner '(pytest nose))))
+#+END_SRC
+
+This means that =pytest= is your primary test runner. To use the secondary test
+runner you can call the test functions with a prefix argument e.g. ~SPC u SPC m
+t t~ to run one test with =nose=.
+
+To set project specific test runners you can set =python-test-runner= in a
+directory local variable in your project root. ~SPC f v d~ in Spacemacs. See
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][the official documentation]] for more information.
+
+The root of the project is detected with a =.git= directory or a =setup.cfg= file.
+
+** Buffer formatting
+One of [[https://github.com/google/yapf][YAPF]] (the default), [[https://github.com/ambv/black][black]] or =lsp= may be selected as the formatter, via
+=python-formatter=, as =yapf=, =black= or =lsp= respectively.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(
+    (python :variables python-formatter 'yapf)))
+#+END_SRC
+
+Alternatively the =lsp= formatter will be automatically chosen if the layer =lsp=
+is used and you did not specify any value for =python-formatter=.
+
+The key binding ~SPC m =~ invokes the selected formatter on the current buffer
+when in non LSP python mode otherwise ~SPC m ==~ is used.
+
+Note that a specific formatter may also be invoked unconditionally via
+=yapfify-buffer=, =blacken-buffer= or =lsp-format-buffer=, provided
+these are installed.
+
+** Automatic buffer formatting on save
+To enable automatic buffer formatting on save set the variable
+=python-format-on-save= to =t=. The formatter specified by =python-formatter=
+will be used.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(
+    (python :variables python-format-on-save t)))
+#+END_SRC
+
+** Automatic save of buffer when testing
+By default a buffer is automatically saved before tests are executed upon it,
+you can disable this feature by setting =python-save-before-test= to =nil=.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(
+    (python :variables python-save-before-test nil)))
+#+END_SRC
+
+** autoflake
+To be able to suppress unused imports easily, install [[https://github.com/myint/autoflake][autoflake]]:
+
+#+BEGIN_SRC sh
+  pip install autoflake
+#+END_SRC
+
+** pylookup
+To use =pylookup= on ~SPC m h H~, make sure you update the database first, using
+~SPC SPC pylookup-update~.
+
+** dap-mode debugger (only for lsp backend)
+To use =dap-mode= for debugging do:
+
+#+BEGIN_SRC bash
+  pip install "ptvsd>=4.2"
+#+END_SRC
+
+* Configuration
+** Fill column
+If you want to customize the fill column value, use something like this inside
+the =user-init= function in your =.spacemacs=:
+
+#+BEGIN_SRC elisp
+  (setq-default dotspacemacs-configuration-layers '(
+      (python :variables python-fill-column 99)))
+#+END_SRC
+
+** Sort imports
+If you want imports to be automatically sorted when you save a file (using
+[[https://pypi.python.org/pypi/isort][isort]]), set the =python-sort-imports-on-save= variable in the python layer
+config section:
+
+#+BEGIN_SRC elisp
+  (setq-default dotspacemacs-configuration-layers
+    '((python :variables python-sort-imports-on-save t)))
+#+END_SRC
+
+or as a directory-local variable (for per-project settings).
+
+** Importmagic
+Install importmagic and epc for importmagic functionality.
+
+#+BEGIN_SRC sh
+  pip install importmagic epc
+#+END_SRC
+
+** Pyvenv, pyenv, pipenv and poetry
+Sometimes, it is convenient to be able to use python virtual environments from
+other modes. For this reason, the python layer provides the variables
+=spacemacs--python-pyenv-modes=, =spacemacs--python-pyvenv-modes=,
+=spacemacs--python-poetry-modes= and =spacemacs--python-pipenv-modes=.
+If you wish to be able to access these functionalities from other modes,
+in your user config section, do:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'spacemacs--python-pipenv-mode 'your-mode)
+#+END_SRC
+
+This will allow you to use [[https://github.com/pwalsh/pipenv.el][pipenv]] bindings from the mode your-mode.
+You can add to the other two lists analogously.
+
+* Management of Python versions and virtual environments
+** Manage virtual environments with pyvenv
+A virtual environment provides isolation of your Python package versions. For a
+general overview see [[http://docs.python-guide.org/en/latest/dev/virtualenvs/][this site]]. [[http://virtualenvwrapper.readthedocs.io/en/latest/index.html][Virtualenvwrapper]] which is also explained in the
+previous link, is a program which manages your virtual environments in a central
+location set by the =WORKON_HOME= environment variable.
+
+Spacemacs integration of virtual environments and virtualenvwrapper is provided
+by the [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] package. It provides the following key bindings:
+
+| Key binding | Description                                     |
+|-------------+-------------------------------------------------|
+| ~SPC m v a~ | activate a virtual environment in any directory |
+| ~SPC m v d~ | deactivate active virtual environment           |
+| ~SPC m v w~ | work on virtual environment in =WORKON_HOME=    |
+
+*** Automatic activation of local virtual environment
+By default Spacemacs uses the [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] package to manage virtual environments.
+Additionally it uses =pyvenv-tracking-mode= to activate a buffer's local virtual
+environment on change of focus. Pyvenv determines which virtual environment to
+use from the value of the =pyvenv-workon= or the =pyvenv-activate=
+buffer-local-variable. Spacemacs scans the project directory for a pattern
+=.venv=. If the found =.venv= is a directory then it sets that directory as the
+local virtual environment path. If the =.venv= pattern is a file then it checks if
+its first line matches an existing path and if so, it sets it as the local
+virtual environment path. Finally it checks if it finds an existing directory
+with the name of the first line in the ~pyvenv-workon-home~ directory. By default
+Spacemacs scans for a virtual environment and sets the local =pyvenv-workon= or
+the =pyvenv-activate= variables on visiting a file, but switches virtual
+environment on every change of focus using the local variables. The buffer
+tracking behavior can be disabled by setting the value of the customizable
+variable =pyvenv-tracking-mode= to =nil=. The scanning behavior can be set via the
+variable =python-auto-set-local-pyvenv-virtualenv= to:
+- =on-visit= (default) set the virtualenv when you visit a python buffer,
+- =on-project-switch= set the virtualenv when you switch projects,
+- =nil= to disable.
+
+** Manage multiple Python versions with pyenv
+If you need multiple Python versions (e.g. Python 2 and Python 3) then take a
+look at [[https://github.com/yyuu/pyenv][pyenv]]. It enables the installation and management of multiple
+Python versions.
+[[https://www.brianthicks.com/post/2015/04/15/automate-your-python-environment-with-pyenv/][This blogpost]] gives a good overview on how to use the tool. Spacemacs
+integration is provided by [[https://github.com/proofit404/pyenv-mode][pyenv mode]] which has the following key bindings.
+
+| Key binding | Description                          |
+|-------------+--------------------------------------|
+| ~SPC m v s~ | set a pyenv environment with [[https://github.com/pyenv/pyenv][pyenv]]   |
+| ~SPC m v u~ | unset a pyenv environment with [[https://github.com/pyenv/pyenv][pyenv]] |
+
+Pyenv can also manage virtual environments for each of the Python versions it
+has installed. Those will be listed alongside your Python versions.
+
+*** Automatic activation of local pyenv version
+A project-specific pyenv version may be written to a file called
+=.python-version= using the [[https://github.com/yyuu/pyenv/blob/master/COMMANDS.md#user-content-pyenv-local][pyenv local]] command.
+
+Spacemacs can search in parent directories for this file, and automatically set
+the pyenv version. The behavior can be set with the variable
+=python-auto-set-local-pyenv-version= to:
+- =on-visit= (default) set the version when you visit a python buffer,
+- =on-project-switch= set the version when you switch projects,
+- =nil= to disable.
+
+** Manage environments and packages with pipenv
+[[https://pipenv.kennethreitz.org/en/latest/][Pipenv]] is the new standard tool to manage your virtual environments. It can act as
+a replacement for both =pyenv= and =venv= on a per-repository basis. An overview
+of how to use the tool is provided [[https://pipenv.kennethreitz.org/en/latest/basics/][here]].
+
+Spacemacs integration for pipenv is provided by the [[https://github.com/pwalsh/pipenv.el][pipenv package]].
+It provides the following key bindings:
+
+| Key binding   | Description                                                |
+|---------------+------------------------------------------------------------|
+| ~SPC m v p a~ | activate a pipenv environment with [[https://github.com/pwalsh/pipenv.el][pipenv]]                  |
+| ~SPC m v p d~ | deactivate a pipenv environment with [[https://github.com/pwalsh/pipenv.el][pipenv]]                |
+| ~SPC m v p i~ | install a package into a virtual environment with [[https://github.com/pwalsh/pipenv.el][pipenv]]   |
+| ~SPC m v p o~ | open an installed module in a new buffer with [[https://github.com/pwalsh/pipenv.el][pipenv]]       |
+| ~SPC m v p s~ | open a shell buffer in the current environment with [[https://github.com/pwalsh/pipenv.el][pipenv]] |
+| ~SPC m v p u~ | uninstall a package from a virtual environment with [[https://github.com/pwalsh/pipenv.el][pipenv]] |
+
+** Manage environments and packages with Poetry
+Poetry is a tool for dependency management and packaging in Python.
+It allows you to declare the libraries your project depends on and it will
+manage (install/update) them for you.
+
+Spacemacs integration for Poetry is provided by the [[https://github.com/galaunay/poetry.el][poetry]] package.
+It provides the following key bindings:
+
+| Key binding   | Description                                                         |
+|---------------+---------------------------------------------------------------------|
+| ~SPC m v o d~ | De-activate the virtualenv associated to the current poetry project |
+| ~SPC m v o a~ | Activate the virtualenv associated to the current poetry project    |
+| ~SPC m v o t~ | Toggle the virtualenv associated to the current poetry project      |
+
+* Key bindings
+** Inferior REPL process
+Start a Python or iPython inferior REPL process with ~SPC m s i~.
+If =ipython= is available in system executable search paths, =ipython=
+will be used to launch python shell; otherwise, default =python=
+interpreter will be used. You may change your system executable
+search path by activating a virtual environment.
+
+Send code to inferior process commands:
+
+| Key binding | Description                                      |
+|-------------+--------------------------------------------------|
+| ~SPC m s b~ | send buffer and keep code buffer focused         |
+| ~SPC m s B~ | send buffer and switch to REPL in insert mode    |
+| ~SPC m s e~ | send statement and keep code buffer focused      |
+| ~SPC m s E~ | send statement and switch to REPL in insert mode |
+| ~SPC m s f~ | send function and keep code buffer focused       |
+| ~SPC m s F~ | send function and switch to REPL in insert mode  |
+| ~SPC m s i~ | start inferior REPL process                      |
+| ~SPC m s l~ | send line and keep code buffer focused           |
+| ~SPC m s r~ | send region and keep code buffer focused         |
+| ~SPC m s R~ | send region and switch to REPL in insert mode    |
+| ~CTRL+j~    | next item in REPL history                        |
+| ~CTRL+k~    | previous item in REPL history                    |
+
+** Running Python Script in shell
+To run a Python script like you would in the shell press ~SPC m c c~
+to start the Python script in comint mode. This is useful when working with
+multiple Python files since the REPL does not reload changes made in other
+modules.
+
+| Key binding | Description                                                               |
+|-------------+---------------------------------------------------------------------------|
+| ~SPC m c c~ | Execute current file in a comint shell                                    |
+| ~SPC m c C~ | Execute current file in a comint shell and switch to it in =insert state= |
+
+*Note:* With the universal argument ~SPC u~ you can enter a new
+compilation command.
+
+** Testing
+Test commands start with ~m t~. To use the secondary test runner call the
+function with a prefix argument, for example ~SPC u SPC m t a~.
+
+| No Debug    | Description                                              |
+|-------------+----------------------------------------------------------|
+| ~SPC m t a~ | launch all tests of the project                          |
+| ~SPC m t b~ | launch all tests of the current buffer (same as module)  |
+| ~SPC m t l~ | launch last tests                                        |
+| ~SPC m t m~ | launch all tests of the current module                   |
+| ~SPC m t s~ | launch all tests of the current suite (only with =nose=) |
+| ~SPC m t t~ | launch the current test (function)                       |
+
+| Debug       | Description                                                            |
+|-------------+------------------------------------------------------------------------|
+| ~SPC m t A~ | launch all tests of the project in debug mode                          |
+| ~SPC m t B~ | launch all tests of the current buffer (module) in debug mode          |
+| ~SPC m t M~ | launch all tests of the current module in debug mode                   |
+| ~SPC m t S~ | launch all tests of the current suite in debug mode (only with =nose=) |
+| ~SPC m t T~ | launch the current test (function) in debug mode                       |
+
+** Refactoring
+
+| Key binding | Description                                     |
+|-------------+-------------------------------------------------|
+| ~SPC m r f~ | fix a missing import statement with [[https://pypi.python.org/pypi/importmagic][importmagic]] |
+| ~SPC m r i~ | remove unused imports with [[https://github.com/myint/autoflake][autoflake]]            |
+| ~SPC m r I~ | sort imports with [[https://pypi.python.org/pypi/isort][isort]]                         |
+
+** Pip package management
+In python buffer type ~SPC m P~ to open buffer listing all installed =pip=
+packages in the currently activated virtual environment.
+
+*Note:* To open this menu from outside a python buffer type
+~SPC SPC pippel-list-packages RET~.
+
+In the package list buffer:
+
+| Key binding | Description                                                 |
+|-------------+-------------------------------------------------------------|
+| ~RET~       | follow link (=pippel-menu-visit-homepage=)                  |
+| ~d~         | mark for deletion (=pippel-menu-mark-delete=)               |
+| ~i~         | prompt user for packages (=pippel-install-package=)         |
+| ~m~         | remove mark (=pippel-menu-mark-unmark=)                     |
+| ~r~         | refresh package list (=pippel-list-packages=)               |
+| ~U~         | mark all upgradable (=pippel-menu-mark-all-upgrades=)       |
+| ~u~         | mark for upgrade (=pippel-menu-mark-upgrade=)               |
+| ~x~         | perform marked package menu actions (=pippel-menu-execute=) |
+
+** Live coding
+Live coding is provided by the [[https://github.com/donkirkby/live-py-plugin][live-py-plugin.]]
+
+| Key binding | Description         |
+|-------------+---------------------|
+| ~SPC m l~   | Toggle live-py-mode |
+
+** Other Python commands
+
+| Key binding              | Description                                                                       |
+|--------------------------+-----------------------------------------------------------------------------------|
+| ~SPC m =~ or ~SPC m = =~ | reformat the buffer using default formatter specified in =python-formatter=       |
+| ~SPC m d b~              | toggle a breakpoint using =wdb=, =ipdb=, =pudb=, =pdb= or =python3.7= (and above) |
+| ~SPC m g a~              | go to assignment using =anaconda-mode-find-assignments= (~C-o~ to jump back)      |
+| ~SPC m g b~              | jump back                                                                         |
+| ~SPC m g g~              | go to definition using =anaconda-mode-find-definitions= (~C-o~ to jump back)      |
+| ~SPC m g u~              | navigate between usages with =anaconda-mode-find-references=                      |
+| ~SPC m h d~              | look for documentation using =helm-pydoc=                                         |
+| ~SPC m h h~              | quick documentation using anaconda                                                |
+| ~SPC m h H~              | open documentation in =firefox= using [[https://github.com/tsgates/pylookup][pylookup]]                                    |
+| ~SPC m S d~              | insert doc-string skeleton using [[https://github.com/naiquevin/sphinx-doc.el][sphinx-doc]]                                       |
+| ~SPC m v a~              | activate a virtual environment in any directory                                   |
+| ~SPC m v d~              | deactivate active virtual environment                                             |
+| ~SPC m v s~              | set a pyenv environment with [[https://github.com/pyenv/pyenv][pyenv]]                                                |
+| ~SPC m v u~              | unset a pyenv environment with [[https://github.com/pyenv/pyenv][pyenv]]                                              |
+| ~SPC m v w~              | work on virtual environment in =WORKON_HOME=                                      |
+| ~SPC m v p a~            | activate pipenv in current project                                                |
+| ~SPC m v p d~            | deactivate pipenv in current project                                              |
+| ~SPC m v p i~            | install module into pipenv environment                                            |
+| ~SPC m v p o~            | open pipenv module in buffer                                                      |
+| ~SPC m v p s~            | launch pipenv shell in current project                                            |
+| ~SPC m v p u~            | uninstall module from pipenv environment                                          |
+
+** Debugger
+Using the =dap= layer you'll get access to all the DAP key bindings, see the
+complete list of key bindings on the [[https://github.com/syl20bnr/spacemacs/tree/develop/layers/%2Btools/dap#key-bindings][dap layer description]].

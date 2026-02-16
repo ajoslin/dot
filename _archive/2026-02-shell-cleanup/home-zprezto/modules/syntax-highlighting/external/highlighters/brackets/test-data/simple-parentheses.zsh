@@ -1,0 +1,1 @@
+/Users/andrew/dot/zprezto/modules/syntax-highlighting/external/highlighters/brackets/test-data/simple-parentheses.zsh

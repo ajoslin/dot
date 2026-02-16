@@ -1,0 +1,58 @@
+#+TITLE: xclipboard layer
+
+#+TAGS: layer|tool
+
+* Table of Contents                     :TOC_5_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#requirements][Requirements]]
+- [[#usage][Usage]]
+  - [[#clipboard-manager-integration][Clipboard Manager Integration]]
+  - [[#custom-copy-paste-command][Custom Copy Paste Command]]
+- [[#key-bindings][Key bindings]]
+
+* Description
+=xclipboard= integration layer.
+
+** Features:
+- adds copy support to the X-clipboard from the terminal.
+- adds paste support to the X-clipboard from the terminal.
+- [[https://github.com/redguardtoo/cliphist][cliphist]] package: integration with clipboard managers on Linux and macOS.
+
+* Requirements
+This layer depends on a few platform-specific command-line tools:
+- on macOS, this layer calls =pbcopy=
+- on Windows, this layer calls =clip.exe=
+- on GNU/Linux systems, this layer relies on =xsel= to be available.
+
+Note that =xsel= might not be installed by default on e.g. Ubuntu systems.
+
+Clipboard manager integration requires [[http://parcellite.sourceforge.net/][Parcellite]] or [[https://github.com/CristianHenzel/ClipIt][ClipIt]] installed on Linux
+and [[https://github.com/TermiT/Flycut][Flycut]] installed on macOS.
+
+* Usage
+** Clipboard Manager Integration
+Clipboard manager integration can be enabled by setting =xclipboard-enable-cliphist= to =t=.
+
+#+BEGIN_SRC emacs-lisp
+  dotspacemacs-configuration-layers '(
+    (xclipboard :variables xclipboard-enable-cliphist t))
+#+END_SRC
+
+** Custom Copy Paste Command
+Setting =xclipboard-copy-command= for copy, =xclipboard-paste-command= for paste.
+
+#+BEGIN_SRC emacs-lisp
+  dotspacemacs-configuration-layers '(
+    (xclipboard :variables xclipboard-copy-command "utf8clip.exe"))
+#+END_SRC
+
+* Key bindings
+
+| Key binding | Description                                                  |
+|-------------+--------------------------------------------------------------|
+| ~SPC x p~   | Paste clipboard contents at cursor position                  |
+| ~SPC x y~   | Copy selection to clipboard                                  |
+| ~SPC x P~   | paste item from history (cliphist must be enabled)           |
+| ~SPC x R~   | rectangle paste item from history (cliphist must be enabled) |
+| ~SPC x s~   | select item from history (cliphist must be enabled)          |

@@ -1,0 +1,42 @@
+{
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "tailscale": {
+      "mode": "serve"
+    },
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "channels": {
+    "discord": {
+      "dmPolicy": "pairing"
+    },
+    "telegram": {
+      "dmPolicy": "pairing"
+    },
+    "whatsapp": {
+      "dmPolicy": "pairing"
+    }
+  },
+  "agents": {
+    "defaults": {
+      "sandbox": {
+        "mode": "off",
+        "scope": "agent",
+        "workspaceAccess": "none"
+      }
+    }
+  },
+  "tools": {
+    "elevated": {
+      "enabled": false
+    }
+  },
+  "runtime": {
+    "workspaceRoot": "/Users/openclaw/dev",
+    "logLevel": "info"
+  }
+}
