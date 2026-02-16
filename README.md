@@ -1,50 +1,63 @@
+## Dotfiles
 
-## Prerequisites
-
-1. [zsh](http://www.zsh.org/).
-1. [tmux](http://tmux.sourceforge.net/) for terminal multiplexing.
-1. [prezto](https://github.com/sorin-ionescu/prezto) because it's simpler and allegedly faster than oh-my-zsh.
-1. [rcm](https://github.com/thoughtbot/rcm#installation) to manage dotfiles.
-1. [hammerspoon](http://hammerspoon.org) for window switching hotkeys.
-1. [ag](https://github.com/ggreer/the_silver_searcher) for fast file searching.
-1. emacs (`brew install emacs`)
-1. git
-
-```
-brew tap thoughtbot/formulae
-brew install the_silver_searcher git emacs node reattach-to-user-namespace nvim tmux zsh rcm jo direnv asdf jq fzf bat ripgrep git-delta
-sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-```
-
-https://gist.github.com/bbqtd/a4ac060d6f6b9ea6fe3aabe735aa9d95
-
-https://app-updates.agilebits.com/product_history/CLI
-
-
-There's also vim in there, for old times' sake.
+Current baseline uses:
+- zsh + tmux
+- rcm (`rcup`) for symlink management
+- Homebrew for packages/apps
+- Ghostty + Chrome workflow (no iTerm requirement)
 
 ## Setup
 
-### Dotfiles
+### 1) Clone
 
 ```sh
-cd ~/
+cd ~
 git clone git@github.com:ajoslin/dot --recursive
-rcup -d ~/dot -v # on first clone, have to specify dot folder for rcup
 ```
 
-### Tmux / Zsh
+### 2) Bootstrap (general workstation)
 
 ```sh
-which zsh | pbcopy
-sudo vi /etc/shells
-# paste zsh path to bottom of list, exit
-chsh -s $(which zsh)
+~/dot/config/osx.sh
 ```
 
-```
-C-a I # tmux-plugins
+### 2b) Fresh macOS install (recommended order)
+
+```sh
+# 1) install apps/tools + dotfiles links
+~/dot/config/osx.sh
+
+# 2) apply 24/7 server baseline (Studio)
+~/dot/config/studio-macos-baseline.sh --hostname studio-main
+
+# 3) one-command Studio flow (does 1 + 2 + key repeat)
+~/dot/config/studio-all-in-one.sh --hostname studio-main --initial-key-repeat 20 --key-repeat 1
 ```
 
-Start a new terminal, and it should start zsh and tmux. Type `<C-A I>` to install Tmux plugins.
+### 3) Bootstrap (Mac Studio 24/7)
+
+```sh
+~/dot/config/studio-all-in-one.sh --hostname studio-main --initial-key-repeat 20 --key-repeat 1
+```
+
+### 4) Dotfile symlinks
+
+`osx.sh` now installs `rcm` and runs:
+
+```sh
+rcup -d ~/dot
+```
+
+### 5) tmux plugins
+
+Inside tmux:
+
+```sh
+C-a I
+```
+
+## Notes
+
+- OpenClaw + Kimaki are intended to run on the always-on Studio user/session.
+- Tailscale is the primary remote access path.
+- Use `mosh` for interactive shells and plain `ssh` for port forwarding.
