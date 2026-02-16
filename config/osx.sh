@@ -105,7 +105,6 @@ install_formulae() {
 		zsh-history-substring-search
 		direnv
 		mosh
-		bun
 		node
 		pnpm
 		ripgrep
@@ -134,6 +133,28 @@ install_formulae() {
 	for formula in "${formulae[@]}"; do
 		brew_install_formula "$formula"
 	done
+}
+
+ensure_bun() {
+	log "Ensuring bun is installed"
+
+	if need_cmd bun; then
+		log "bun already installed"
+		return
+	fi
+
+	log "Installing bun via official installer"
+	run /bin/bash -lc "curl -fsSL https://bun.sh/install | bash"
+
+	# Ensure bun is available in this shell after install.
+	export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+	export PATH="$BUN_INSTALL/bin:$PATH"
+
+	if ! need_cmd bun; then
+		log "bun install completed but bun is still unavailable in PATH"
+		log "Open a new shell or ensure ~/.bun/bin is on PATH"
+		exit 1
+	fi
 }
 
 setup_rcup() {
@@ -421,6 +442,7 @@ main() {
 	run brew update
 
 	if [[ "$DO_FORMULAE" == "true" ]]; then install_formulae; fi
+	ensure_bun
 	if [[ "$DO_CASKS" == "true" ]]; then install_casks; fi
 	setup_rcup
 	setup_legacy_runtime_links
