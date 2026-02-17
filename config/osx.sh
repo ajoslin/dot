@@ -31,6 +31,13 @@ Examples:
 EOF
 }
 
+assert_not_root() {
+	if [[ "$EUID" -eq 0 ]]; then
+		log "Do not run osx.sh as root. Run it as your normal user."
+		exit 1
+	fi
+}
+
 log() {
 	printf '[%s] %s\n' "$SCRIPT_NAME" "$*"
 }
@@ -427,6 +434,7 @@ parse_args() {
 }
 
 main() {
+	assert_not_root
 	parse_args "$@"
 
 	ensure_xcode_clt
@@ -435,7 +443,7 @@ main() {
 	run brew update
 
 	if [[ "$DO_FORMULAE" == "true" ]]; then install_formulae; fi
-	ensure_bun
+	if [[ "$DO_BUN_GLOBALS" == "true" ]]; then ensure_bun; fi
 	if [[ "$DO_CASKS" == "true" ]]; then install_casks; fi
 	setup_rcup
 	setup_legacy_runtime_links

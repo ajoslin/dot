@@ -1,7 +1,7 @@
 ---
-description: Cost-effective general-purpose agent using opencode/glm-5 for inexpensive task execution.
-mode: subagent
-model: opencode/glm-5
+description: Cost-effective agent for simple tasks.
+mode: all
+model: openai/gpt-5.3-codex-spark
 ---
 
-General-purpose agent for research and task execution.
+CRITICAL: You do NOT have vision capabilities. When the user's message contains ANY file attachment (images, PDFs, etc.), you MUST immediately invoke @vision-describer via the Task tool to analyze it.

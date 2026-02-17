@@ -8,6 +8,10 @@ HOSTNAME="studio-main"
 DISPLAY_SLEEP_MINUTES=30
 INITIAL_KEY_REPEAT=20
 KEY_REPEAT=1
+RUN_OSX=true
+RUN_BASELINE=true
+RUN_KEY_REPEAT=true
+RESUME_FROM=""
 
 usage() {
 	cat <<'EOF'
@@ -24,6 +28,10 @@ Options:
   --display-sleep <minutes>  Display sleep timeout (default: 30)
   --initial-key-repeat <n>   InitialKeyRepeat value (default: 20)
   --key-repeat <n>           KeyRepeat value (default: 1)
+  --skip-osx                 Skip osx.sh step
+  --skip-baseline            Skip studio-macos-baseline.sh step
+  --skip-key-repeat          Skip key-repeat step
+  --resume-from <step>       Resume from: osx|baseline|key-repeat
   -h, --help                 Show this help
 EOF
 }
@@ -78,6 +86,41 @@ parse_args() {
 				exit 1
 			}
 			;;
+		--skip-osx)
+			RUN_OSX=false
+			;;
+		--skip-baseline)
+			RUN_BASELINE=false
+			;;
+		--skip-key-repeat)
+			RUN_KEY_REPEAT=false
+			;;
+		--resume-from)
+			shift
+			RESUME_FROM="${1:-}"
+			case "$RESUME_FROM" in
+			osx)
+				RUN_OSX=true
+				RUN_BASELINE=true
+				RUN_KEY_REPEAT=true
+				;;
+			baseline)
+				RUN_OSX=false
+				RUN_BASELINE=true
+				RUN_KEY_REPEAT=true
+				;;
+			key-repeat)
+				RUN_OSX=false
+				RUN_BASELINE=false
+				RUN_KEY_REPEAT=true
+				;;
+			*)
+				log "Unknown --resume-from value: $RESUME_FROM"
+				usage
+				exit 1
+				;;
+			esac
+			;;
 		-h | --help)
 			usage
 			exit 0
@@ -95,22 +138,34 @@ parse_args() {
 main() {
 	parse_args "$@"
 
-	log "Running full osx setup"
-	if [[ "$DRY_RUN" == "true" ]]; then
-		run "$HOME/dot/config/osx.sh" --dry-run
+	if [[ "$RUN_OSX" == "true" ]]; then
+		log "Running full osx setup"
+		if [[ "$DRY_RUN" == "true" ]]; then
+			run "$HOME/dot/config/osx.sh" --dry-run
+		else
+			run "$HOME/dot/config/osx.sh"
+		fi
 	else
-		run "$HOME/dot/config/osx.sh"
+		log "Skipping osx setup step"
 	fi
 
-	log "Applying Studio macOS baseline"
-	if [[ "$DRY_RUN" == "true" ]]; then
-		run "$HOME/dot/config/studio-macos-baseline.sh" --dry-run --hostname "$HOSTNAME" --display-sleep "$DISPLAY_SLEEP_MINUTES"
+	if [[ "$RUN_BASELINE" == "true" ]]; then
+		log "Applying Studio macOS baseline"
+		if [[ "$DRY_RUN" == "true" ]]; then
+			run "$HOME/dot/config/studio-macos-baseline.sh" --dry-run --hostname "$HOSTNAME" --display-sleep "$DISPLAY_SLEEP_MINUTES"
+		else
+			run "$HOME/dot/config/studio-macos-baseline.sh" --hostname "$HOSTNAME" --display-sleep "$DISPLAY_SLEEP_MINUTES"
+		fi
 	else
-		run "$HOME/dot/config/studio-macos-baseline.sh" --hostname "$HOSTNAME" --display-sleep "$DISPLAY_SLEEP_MINUTES"
+		log "Skipping Studio macOS baseline step"
 	fi
 
-	log "Applying key repeat via ~/dot/bin/key-repeat"
-	run "$HOME/dot/bin/key-repeat" "$INITIAL_KEY_REPEAT" "$KEY_REPEAT"
+	if [[ "$RUN_KEY_REPEAT" == "true" ]]; then
+		log "Applying key repeat via ~/dot/bin/key-repeat"
+		run "$HOME/dot/bin/key-repeat" "$INITIAL_KEY_REPEAT" "$KEY_REPEAT"
+	else
+		log "Skipping key repeat step"
+	fi
 
 	log "Done"
 	log "Next: run 'sudo tailscale up --ssh --hostname $HOSTNAME' if not already joined"

@@ -37,6 +37,10 @@ log() {
 	printf '[%s] %s\n' "$SCRIPT_NAME" "$*"
 }
 
+warn() {
+	printf '[%s] WARNING: %s\n' "$SCRIPT_NAME" "$*" >&2
+}
+
 run() {
 	if [[ "$DRY_RUN" == "true" ]]; then
 		log "DRY-RUN: $*"
@@ -50,6 +54,18 @@ sudo_run() {
 		log "DRY-RUN: sudo $*"
 	else
 		sudo "$@"
+	fi
+}
+
+safe_user_default_write() {
+	if [[ "$DRY_RUN" == "true" ]]; then
+		log "DRY-RUN: defaults write $*"
+		return
+	fi
+
+	if ! defaults write "$@"; then
+		warn "Could not write defaults domain/value: $*"
+		warn "Continuing. This can happen if the target user is not the active GUI login session."
 	fi
 }
 
@@ -117,15 +133,15 @@ configure_updates() {
 
 configure_ui() {
 	log "Disabling UI transitions/animations and clearing Dock"
-	run defaults write com.apple.universalaccess reduceMotion -bool true
-	run defaults write com.apple.universalaccess reduceTransparency -bool true
-	run defaults write com.apple.dock launchanim -bool false
-	run defaults write com.apple.dock autohide-time-modifier -float 0
-	run defaults write com.apple.dock autohide-delay -float 0
-	run defaults write com.apple.dock expose-animation-duration -float 0
-	run defaults write com.apple.dock persistent-apps -array
-	run defaults write com.apple.dock persistent-others -array
-	run defaults write com.apple.dock show-recents -bool false
+	safe_user_default_write com.apple.universalaccess reduceMotion -bool true
+	safe_user_default_write com.apple.universalaccess reduceTransparency -bool true
+	safe_user_default_write com.apple.dock launchanim -bool false
+	safe_user_default_write com.apple.dock autohide-time-modifier -float 0
+	safe_user_default_write com.apple.dock autohide-delay -float 0
+	safe_user_default_write com.apple.dock expose-animation-duration -float 0
+	safe_user_default_write com.apple.dock persistent-apps -array
+	safe_user_default_write com.apple.dock persistent-others -array
+	safe_user_default_write com.apple.dock show-recents -bool false
 	run killall Dock || true
 }
 

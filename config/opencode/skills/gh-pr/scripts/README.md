@@ -1,24 +1,36 @@
 # Script helpers
 
-## `gh_pr_ops.py`
+## `gh_pr_ops.ts`
 
 Small helper for idempotent PR comment operations.
 
 ### Queue
 
 ```bash
-python3 skills/gh-pr/scripts/gh_pr_ops.py queue --repo owner/repo --pr 123
-python3 skills/gh-pr/scripts/gh_pr_ops.py queue --repo owner/repo --pr 123 --json
+bun skills/gh-pr/scripts/gh_pr_ops.ts queue --repo owner/repo --pr 123
+bun skills/gh-pr/scripts/gh_pr_ops.ts queue --repo owner/repo --pr 123 --json
 ```
 
-### Mark addressed
+### Mark pending / addressed
 
 ```bash
-python3 skills/gh-pr/scripts/gh_pr_ops.py mark --repo owner/repo --pr 123 --ids 111
-python3 skills/gh-pr/scripts/gh_pr_ops.py mark --repo owner/repo --pr 123 --ids 111,222,333
+# mark pending (eyes)
+bun skills/gh-pr/scripts/gh_pr_ops.ts mark --repo owner/repo --pr 123 --ids 111 --status pending
+
+# mark addressed (thumbs up)
+bun skills/gh-pr/scripts/gh_pr_ops.ts mark --repo owner/repo --pr 123 --ids 111 --status addressed
+bun skills/gh-pr/scripts/gh_pr_ops.ts mark --repo owner/repo --pr 123 --ids 111,222,333 --status addressed
+```
+
+### Test
+
+```bash
+bun test skills/gh-pr/scripts/gh_pr_ops.test.ts
 ```
 
 ### Environment
 
-- `MARKER_REACTION` (default: `hooray`)
+- `ADDRESSED_REACTION` (default: `+1`)
+- `PENDING_REACTION` (default: `eyes`)
+- `MARKER_REACTION` (legacy fallback for addressed reaction)
 - `BOT_REPLY_PREFIX` (default: `🤖`)
