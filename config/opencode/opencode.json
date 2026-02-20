@@ -12,8 +12,7 @@
     "opencode-rate-limit-fallback",
     "opencode-comments-plugin",
     "file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
-    "file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js",
-    "file:///Users/andrew/dot/config/opencode/plugin/overseer-orchestrate-autocontinue.js"
+    "file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js"
   ],
   "mcp": {
     "opensrc": {
@@ -24,16 +23,6 @@
         "-y",
         "opensrc-mcp"
       ]
-    },
-    "overseer": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@dmmulroy/overseer",
-        "mcp"
-      ],
-      "enabled": true
     },
     "websearch": {
       "type": "remote",
@@ -61,8 +50,7 @@
       "enabled": true,
       "command": [
         "node",
-        "/Users/andrew/dev/overdo/scripts/overdo.mjs",
-        "mcp"
+        "/Users/andrew/dev/overdo/packages/overdo-mcp/bin/overdo-mcp-server.mjs"
       ]
     }
   },

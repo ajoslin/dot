@@ -29,15 +29,39 @@ type MarkArgs = {
   status: "pending" | "addressed";
 };
 
-function runGh(path: string, method = "GET", fields?: Record<string, string>) {
+function runGh(
+  path: string,
+  options?: {
+    method?: "GET" | "POST";
+    fields?: Record<string, string>;
+    paginate?: boolean;
+  },
+) {
+  const method = options?.method ?? "GET";
   const cmd = ["api", "--method", method, path];
-  if (fields) {
-    for (const [key, value] of Object.entries(fields)) {
+  if (options?.paginate) {
+    cmd.push("--paginate", "--slurp");
+  }
+  if (options?.fields) {
+    for (const [key, value] of Object.entries(options.fields)) {
       cmd.push("-f", `${key}=${value}`);
     }
   }
   const out = execFileSync("gh", cmd, { encoding: "utf8" });
-  return JSON.parse(out);
+  const parsed = JSON.parse(out);
+  if (!options?.paginate) {
+    return parsed;
+  }
+  if (!Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (parsed.length === 0) {
+    return [];
+  }
+  if (Array.isArray(parsed[0])) {
+    return parsed.flat();
+  }
+  return parsed;
 }
 
 function normalizeIssueComment(item: any): UnifiedComment {
@@ -107,8 +131,12 @@ export function isNewItem(
 }
 
 function fetchUnified(repo: string, pr: number): UnifiedComment[] {
-  const issue = runGh(`/repos/${repo}/issues/${pr}/comments?per_page=100`);
-  const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`);
+  const issue = runGh(`/repos/${repo}/issues/${pr}/comments?per_page=100`, {
+    paginate: true,
+  });
+  const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`, {
+    paginate: true,
+  });
   const unified = issue.map(normalizeIssueComment).concat(review.map(normalizeReviewComment));
   unified.sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
   return unified;
@@ -142,8 +170,12 @@ function cmdQueue(args: QueueArgs) {
 
 function detectCommentEndpoints(repo: string, pr: number): Record<number, string> {
   const endpoints: Record<number, string> = {};
-  const issue = runGh(`/repos/${repo}/issues/${pr}/comments?per_page=100`);
-  const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`);
+  const issue = runGh(`/repos/${repo}/issues/${pr}/comments?per_page=100`, {
+    paginate: true,
+  });
+  const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`, {
+    paginate: true,
+  });
 
   for (const item of issue) {
     endpoints[item.id] = `/repos/${repo}/issues/comments/${item.id}/reactions`;
@@ -175,7 +207,7 @@ function cmdMark(args: MarkArgs) {
   }
 
   for (const id of ids) {
-    runGh(endpoints[id], "POST", { content: marker });
+    runGh(endpoints[id], { method: "POST", fields: { content: marker } });
     console.log(`Marked ${args.status}: ${id}`);
   }
 }

@@ -165,7 +165,7 @@ nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
 " nnoremap <silent> <leader>ch <cmd>lua require("hover").hover, {desc = "hover.nvim"})<CR>
         " vim.keymap.set("n", "gK", require("hover").hover_select, {desc = "hover.nvim (select)"})
 
-nnoremap <silent> <leader>ca <cmd>lua sorted_code_action()<CR>
+nnoremap <silent> <leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
 nnoremap <silent> <leader>cn <cmd>lua require('renamer').rename()<CR>
 nnoremap <silent> <leader>cd :Telescope lsp_definitions<cr>
 nnoremap <silent> <leader>cs <cmd>vim.lsp.buf.definition()<cr>

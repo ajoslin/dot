@@ -53,14 +53,30 @@ if [[ -r /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
   source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 
-# History substring search (Homebrew package)
-if [[ -r /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh ]]; then
-  source /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh
-  bindkey '^[[A' history-substring-search-up      # Up arrow
-  bindkey '^[[B' history-substring-search-down    # Down arrow
+# History substring search (restore Prezto-style lookback search)
+history_substring_search_script=''
+for candidate in \
+  '/opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh' \
+  "${ZDOTDIR:-$HOME}/.zprezto/modules/history-substring-search/external/zsh-history-substring-search.zsh" \
+  "$HOME/dot/_archive/2026-02-shell-cleanup/dot-zprezto/modules/history-substring-search/external/zsh-history-substring-search.zsh"; do
+  if [[ -r "$candidate" ]]; then
+    history_substring_search_script="$candidate"
+    break
+  fi
+done
+
+if [[ -n "$history_substring_search_script" ]]; then
+  source "$history_substring_search_script"
+  for keymap in emacs viins vicmd; do
+    bindkey -M "$keymap" '^[[A' history-substring-search-up
+    bindkey -M "$keymap" '^[[B' history-substring-search-down
+  done
+  bindkey -M emacs '^P' history-substring-search-up
+  bindkey -M emacs '^N' history-substring-search-down
   bindkey -M vicmd 'k' history-substring-search-up
   bindkey -M vicmd 'j' history-substring-search-down
 fi
+unset history_substring_search_script
 
 # Z directory jumper
 source ~/.config/z/z.sh

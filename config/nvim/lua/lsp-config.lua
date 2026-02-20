@@ -149,17 +149,17 @@ cmp.setup({
 
 require('git-conflict').setup()
 
--- ts_ls for TypeScript/JavaScript (stable, maintained)
-vim.lsp.config.ts_ls = {
-  cmd = { 'typescript-language-server', '--stdio' },
-  filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx' },
+-- tsgo for TypeScript/JavaScript (TypeScript native preview)
+vim.lsp.config.tsgo = {
+  cmd = { 'tsgo', '--lsp', '--stdio' },
+  filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
   root_markers = { 'tsconfig.json', 'package.json', 'jsconfig.json', '.git' },
   capabilities = cmpCapabilities,
   on_attach = function(client, bufnr)
     client.server_capabilities.documentFormattingProvider = false
   end,
 }
-vim.lsp.enable('ts_ls')
+vim.lsp.enable('tsgo')
 
 -- Custom code action function that sorts vtsls/TypeScript actions first, biome last
 _G.sorted_code_action = function()
@@ -185,10 +185,10 @@ _G.sorted_code_action = function()
       end
     end
     
-    -- Sort: ts_ls first, then others, biome last
+    -- Sort: tsgo first, then others, biome last
     table.sort(actions, function(a, b)
-      local a_is_ts = a.client_name == "ts_ls"
-      local b_is_ts = b.client_name == "ts_ls"
+      local a_is_ts = a.client_name == "tsgo" or a.client_name == "ts_ls"
+      local b_is_ts = b.client_name == "tsgo" or b.client_name == "ts_ls"
       local a_is_biome = a.client_name == "biome"
       local b_is_biome = b.client_name == "biome"
       
@@ -367,12 +367,12 @@ require('gp').setup({
 })
 require("mason").setup({})
 require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "tailwindcss", "ts_ls", "jsonls" },
+  ensure_installed = { "lua_ls", "tailwindcss", "jsonls" },
   handlers = {
     -- Default handler for auto-setup (keeps existing behavior)
     function(server_name)
-      -- Skip vtsls if installed - we're using ts_ls instead
-      if server_name == "vtsls" then
+      -- Skip TypeScript language servers managed elsewhere in this config.
+      if server_name == "vtsls" or server_name == "ts_ls" then
         return
       end
       -- Auto-setup everything else
