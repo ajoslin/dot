@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+prefix_key="${TMUX_PREFIX_KEY:-}"
+
+tmux_env_value() {
+    tmux show-environment -g "$1" 2>/dev/null || true
+}
+
+tmux_env_has_value() {
+    value="$(tmux_env_value "$1")"
+    case "$value" in
+        "$1="*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+if [ -z "$prefix_key" ]; then
+    tmux_prefix_key="$(tmux_env_value TMUX_PREFIX_KEY)"
+    case "$tmux_prefix_key" in
+        TMUX_PREFIX_KEY=*) prefix_key="${tmux_prefix_key#TMUX_PREFIX_KEY=}" ;;
+    esac
+fi
+
+if [ -z "$prefix_key" ]; then
+    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] \
+        || tmux_env_has_value SSH_CONNECTION \
+        || tmux_env_has_value SSH_CLIENT \
+        || tmux_env_has_value SSH_TTY; then
+        prefix_key=b
+    else
+        prefix_key=a
+    fi
+fi
+
+case "$prefix_key" in
+    [A-Za-z]) tmux set-option -g prefix "C-${prefix_key}" ;;
+    *) tmux set-option -g prefix C-a ;;
+esac
