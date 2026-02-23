@@ -197,6 +197,6 @@ eval "$(direnv hook zsh)"
 [ -s "/Users/andrew/.bun/_bun" ] && source "/Users/andrew/.bun/_bun"
 
 # Auto-attach to tmux (at end after PATH is set)
-if [[ -z ${TMUX:-} ]] && [[ -z ${SSH_TTY:-} ]] && [[ -z ${MOSH_IP:-} ]] && command -v tmux &> /dev/null; then
-  tmux attach || tmux new-session -s main
+if [[ -z ${TMUX:-} ]] && command -v tmux &> /dev/null; then
+tmux attach || tmux new-session -s main
 fi
