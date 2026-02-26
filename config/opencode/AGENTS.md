@@ -28,3 +28,13 @@ npx opensrc <owner>/<repo>      # GitHub repo (e.g., npx opensrc vercel/ai)
 ## Review Routing
 
 If the user asks for a code review in natural language - including "code review", "review", "review PR", or "audit changes" - prefer invoking `/code-review` instead of doing an ad-hoc review flow.
+
+## Research Routing
+
+If the user asks for research, investigation, or exploratory analysis, prefer this routing:
+
+- `explore`: fast local codebase exploration and pattern discovery.
+- `oracle`: deep reasoning on architecture, trade-offs, and root-cause analysis.
+- `librarian`: external libraries, docs, multi-repo internals, and implementation comparisons.
+
+For non-trivial research requests, use at least two of the above in parallel and synthesize the result.
