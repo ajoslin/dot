@@ -8,12 +8,12 @@
 		}
 	},
 	"plugin": [
-		"file:///Users/andrew/dot/config/opencode/plugin/opencode-anthropic-auth.mjs",
+		"file:///{env:HOME}//dot/config/opencode/plugin/opencode-anthropic-auth.mjs",
 		"opencode-rate-limit-fallback",
 		"opencode-comments-plugin",
-		"file:///Users/andrew/dot/config/opencode/plugin/question-sound.js",
-		"file:///Users/andrew/dot/config/opencode/plugin/preemptive-compaction.js",
-		"file:///Users/andrew/dot/config/opencode/plugin/interrupt-on-x.js"
+		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
+		"file:///{env:HOME}/dot/config/opencode/plugin/preemptive-compaction.js",
+		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js"
 	],
 	"mcp": {
 		"opensrc": {
@@ -38,14 +38,6 @@
 			"environment": {
 				"PLAYWRITER_AUTO_ENABLE": "1"
 			}
-		},
-		"overdo": {
-			"type": "local",
-			"enabled": true,
-			"command": [
-				"node",
-				"/Users/andrew/dev/overdo/packages/overdo-mcp/bin/overdo-mcp-server.mjs"
-			]
 		}
 	},
 	"permission": {
@@ -66,18 +58,6 @@
 					"options": {
 						"reasoningEffort": "medium"
 					}
-				}
-			}
-		},
-		"lmstudio": {
-			"npm": "@ai-sdk/openai-compatible",
-			"name": "LM Studio (local)",
-			"options": {
-				"baseURL": "http://localhost:1234/v1"
-			},
-			"models": {
-				"qwen/qwen3-30b-a3b-2507": {
-					"name": "Qwen 3 30B a3b (local)"
 				}
 			}
 		}

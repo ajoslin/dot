@@ -31,7 +31,7 @@ task({
 | Simple search/explore | glm-5 (default) | Low |
 | Code review | code-review-glm | Low |
 | Complex architecture | oracle | Medium |
-| Deep debugging | code-review-opus | Higher |
+| Deep debugging | code-review-sonnet | Higher |
 
 ## Best Practices
 
@@ -79,4 +79,4 @@ await Promise.all(tasks);
 - Novel problem-solving requiring creativity
 - Tasks requiring deep contextual understanding
 
-For these, use `oracle`, `code-review-opus`, or other specialized subagents instead.
+For these, use `oracle`, `code-review-sonnet`, or other specialized subagents instead.
