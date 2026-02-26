@@ -41,7 +41,14 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # Case insensitive
 # Custom lightweight prompt (matching your "andrew" theme)
 setopt PROMPT_SUBST
 autoload -Uz vcs_info
-precmd() { vcs_info }
+precmd() {
+  vcs_info
+  if [[ -n "${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-}" ]]; then
+    PROMPT='%F{magenta}[ssh]%f %F{blue}%~${vcs_info_msg_0_} %f'
+  else
+    PROMPT='%F{blue}%~${vcs_info_msg_0_} %f'
+  fi
+}
 zstyle ':vcs_info:git:*' formats '%F{grey}|%F{yellow}%b%f%F{grey}|%F{red}%u%c%f'
 zstyle ':vcs_info:git:*' check-for-changes true
 zstyle ':vcs_info:git:*' unstagedstr '*'
@@ -196,7 +203,40 @@ eval "$(direnv hook zsh)"
 # Bun completions
 [ -s "/Users/andrew/.bun/_bun" ] && source "/Users/andrew/.bun/_bun"
 
+# Detect whether current shell was launched from cmux.
+is_inside_cmux() {
+  local pid cmd ppid depth
+
+  # Fast-path env markers
+  [[ "${TERM_PROGRAM:-}" == "cmux" ]] && return 0
+  [[ -n "${CMUX:-}" ]] && return 0
+
+  pid="$PPID"
+  depth=0
+  while [[ "$pid" == <-> && "$pid" -gt 1 && "$depth" -lt 20 ]]; do
+    cmd="$(ps -o comm= -p "$pid" 2>/dev/null)"
+    [[ -z "$cmd" ]] && break
+    [[ "$cmd" == *cmux* ]] && return 0
+
+    ppid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')"
+    [[ "$ppid" != <-> ]] && break
+    pid="$ppid"
+    depth=$((depth + 1))
+  done
+
+  return 1
+}
+
+is_cmux_like_terminal() {
+  [[ "${TERM_PROGRAM:-}" == "cmux" ]] && return 0
+  [[ "${TERM_PROGRAM:-}" == "ghostty" ]] && return 0
+  [[ "${TERM:-}" == "xterm-ghostty" ]] && return 0
+  [[ "${TERM:-}" == "xterm-ghostty-direct" ]] && return 0
+  is_inside_cmux && return 0
+  return 1
+}
+
 # Auto-attach to tmux (at end after PATH is set)
-if [[ -z ${TMUX:-} ]] && command -v tmux &> /dev/null; then
-tmux attach || tmux new-session -s main
+if [[ -o interactive ]] && [[ -z ${TMUX:-} ]] && ! is_cmux_like_terminal && command -v tmux &> /dev/null; then
+  tmux attach || tmux new-session -s main
 fi

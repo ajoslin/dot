@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+RALPHD_REPO="${RALPHD_REPO:-$HOME/dev/ralphd}"
+
+if [[ ! -d "$RALPHD_REPO" ]]; then
+  printf '[ralphd-ui][ERROR] ralphd repo not found: %s\n' "$RALPHD_REPO" >&2
+  printf '[ralphd-ui] Set RALPHD_REPO to override the default path.\n' >&2
+  exit 1
+fi
+
+if ! command -v bun >/dev/null 2>&1; then
+  printf '[ralphd-ui][ERROR] bun is required but not found in PATH.\n' >&2
+  exit 1
+fi
+
+exec bun --cwd "$RALPHD_REPO" run ui -- "$@"

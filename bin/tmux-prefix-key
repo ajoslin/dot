@@ -14,6 +14,15 @@ tmux_env_has_value() {
     esac
 }
 
+is_ssh_session=0
+
+if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] \
+    || tmux_env_has_value SSH_CONNECTION \
+    || tmux_env_has_value SSH_CLIENT \
+    || tmux_env_has_value SSH_TTY; then
+    is_ssh_session=1
+fi
+
 if [ -z "$prefix_key" ]; then
     tmux_prefix_key="$(tmux_env_value TMUX_PREFIX_KEY)"
     case "$tmux_prefix_key" in
@@ -22,10 +31,7 @@ if [ -z "$prefix_key" ]; then
 fi
 
 if [ -z "$prefix_key" ]; then
-    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] \
-        || tmux_env_has_value SSH_CONNECTION \
-        || tmux_env_has_value SSH_CLIENT \
-        || tmux_env_has_value SSH_TTY; then
+    if [ "$is_ssh_session" -eq 1 ]; then
         prefix_key=b
     else
         prefix_key=a
@@ -36,3 +42,11 @@ case "$prefix_key" in
     [A-Za-z]) tmux set-option -g prefix "C-${prefix_key}" ;;
     *) tmux set-option -g prefix C-a ;;
 esac
+
+if [ "$is_ssh_session" -eq 1 ]; then
+    tmux set-option -g status-bg "#20242f"
+    tmux set-option -g status-fg "#9fb3c8"
+else
+    tmux set-option -g status-bg "#1A1A1A"
+    tmux set-option -g status-fg "#727272"
+fi

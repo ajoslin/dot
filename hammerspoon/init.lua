@@ -93,7 +93,7 @@ end)
 hs.hotkey.bind(hyper, "1", launchOrCycleFocus("1Password"))
 hs.hotkey.bind(hyper, "a", launchOrCycleFocus("Safari"))
 hs.hotkey.bind(hyper, "b", launchOrCycleFocus("Preview"))
-hs.hotkey.bind(hyper, "c", launchOrCycleFocus("Simulator"))
+hs.hotkey.bind(hyper, "c", launchOrCycleFocus("cmux"))
 hs.hotkey.bind(hyper, "d", launchOrCycleFocus("Google Chrome"))
 hs.hotkey.bind(hyper, "e", launchOrCycleFocus("Slack"))
 hs.hotkey.bind(hyper, "f", launchOrCycleFocus("Ghostty"))
@@ -163,3 +163,138 @@ hs.hotkey.bind(hyper, "0", function()
   hs.reload()
   hs.notify.new({ title = "Hammerspoon Reloaded" }):send()
 end)
+
+local CMUX_BUNDLE_ID = "com.cmuxterm.app"
+local cmuxPrefixActive = false
+local cmuxPrefixTimer = nil
+local cmuxPrefixTimeoutSeconds = 1.0
+
+local function isCmuxFrontmost()
+  local app = hs.application.frontmostApplication()
+  return app ~= nil and app:bundleID() == CMUX_BUNDLE_ID
+end
+
+local function clearCmuxPrefix()
+  cmuxPrefixActive = false
+  if cmuxPrefixTimer then
+    cmuxPrefixTimer:stop()
+    cmuxPrefixTimer = nil
+  end
+end
+
+local function armCmuxPrefix()
+  clearCmuxPrefix()
+  cmuxPrefixActive = true
+  cmuxPrefixTimer = hs.timer.doAfter(cmuxPrefixTimeoutSeconds, clearCmuxPrefix)
+end
+
+local function cmuxPrefixDispatch(key)
+  if key == "h" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "left", 0)
+    return true
+  elseif key == "j" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "down", 0)
+    return true
+  elseif key == "k" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "up", 0)
+    return true
+  elseif key == "l" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "right", 0)
+    return true
+  elseif key == "a" then
+    hs.eventtap.keyStroke({ "cmd" }, "d", 0)
+    return true
+  elseif key == "v" then
+    hs.eventtap.keyStroke({ "cmd" }, "d", 0)
+    return true
+  elseif key == "s" then
+    hs.eventtap.keyStroke({ "cmd", "shift" }, "d", 0)
+    return true
+  elseif key == "c" then
+    hs.eventtap.keyStroke({ "cmd" }, "t", 0)
+    return true
+  elseif key == "n" then
+    hs.eventtap.keyStroke({ "cmd", "shift" }, "]", 0)
+    return true
+  elseif key == "p" then
+    hs.eventtap.keyStroke({ "cmd", "shift" }, "[", 0)
+    return true
+  elseif key == "," then
+    hs.eventtap.keyStroke({ "cmd" }, "r", 0)
+    return true
+  elseif key == "w" then
+    hs.eventtap.keyStroke({ "cmd" }, "w", 0)
+    return true
+  elseif key == "i" then
+    hs.eventtap.keyStroke({ "cmd" }, "i", 0)
+    return true
+  elseif key == "u" then
+    hs.eventtap.keyStroke({ "cmd", "shift" }, "u", 0)
+    return true
+  end
+
+  return false
+end
+
+local cmuxPrefixTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+  if not isCmuxFrontmost() then
+    clearCmuxPrefix()
+    return false
+  end
+
+  local chars = event:getCharacters(true)
+  if not chars or #chars ~= 1 then
+    return false
+  end
+
+  local key = string.lower(chars)
+  local flags = event:getFlags()
+
+  if not cmuxPrefixActive then
+    if key == "a" and flags.ctrl and not flags.cmd and not flags.alt and not flags.shift then
+      armCmuxPrefix()
+      return true
+    end
+    return false
+  end
+
+  clearCmuxPrefix()
+  return cmuxPrefixDispatch(key)
+end)
+
+cmuxPrefixTap:start()
+
+local cmuxDirectNavTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(event)
+  if not isCmuxFrontmost() then
+    return false
+  end
+
+  local chars = event:getCharacters(true)
+  if not chars or #chars ~= 1 then
+    return false
+  end
+
+  local key = string.lower(chars)
+  local flags = event:getFlags()
+  if not (flags.ctrl and not flags.cmd and not flags.alt and not flags.shift) then
+    return false
+  end
+
+  if key == "h" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "left", 0)
+    return true
+  elseif key == "j" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "down", 0)
+    return true
+  elseif key == "k" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "up", 0)
+    return true
+  elseif key == "l" then
+    hs.eventtap.keyStroke({ "cmd", "alt" }, "right", 0)
+    return true
+  end
+
+  return false
+end)
+
+cmuxDirectNavTap:start()
