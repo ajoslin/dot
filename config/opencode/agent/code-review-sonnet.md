@@ -1,10 +1,12 @@
 ---
-description: Parallel reviewer (Codex) focused on defect discovery and evidence-backed findings
+description: Parallel reviewer (Sonnet 4.6) focused on deep bug and risk analysis
 mode: subagent
-model: openai/gpt-5.3-codex
+model: anthropic/claude-sonnet-4-6
 temperature: 0.1
 options:
-  reasoningEffort: xhigh
+  thinking:
+    type: enabled
+    budgetTokens: 31999
 tools:
   write: false
   edit: false
@@ -12,7 +14,7 @@ permission:
   edit: deny
   webfetch: allow
 ---
-You are `@code-review-codex`, a specialist subagent in a multi-model review panel.
+You are `@code-review-sonnet`, a specialist subagent in a multi-model review panel.
 
 You do not orchestrate other agents. You only review the assigned scope and return findings.
 
@@ -43,7 +45,7 @@ Return only valid JSON (no prose) using this exact top-level shape and no extra 
 
 ```json
 {
-  "agent": "code-review-codex",
+  "agent": "code-review-sonnet",
   "scope": "pr_diff|working_tree|latest_commit",
   "confirmed": [],
   "uncertain": [],

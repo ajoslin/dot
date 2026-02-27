@@ -171,7 +171,55 @@ local cmuxPrefixTimeoutSeconds = 1.0
 
 local function isCmuxFrontmost()
   local app = hs.application.frontmostApplication()
-  return app ~= nil and app:bundleID() == CMUX_BUNDLE_ID
+  if app == nil then
+    return false
+  end
+
+  local bundleId = app:bundleID() or ""
+  if bundleId == CMUX_BUNDLE_ID then
+    return true
+  end
+
+  return bundleId:match("^com%.cmuxterm%.app") ~= nil
+end
+
+local function eventKey(event)
+  local keyCode = event:getKeyCode()
+  if keyCode == 4 then
+    return "h"
+  elseif keyCode == 38 then
+    return "j"
+  elseif keyCode == 40 then
+    return "k"
+  elseif keyCode == 37 then
+    return "l"
+  elseif keyCode == 0 then
+    return "a"
+  elseif keyCode == 1 then
+    return "s"
+  elseif keyCode == 9 then
+    return "v"
+  elseif keyCode == 8 then
+    return "c"
+  elseif keyCode == 45 then
+    return "n"
+  elseif keyCode == 35 then
+    return "p"
+  elseif keyCode == 13 then
+    return "w"
+  elseif keyCode == 34 then
+    return "i"
+  elseif keyCode == 32 then
+    return "u"
+  elseif keyCode == 43 then
+    return ","
+  end
+
+  local chars = event:getCharacters(true)
+  if not chars or #chars ~= 1 then
+    return nil
+  end
+  return string.lower(chars)
 end
 
 local function clearCmuxPrefix()
@@ -214,10 +262,10 @@ local function cmuxPrefixDispatch(key)
     hs.eventtap.keyStroke({ "cmd" }, "t", 0)
     return true
   elseif key == "n" then
-    hs.eventtap.keyStroke({ "cmd", "shift" }, "]", 0)
+    hs.eventtap.keyStroke({ "ctrl", "cmd" }, "]", 0)
     return true
   elseif key == "p" then
-    hs.eventtap.keyStroke({ "cmd", "shift" }, "[", 0)
+    hs.eventtap.keyStroke({ "ctrl", "cmd" }, "[", 0)
     return true
   elseif key == "," then
     hs.eventtap.keyStroke({ "cmd" }, "r", 0)
@@ -242,12 +290,10 @@ local cmuxPrefixTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, funct
     return false
   end
 
-  local chars = event:getCharacters(true)
-  if not chars or #chars ~= 1 then
+  local key = eventKey(event)
+  if not key then
     return false
   end
-
-  local key = string.lower(chars)
   local flags = event:getFlags()
 
   if not cmuxPrefixActive then
@@ -269,12 +315,10 @@ local cmuxDirectNavTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, fu
     return false
   end
 
-  local chars = event:getCharacters(true)
-  if not chars or #chars ~= 1 then
+  local key = eventKey(event)
+  if not key then
     return false
   end
-
-  local key = string.lower(chars)
   local flags = event:getFlags()
   if not (flags.ctrl and not flags.cmd and not flags.alt and not flags.shift) then
     return false

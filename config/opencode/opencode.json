@@ -8,14 +8,19 @@
 		}
 	},
 	"plugin": [
-		"file:///{env:HOME}//dot/config/opencode/plugin/opencode-anthropic-auth.mjs",
+		"@ex-machina/opencode-anthropic-auth",
 		"opencode-rate-limit-fallback",
 		"opencode-comments-plugin",
 		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
-		"file:///{env:HOME}/dot/config/opencode/plugin/preemptive-compaction.js",
-		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js"
+		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
+		"opencode-supermemory@latest"
 	],
 	"mcp": {
+		"agentation": {
+			"type": "local",
+			"command": ["npx", "-y", "agentation-mcp", "server"],
+			"enabled": true
+		},
 		"opensrc": {
 			"enabled": true,
 			"type": "local",
@@ -47,8 +52,9 @@
 			"/tmp/*": "allow",
 			"/private/tmp": "allow",
 			"/private/tmp/*": "allow",
-			"env:$TMPDIR": "allow",
-			"env:$TMPDIR/*": "allow"
+			"{env:$TMPDIR}": "allow",
+			"{env:$TMPDIR}/*": "allow",
+			"{env:$HOME}/.local/share/opensrc/*": "allow"
 		}
 	},
 	"provider": {

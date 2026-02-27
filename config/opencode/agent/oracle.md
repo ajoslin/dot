@@ -4,6 +4,8 @@ mode: subagent
 model: opencode/gpt-5.3-codex
 options:
   reasoningEffort: xhigh
+tools:
+  skill: true
 permission:
   "*": deny
   read: allow
@@ -13,6 +15,7 @@ permission:
   opensrc_execute: allow
   context7_resolve-library-id: allow
   context7_query-docs: allow
+  skill: allow
 ---
 
 You are the Oracle, an expert technical advisor.

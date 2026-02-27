@@ -1,0 +1,19 @@
+{
+	"similarityThreshold": 0.62,
+	"maxMemories": 5,
+	"maxProjectMemories": 10,
+	"maxProfileItems": 5,
+	"injectProfile": true,
+	"compactionThreshold": 0.8,
+	"keywordPatterns": [
+		"remember",
+		"save this",
+		"don't forget",
+		"note that",
+		"important",
+		"for future",
+		"keep this in mind",
+		"we decided",
+		"use this pattern"
+	]
+}

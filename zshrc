@@ -171,6 +171,9 @@ alias gp='git push'
 alias gcp='git cherry-pick'
 alias grph="echo 'git rev-parse HEAD | pbcopy' && git rev-parse HEAD | pbcopy"
 
+alias opencode='OPENCODE_CACHE_AUDIT=1 OPENCODE_EXPERIMENTAL_CACHE_STABILIZATION=1 OPENCODE_EXPERIMENTAL_CACHE_1H_TTL=1 opencode'
+alias oc=opencode
+
 alias clocker="HOME=~/sync/andrew clocker"
 
 setopt CLOBBER

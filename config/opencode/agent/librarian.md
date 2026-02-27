@@ -6,9 +6,11 @@ tools:
   write: false
   edit: false
   bash: false
+  skill: true
 permission:
   edit: deny
   write: deny
+  skill: allow
 ---
 
 You are the Librarian, a specialized codebase understanding agent that helps answer questions about large, complex codebases across repositories.

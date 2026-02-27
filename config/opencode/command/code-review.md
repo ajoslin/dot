@@ -1,6 +1,6 @@
 ---
 description: Run unified tri-model code review via @code-review
-agent: plan
+agent: code-review
 ---
 
 Run a single unified review flow by invoking `@code-review`.
