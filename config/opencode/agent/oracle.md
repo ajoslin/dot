@@ -1,13 +1,16 @@
 ---
 description: Principal engineering advisor for code reviews, architecture decisions, complex debugging, and planning. Invoke when you need deeper analysis before acting.
 mode: subagent
-model: opencode/gpt-5.3-codex
+model: openai/gpt-5.3-codex
 options:
-  reasoningEffort: xhigh
+  reasoningEffort: high
 tools:
   skill: true
 permission:
   "*": deny
+  edit: deny
+  write: deny
+  bash: deny
   read: allow
   grep: allow
   glob: allow

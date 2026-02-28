@@ -10,6 +10,7 @@ tools:
 permission:
   edit: deny
   write: deny
+  bash: deny
   skill: allow
 ---
 

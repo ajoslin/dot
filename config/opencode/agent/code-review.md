@@ -1,6 +1,6 @@
 ---
 description: Primary code review orchestrator that runs a 3-model review panel and returns a correlated final report
-mode: all
+mode: subagent
 model: openai/gpt-5.3-codex
 temperature: 0.1
 options:
