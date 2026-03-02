@@ -1,7 +1,6 @@
 ---
 description: Fast discovery agent for local and external codebases. Use as the default first hop for investigation, routing, and implementation hotspot mapping.
 mode: subagent
-model: anthropic/claude-haiku-4-5
 tools:
   write: false
   edit: false
