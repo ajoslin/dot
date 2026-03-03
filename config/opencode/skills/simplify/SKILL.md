@@ -55,7 +55,9 @@ Ledger entry fields:
 
 1. Locate `.opencode/simplify-ledger.md` in the current project.
 2. If present, read relevant entries for touched files/APIs/tests.
-3. If absent, create it using this starter template:
+3. If absent, defer creation until there are reviewed candidates to record.
+
+Starter template for creation in Phase 6:
 
 ```markdown
 # Simplify Ledger
@@ -86,6 +88,14 @@ Do not embed code in this skill. Collect the diff at runtime and pass it to suba
    - `DIFF_TEXT`: full patch text.
    - `CHANGED_FILES`: stable file list in diff order.
 3. If no changes are found, stop and report that there is nothing to simplify.
+
+## Large Diff Fallback
+
+If `DIFF_TEXT` is too large for a single prompt:
+
+1. Split by file or hunk while preserving patch boundaries.
+2. Run the same three-lane review in parallel on chunks.
+3. Merge chunk findings, dedupe globally, then continue with Phase 3.
 
 ## Phase 2: Launch Three Parallel Reviewers
 
@@ -150,13 +160,8 @@ Rules:
 - Avoid speculative refactors unrelated to changed code.
 - Never apply `proposal-only` or `do-not-apply` items automatically.
 
-## Phase 6: Update Ledger
-
-Append or update entries in `.opencode/simplify-ledger.md` for all reviewed candidates:
-
-- Add new witness entries for new simplification decisions.
-- Update existing entries when evidence or risk changed.
-- Keep concise wording and stable IDs where possible.
+Conservative default:
+- Apply at most 3 `safe-to-apply` findings per run unless the user asked for broader cleanup.
 
 ## Phase 5: Verify
 
@@ -169,15 +174,16 @@ Typical order:
 
 If checks fail, iterate on fixes and re-run checks before final output.
 
-## Large Diff Fallback
+## Phase 6: Update Ledger
 
-If `DIFF_TEXT` is too large for a single prompt:
+Append or update entries in `.opencode/simplify-ledger.md` for all reviewed candidates:
 
-1. Split by file or hunk while preserving patch boundaries.
-2. Run the same three-lane review in parallel on chunks.
-3. Merge chunk findings, dedupe globally, then continue with Phase 4.
+- If missing and there are reviewed candidates, create the file with the starter template.
+- Add new witness entries for new simplification decisions.
+- Update existing entries when evidence or risk changed.
+- Keep concise wording and stable IDs where possible.
 
-## Final Output Format
+## Phase 7: Final Output Format
 
 Return a concise report with:
 
