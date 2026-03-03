@@ -74,67 +74,41 @@ If files are missing, continue with baseline rubric and note that `/init-review-
 ## Validation Gate
 
 After correlating the three review outputs, consult `@oracle` to validate each candidate finding for correctness and architectural context.
-Do not skip this step.
+Skip this step only when operating in `advise` mode with zero confirmed findings.
 
-## Subagent Output Schema (required)
+## Subagent Output Contract (simple)
 
-Each subagent response MUST be valid JSON with this exact shape and no extra top-level keys:
+Do not require strict JSON from subagents.
 
-```json
-{
-  "agent": "code-review-sonnet|code-review-codex|code-review-glm",
-  "scope": "pr_diff|working_tree|latest_commit",
-  "confirmed": [
-    {
-      "id": "short-stable-id",
-      "severity": "critical|high|medium|low",
-      "category": "correctness|security|data_integrity|concurrency|error_handling|api_contract|performance|maintainability|general",
-      "title": "brief defect title",
-      "path": "relative/path.ext",
-      "line": 1,
-      "failure_mode": "what breaks and how",
-      "impact": "realistic impact",
-      "evidence": "concise code-based proof",
-      "policy_mapping": "policy-id-or-General",
-      "confidence": 0.0
-    }
-  ],
-  "uncertain": [
-    {
-      "title": "needs validation",
-      "path": "relative/path.ext",
-      "line": 1,
-      "why_uncertain": "missing runtime/context detail"
-    }
-  ],
-  "rejected": [
-    {
-      "candidate": "what was considered",
-      "reason": "why dismissed"
-    }
-  ],
-  "fix_suggestions": [
-    {
-      "for_id": "short-stable-id",
-      "path": "relative/path.ext",
-      "line": 1,
-      "change": "concrete remediation step"
-    }
-  ]
-}
-```
+Require concise plain text with these section headers (exact header names):
+- `AGENT:`
+- `SCOPE:`
+- `CONFIRMED:`
+- `UNCERTAIN:`
+- `FIX_SUGGESTIONS:`
 
-If schema is invalid, request one retry from that subagent with `SCHEMA_VIOLATION` feedback. If still invalid, mark that reviewer failed.
+Each finding line in `CONFIRMED:` should include these labeled fields in one line:
+- `severity`, `category`, `path`, `line`, `title`, `failure_mode`, `impact`, `evidence`, `policy`, `confidence`
 
-## Fail-Closed Correlation Rules
+Confidence must be one of `high`, `medium`, or `low` (not a float).
 
-- Do not produce a normal final report until all subagent responses are received and schema-validated.
-- If fewer than 2 subagents return valid output, return `status: degraded` and do not claim complete review coverage.
+Example line format:
+- `- severity=high; category=correctness; path=src/x.ts; line=42; title=...; failure_mode=...; impact=...; evidence=...; policy=General; confidence=high`
+
+If a section has no items, subagent must write `none` for that section.
+
+If output is incomplete or malformed, mark reviewer `failed` immediately. Do not retry.
+
+## Correlation Rules
+
+- Do not produce a normal final report until all subagent responses are received and parsed.
+- If fewer than 2 subagents return parseable output, return `status: degraded` and do not claim complete review coverage.
 - Promote a finding to `confirmed` only when either:
   - at least two reviewers independently report the same defect, or
   - one reviewer reports it and `@oracle` confirms.
 - Normalize severity in parent output; do not rely on raw child severity labels alone.
 - Deduplicate findings by failure mode + location, not by wording similarity.
+- Never coerce unknown or ambiguous text into a confirmed defect. Route ambiguous items to `uncertain`.
 
 ## Remediation Mode
 
@@ -164,8 +138,8 @@ Return one consolidated report with:
 7. Action Required
 
 Also include panel telemetry:
-- `subagent_runs` with each reviewer `valid|invalid|timeout|error`
-- `schema_retry_count`
+- `subagent_runs` with each reviewer `valid|failed|timeout` (`failed` covers both malformed output and errors)
+- `format_retry_count`
 - `consensus_counts` (2of3, 1plus_oracle)
 
 Tone: factual, direct, no flattery.
