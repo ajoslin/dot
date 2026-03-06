@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>homebrew.mxcl.mongo-health-probe</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/raynor/dot/bin/mongo-health-probe</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>MONGO_URI</key>
+    <string>mongodb://127.0.0.1:27017/admin?serverSelectionTimeoutMS=2000&amp;connectTimeoutMS=2000&amp;socketTimeoutMS=2000</string>
+    <key>MAX_CONSECUTIVE_FAILURES</key>
+    <string>2</string>
+    <key>RESTART_COOLDOWN_SECONDS</key>
+    <string>300</string>
+    <key>SERVICE_NAME</key>
+    <string>mongodb-community</string>
+  </dict>
+
+  <key>StartInterval</key>
+  <integer>15</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/raynor/.local/state/mongo-health-probe/launchd.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/raynor/.local/state/mongo-health-probe/launchd.err.log</string>
+</dict>
+</plist>

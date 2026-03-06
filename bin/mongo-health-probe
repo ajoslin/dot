@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+set -u
+
+MONGO_URI="${MONGO_URI:-mongodb://127.0.0.1:27017/admin?serverSelectionTimeoutMS=2000&connectTimeoutMS=2000&socketTimeoutMS=2000}"
+MONGOSH_BIN="${MONGOSH_BIN:-mongosh}"
+BREW_BIN="${BREW_BIN:-brew}"
+SERVICE_NAME="${SERVICE_NAME:-mongodb-community}"
+
+STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/mongo-health-probe"
+FAIL_FILE="$STATE_ROOT/consecutive_failures"
+RESTART_FILE="$STATE_ROOT/last_restart_epoch"
+LOG_FILE="$STATE_ROOT/probe.log"
+
+MAX_CONSECUTIVE_FAILURES="${MAX_CONSECUTIVE_FAILURES:-2}"
+RESTART_COOLDOWN_SECONDS="${RESTART_COOLDOWN_SECONDS:-300}"
+
+mkdir -p "$STATE_ROOT"
+
+log() {
+  printf '%s %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >>"$LOG_FILE"
+}
+
+read_int_file() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    local value
+    value="$(cat "$file" 2>/dev/null || true)"
+    if [[ "$value" =~ ^[0-9]+$ ]]; then
+      printf '%s' "$value"
+      return 0
+    fi
+  fi
+  printf '0'
+}
+
+set_int_file() {
+  local file="$1"
+  local value="$2"
+  printf '%s' "$value" >"$file"
+}
+
+run_probe() {
+  "$MONGOSH_BIN" "$MONGO_URI" --quiet --eval 'const ok = db.runCommand({ ping: 1 }).ok; if (ok !== 1) { quit(2) }' >/dev/null 2>&1
+}
+
+handle_success() {
+  local failures
+  failures="$(read_int_file "$FAIL_FILE")"
+  if [[ "$failures" -gt 0 ]]; then
+    log "probe=success cleared_failures=$failures"
+  fi
+  set_int_file "$FAIL_FILE" 0
+}
+
+handle_failure() {
+  local failures
+  local now
+  local last_restart
+  local elapsed
+
+  failures="$(read_int_file "$FAIL_FILE")"
+  failures="$((failures + 1))"
+  set_int_file "$FAIL_FILE" "$failures"
+  log "probe=failure consecutive_failures=$failures"
+
+  if [[ "$failures" -lt "$MAX_CONSECUTIVE_FAILURES" ]]; then
+    return 0
+  fi
+
+  now="$(date +%s)"
+  last_restart="$(read_int_file "$RESTART_FILE")"
+  elapsed="$((now - last_restart))"
+
+  if [[ "$elapsed" -lt "$RESTART_COOLDOWN_SECONDS" ]]; then
+    log "action=skip_restart reason=cooldown elapsed=${elapsed}s cooldown=${RESTART_COOLDOWN_SECONDS}s"
+    return 0
+  fi
+
+  log "action=restart service=$SERVICE_NAME"
+  if "$BREW_BIN" services restart "$SERVICE_NAME" >>"$LOG_FILE" 2>&1; then
+    set_int_file "$RESTART_FILE" "$now"
+    set_int_file "$FAIL_FILE" 0
+    log "action=restart_result result=success"
+  else
+    log "action=restart_result result=failure"
+  fi
+}
+
+if run_probe; then
+  handle_success
+else
+  handle_failure
+fi
