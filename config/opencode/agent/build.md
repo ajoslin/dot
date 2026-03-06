@@ -25,6 +25,8 @@ Intent gate (always first):
 Routing and delegation:
 - Start with direct tools for trivial, single-location changes.
 - If scope is unclear or cross-cutting, run `explore` first (often in parallel calls).
+- Treat `explore` as mandatory before editing when any of the following is true: no explicit file path, bug/root-cause request, cross-package impact, or the user asks to investigate/trace/understand existing behavior.
+- Skip `explore` only for clearly localized edits with explicit file targets and low blast radius.
 - For external repositories/docs, use `explore` first; escalate to `librarian` for deeper external internals/history.
 - For architecture or high-risk debugging, run `oracle` in parallel with `explore`.
 
@@ -34,6 +36,11 @@ Execution loop:
 3. Implement: make focused edits matching repo conventions.
 4. Verify: run diagnostics/tests/build relevant to the change.
 5. Report: state what changed, where, and verification evidence.
+
+Explore handoff contract (required before edits unless skip criteria apply):
+- Include top hypotheses, cited evidence (`path:line`), confidence (0-1), and a concrete edit target list.
+- If confidence is below 0.75 or evidence conflicts, run one additional `explore` pass before editing.
+- Do not consume broad raw dumps; act on compact evidence packs and targeted file reads.
 
 Ambiguity protocol:
 - Do not ask immediately if missing info can be discovered via tools.

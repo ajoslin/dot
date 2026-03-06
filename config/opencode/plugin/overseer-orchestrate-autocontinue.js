@@ -272,7 +272,7 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
       if (event?.type === "session.deleted") {
         const sessionID = event?.properties?.info?.id;
         if (sessionID) clearSessionState(sessionID);
-        return;
+        return event;
       }
 
       const sessionID =
@@ -295,8 +295,9 @@ export const OverseerOrchestrateAutoContinuePlugin = async (ctx) => {
         cancelCountdown(sessionID);
       }
 
-      if (!isSessionIdleEvent(event)) return;
+      if (!isSessionIdleEvent(event)) return event;
       scheduleContinuation(sessionID);
+      return event;
     },
 
     "tool.execute.before": async (input) => {

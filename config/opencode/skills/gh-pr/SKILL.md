@@ -1,6 +1,6 @@
 ---
 name: gh-pr
-description: Run simple GitHub PR operations in natural language: open PR, pull new comments idempotently, and mark one or many comments pending/addressed.
+description: "Run simple GitHub PR operations in natural language: open PR, pull new comments idempotently, and mark one or many comments pending/addressed."
 references:
   - scripts/README.md
 ---
@@ -42,6 +42,9 @@ bun skills/gh-pr/scripts/gh_pr_ops.ts queue --repo <owner/repo> --pr <number>
 This fetches issue + inline review comments and returns only unmarked, non-bot-prefixed items.
 
 ### 3) Mark pending/addressed (one or many)
+
+`--status addressed` now resolves GitHub review threads for PR review comments (instead of only adding a reaction).
+Issue comments still use reactions.
 
 ```bash
 # mark pending when you start work

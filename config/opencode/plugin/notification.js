@@ -131,6 +131,7 @@ export const NotificationPlugin = async ({ $, client }) => {
           }
         }
       }
+      return event;
     },
   };
 };

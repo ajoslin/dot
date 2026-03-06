@@ -1,13 +1,73 @@
 import { tool } from "@opencode-ai/plugin";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { getNeverStopPrompt } from "./never-stop-state.ts";
 
 const THRESHOLD = 0.8;
 const COOLDOWN_MS = 60_000;
 const CONTINUE_DELAY_MS = 500;
 
 const CONTEXT_LIMIT_DEFAULT = 200_000;
-const MODEL_CONTEXT_LIMITS = [
+
+interface ModelContextLimit {
+	pattern: RegExp;
+	limit: number;
+	threshold?: number;
+}
+
+interface Config {
+	enabled: boolean;
+}
+
+interface TokenUsage {
+	input: number;
+	output: number;
+	cache: { read: number };
+}
+
+interface MessageInfo {
+	role?: string;
+	finish?: unknown;
+	tokens?: TokenUsage;
+	modelID?: string;
+	providerID?: string;
+	summary?: unknown;
+	sessionID?: string;
+}
+
+interface EventLike {
+	type?: string;
+	properties?: {
+		info?: MessageInfo & { id?: string };
+	};
+}
+
+interface CompactClient {
+	tui: {
+		showToast(input: {
+			body: { message: string; variant: "warning" | "success" | "error" };
+		}): Promise<unknown>;
+	};
+	session: {
+		summarize(input: {
+			path: { id: string };
+			body: { providerID: string; modelID: string };
+			query: { directory: string };
+		}): Promise<unknown>;
+		prompt(input: {
+			path: { id: string };
+			body: { parts: Array<{ type: "text"; text: string }> };
+			query: { directory: string };
+		}): Promise<unknown>;
+	};
+}
+
+interface PluginContext {
+	client: CompactClient;
+	directory: string;
+}
+
+const MODEL_CONTEXT_LIMITS: ModelContextLimit[] = [
 	{
 		pattern: /claude-sonnet-4.6/i,
 		limit: 1_000_000,
@@ -20,6 +80,8 @@ const MODEL_CONTEXT_LIMITS = [
 				? 1_000_000
 				: 200_000,
 	},
+	{ pattern: /-spark/i, limit: 128_000 },
+	{ pattern: /gpt-?5.4/i, limit: 1_000_000 },
 	{ pattern: /gpt-?5(\.|-|$)/i, limit: 400_000 },
 	{ pattern: /kimi.*k2\.5|kimi.*2\.5|k2\.5/i, limit: 200_000 },
 ];
@@ -27,39 +89,39 @@ const MODEL_CONTEXT_LIMITS = [
 const STATE_DIR = ".opencode/state";
 const CONFIG_FILE = "preemptive-compaction.json";
 
-const lastCompactionTime = new Map();
-const inProgress = new Set();
+const lastCompactionTime = new Map<string, number>();
+const inProgress = new Set<string>();
 
-function getConfigPath(directory) {
+function getConfigPath(directory: string): string {
 	return path.join(directory, STATE_DIR, CONFIG_FILE);
 }
 
-function ensureStateDir(directory) {
+function ensureStateDir(directory: string): void {
 	const stateDir = path.join(directory, STATE_DIR);
 	if (!fs.existsSync(stateDir)) {
 		fs.mkdirSync(stateDir, { recursive: true });
 	}
 }
 
-function readConfig(directory) {
+function readConfig(directory: string): Config {
 	const configPath = getConfigPath(directory);
 	if (!fs.existsSync(configPath)) return { enabled: true };
 	try {
 		const content = fs.readFileSync(configPath, "utf-8");
-		const parsed = JSON.parse(content);
+		const parsed = JSON.parse(content) as Partial<Config>;
 		return { enabled: parsed?.enabled !== false };
 	} catch {
 		return { enabled: true };
 	}
 }
 
-function writeConfig(directory, config) {
+function writeConfig(directory: string, config: Config): void {
 	ensureStateDir(directory);
 	const configPath = getConfigPath(directory);
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
-function getContextLimit(modelID) {
+function getContextLimit(modelID: string): number {
 	const envLimit = Number.parseInt(
 		process.env.PCOMPACT_CONTEXT_LIMIT ?? "",
 		10,
@@ -72,11 +134,22 @@ function getContextLimit(modelID) {
 	return matched?.limit ?? CONTEXT_LIMIT_DEFAULT;
 }
 
-function calculateUsage(tokens) {
+function getContextThreshold(modelID: string): number {
+	const matched = MODEL_CONTEXT_LIMITS.find((entry) =>
+		entry.pattern.test(modelID),
+	);
+	return matched?.threshold ?? THRESHOLD;
+}
+
+function calculateUsage(tokens: TokenUsage): number {
 	return tokens.input + tokens.cache.read + tokens.output;
 }
 
-async function showToast(client, message, variant) {
+async function showToast(
+	client: CompactClient,
+	message: string,
+	variant: "warning" | "success" | "error",
+): Promise<void> {
 	try {
 		await client.tui.showToast({ body: { message, variant } });
 	} catch {
@@ -84,7 +157,11 @@ async function showToast(client, message, variant) {
 	}
 }
 
-async function handleMessageUpdated(event, client, directory) {
+async function handleMessageUpdated(
+	event: EventLike,
+	client: CompactClient,
+	directory: string,
+): Promise<void> {
 	if (event.type !== "message.updated") return;
 
 	const config = readConfig(directory);
@@ -97,6 +174,7 @@ async function handleMessageUpdated(event, client, directory) {
 	if (info.summary) return;
 
 	const sessionID = info.sessionID;
+	if (!sessionID) return;
 	if (inProgress.has(sessionID)) return;
 
 	const lastTime = lastCompactionTime.get(sessionID) ?? 0;
@@ -104,8 +182,9 @@ async function handleMessageUpdated(event, client, directory) {
 
 	const used = calculateUsage(info.tokens);
 	const limit = getContextLimit(info.modelID);
+	const threshold = getContextThreshold(info.modelID);
 	const ratio = used / limit;
-	if (ratio < THRESHOLD) return;
+	if (ratio < threshold) return;
 
 	inProgress.add(sessionID);
 	lastCompactionTime.set(sessionID, Date.now());
@@ -127,9 +206,13 @@ async function handleMessageUpdated(event, client, directory) {
 
 		setTimeout(async () => {
 			try {
+				const neverStopPrompt = getNeverStopPrompt(directory, sessionID);
+				const continuationText = neverStopPrompt
+					? `Continue\n\n${neverStopPrompt}`
+					: "Continue";
 				await client.session.prompt({
 					path: { id: sessionID },
-					body: { parts: [{ type: "text", text: "Continue" }] },
+					body: { parts: [{ type: "text", text: continuationText }] },
 					query: { directory },
 				});
 			} catch {
@@ -147,7 +230,7 @@ async function handleMessageUpdated(event, client, directory) {
 	}
 }
 
-function handleSessionDeleted(event) {
+function handleSessionDeleted(event: EventLike): void {
 	if (event.type !== "session.deleted") return;
 
 	const info = event.properties?.info;
@@ -157,7 +240,7 @@ function handleSessionDeleted(event) {
 	}
 }
 
-function createCompactToggle(directory) {
+function createCompactToggle(directory: string) {
 	return tool({
 		description: "Toggle preemptive compaction on/off. Returns new state.",
 		args: {
@@ -166,7 +249,7 @@ function createCompactToggle(directory) {
 				.optional()
 				.describe("Set enabled state (toggles if omitted)"),
 		},
-		async execute(args) {
+		async execute(args: { enabled?: boolean }) {
 			const config = readConfig(directory);
 			const newEnabled = args.enabled ?? !config.enabled;
 			writeConfig(directory, { enabled: newEnabled });
@@ -175,7 +258,7 @@ function createCompactToggle(directory) {
 	});
 }
 
-function createCompactStatus(directory) {
+function createCompactStatus(directory: string) {
 	return tool({
 		description: "Check preemptive compaction status.",
 		args: {},
@@ -187,7 +270,7 @@ function createCompactStatus(directory) {
 
 			const lines = [
 				`[compact] ${config.enabled ? "enabled" : "disabled"}`,
-				`  threshold: ${threshold}`,
+				`  default threshold: ${threshold}`,
 				`  context limit: ${limit} tokens`,
 				`  cooldown: ${COOLDOWN_MS / 1000}s`,
 				`  active compactions: ${activeSessions}`,
@@ -198,11 +281,12 @@ function createCompactStatus(directory) {
 	});
 }
 
-export const PreemptiveCompactionPlugin = async (ctx) => {
+export const PreemptiveCompactionPlugin = async (ctx: PluginContext) => {
 	return {
-		event: async ({ event }) => {
+		event: async ({ event }: { event: EventLike }) => {
 			await handleMessageUpdated(event, ctx.client, ctx.directory);
 			handleSessionDeleted(event);
+			return event;
 		},
 		tool: {
 			pcompact_toggle: createCompactToggle(ctx.directory),
@@ -210,3 +294,5 @@ export const PreemptiveCompactionPlugin = async (ctx) => {
 		},
 	};
 };
+
+export default PreemptiveCompactionPlugin;

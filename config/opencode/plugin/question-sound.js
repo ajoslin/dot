@@ -21,13 +21,14 @@ export const QuestionSoundPlugin = async ({ $, client }) => {
   return {
     event: async ({ event }) => {
       if (event.type !== "question.asked") {
-        return;
+        return event;
       }
 
       const sessionID = event.properties?.sessionID;
       if (await isMainSession(sessionID)) {
         await $`ffplay -nodisp -autoexit -loglevel quiet -af volume=0.7 ${soundPath}`;
       }
+      return event;
     },
   };
 };

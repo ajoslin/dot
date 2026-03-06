@@ -13,6 +13,8 @@ bun skills/gh-pr/scripts/gh_pr_ops.ts queue --repo owner/repo --pr 123 --json
 
 ### Mark pending / addressed
 
+`--status addressed` resolves GitHub review threads for PR review comments. Issue comments remain reaction-based.
+
 ```bash
 # mark pending (eyes)
 bun skills/gh-pr/scripts/gh_pr_ops.ts mark --repo owner/repo --pr 123 --ids 111 --status pending

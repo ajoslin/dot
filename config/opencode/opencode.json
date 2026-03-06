@@ -13,6 +13,7 @@
 		"opencode-comments-plugin",
 		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
+		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
 		"opencode-supermemory@latest"
 	],
 	"mcp": {
@@ -36,13 +37,10 @@
 			"url": "https://mcp.context7.com/mcp",
 			"enabled": true
 		},
-		"playwriter": {
-			"type": "local",
-			"command": ["bunx", "playwriter@latest"],
-			"enabled": true,
-			"environment": {
-				"PLAYWRITER_AUTO_ENABLE": "1"
-			}
+		"refero": {
+			"type": "remote",
+			"url": "https://api.refero.design/mcp",
+			"enabled": true
 		}
 	},
 	"permission": {
@@ -62,7 +60,7 @@
 			"models": {
 				"gpt-5.3-codex": {
 					"options": {
-						"reasoningEffort": "medium"
+						"reasoningEffort": "xhigh"
 					}
 				}
 			}

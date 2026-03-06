@@ -11,6 +11,14 @@ tools:
 permission:
   edit: deny
   webfetch: allow
+  task:
+    "*": deny
+    code-review-sonnet: allow
+    code-review-codex: allow
+    code-review-glm: allow
+    oracle: allow
+  bash:
+    "opencode *": deny
 ---
 You are the primary `@code-review` orchestrator.
 
@@ -24,6 +32,7 @@ For each review, you MUST spawn these three subagents in parallel:
 - `@code-review-glm`
 
 Do not ask the user to invoke these subagents manually. The parent `@code-review` agent owns orchestration.
+Use the Task tool for orchestration; do not shell out to `opencode run` for subagent execution.
 
 ## Deterministic Input Contract
 

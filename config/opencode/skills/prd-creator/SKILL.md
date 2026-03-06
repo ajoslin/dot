@@ -1,145 +1,94 @@
 ---
 name: prd-creator
-description: Unified PRD creator that combines Matt Pocock discipline, breadboarding/shaping, and vertical slice planning. Use when the user wants a full PRD with acceptance tests, requirements, slices, and timeline.
+description: Create a PRD through deep user interviewing, codebase exploration, and explicit implementation/testing decisions. Use as the first step before prd-to-plan or prd-to-issues.
 ---
 
-# Unified PRD Creator
+# PRD Creator
 
-This skill composes three methods with explicit role separation:
+Use this skill when the user wants to create a PRD.
 
-1. Matt Pocock governance and quality gates (framing + readiness)
-2. Breadboarding and shaping requirement development (core discovery)
-3. Matt-aligned slice formalization and PRD output
+## Process
 
-Do not skip phases. If a required artifact is missing, move backward and produce it first.
+### 1. Gather detailed problem context
 
-## Core Flow
+Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
 
-`intake -> matt framing gate -> shaping/breadboarding core -> rabbit-hole closure -> matt formalization gate -> slicing -> phased PRD -> acceptance + readiness checks`
+### 2. Explore the repo
 
-Read details in:
+Explore the repo to verify user assertions and understand the current state of the codebase.
 
-1. `references/unified-flow.md`
-2. `references/prd-template.md`
+### 3. Interview relentlessly
 
-## Phase Contract
+Interview the user about every important aspect of the plan until you reach shared understanding.
 
-### Phase 0: Intake
+Walk each major branch of the design tree and resolve dependencies between decisions one-by-one.
 
-Capture:
+### 4. Sketch major modules
 
-- problem statement
-- target users/personas
-- constraints (time, technical, business)
-- non-goals
-- success metrics
+Sketch the major modules to build or modify.
 
-### Phase 1: Matt Rules Gate
+Look for opportunities to extract deep modules that can be tested in isolation.
 
-Apply these non-negotiables:
+A deep module encapsulates substantial functionality behind a simple, testable interface that rarely changes.
 
-- PRD-first; no implementation planning without acceptance criteria
-- vertical slices over horizontal layers
-- explicit dependency mapping between slices
-- behavior-first validation criteria
+Check with the user that the proposed modules match expectations.
+Check with the user which modules should have tests.
 
-If acceptance criteria are vague, refine them before continuing.
+### 5. Write the PRD
 
-Role in this phase: governance wrapper (quality constraints), not full requirement discovery.
+Once understanding is complete, write the PRD using the template below.
 
-### Phase 2: Breadboarding + Shaping
+By default, format the PRD so it can be posted as a GitHub issue.
 
-Produce:
+<prd-template>
+## Problem Statement
 
-- places, affordances, connections (breadboard topology)
-- appetite (timebox) and bounded scope
-- rabbit holes with explicit patches
-- out-of-bounds list
+The problem from the user's perspective.
 
-If major unknowns remain, stay in this phase.
+## Solution
 
-Role in this phase: requirement-development core that turns ambiguity into bounded, testable requirements.
+The proposed solution from the user's perspective.
 
-### Phase 3: Slice Design
+## User Stories
 
-Split into independent vertical slices, each with:
+A long, numbered list of user stories in this format:
 
-- user-visible outcome
-- modules/touchpoints
-- dependencies (blocked-by, unblocks)
-- definition of done
-- acceptance tests
+1. As an <actor>, I want a <feature>, so that <benefit>
 
-Role in this phase: Matt-aligned formalization of shaped requirements into executable slices.
+## Implementation Decisions
 
-### Phase 4: PRD Assembly
+List implementation decisions, including:
 
-Render the final PRD using `references/prd-template.md`.
+- modules to build/modify
+- interface changes
+- technical clarifications
+- architectural decisions
+- schema changes
+- API contracts
+- specific interactions
 
-Required PRD sections:
+Do not include specific file paths or code snippets.
 
-- problem, goals, non-goals
-- personas and baseline
-- shaped solution summary
-- full requirements list
-- feature conditions and edge cases
-- vertical slice plan
-- acceptance test matrix
-- phase timeline
-- risks and mitigation
-- launch/readiness checklist
+## Testing Decisions
 
-## Output Requirements
+List testing decisions, including:
 
-The final PRD must include all of the following:
+- what makes a good test (external behavior over implementation details)
+- which modules will be tested
+- prior-art tests in the codebase (if known)
 
-1. Measurable acceptance criteria for every feature
-2. Requirement IDs (`R-001`, `R-002`, ...)
-3. Slice IDs (`S-01`, `S-02`, ...)
-4. A phase timeline with duration and dependencies
-5. Explicit assumptions and open questions
-6. In-scope and out-of-scope boundaries
-7. Phase acceptance conditions for every `P-*` timeline phase
+## Out of Scope
 
-## Quality Gates
+Explicitly list what is not included.
 
-- Gate A (after shaping): unknowns are patched or explicitly deferred
-- Gate B (after slicing): each slice is independently testable
-- Gate C (before final PRD): every requirement maps to at least one acceptance test
+## Further Notes
 
-Do not emit a "final PRD" if any gate fails.
+Any additional context needed for execution.
+</prd-template>
 
-## Clarification Protocol (Mandatory)
+## Hand-off
 
-For each timeline phase `P-*`, acceptance conditions must be explicit and testable.
+After PRD creation, suggest one of these next skills:
 
-If any phase acceptance condition is ambiguous, missing measurable thresholds, or lacks evidence signals, ask targeted clarification questions before finalizing.
-
-Minimum required question set per unclear phase:
-
-1. What exact pass/fail condition defines phase completion?
-2. What observable evidence proves completion (test, log, metric, API response)?
-3. What is explicitly out of scope for this phase?
-
-If answers are unavailable, mark the phase as `Draft` and list blocking unknowns; do not mark the PRD as final-ready.
-
-## Anti-Patterns
-
-- jumping to feature lists without shaped problem framing
-- mixing implementation tasks with PRD requirements
-- horizontal decomposition (backend first, frontend later)
-- requirements without acceptance tests
-- timelines without dependency links
-
-## Suggested Invocation
-
-Use this skill when users ask for:
-
-- full PRDs
-- requirement decomposition
-- phase planning and scope shaping
-- acceptance-test driven specs
-
-Example:
-
-`Use prd-creator to produce a full PRD for [initiative], including slices, timeline, and acceptance tests.`
+- `prd-to-plan` for phased execution planning
+- `prd-to-issues` for immediate issue decomposition

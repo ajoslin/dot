@@ -13,6 +13,7 @@ type UnifiedComment = {
   body: string;
   path: string | null;
   line: number | null;
+  review_thread_resolved: boolean;
   reactions: Reactions;
 };
 
@@ -27,6 +28,66 @@ type MarkArgs = {
   pr: number;
   ids: string;
   status: "pending" | "addressed";
+};
+
+type RepoRef = {
+  owner: string;
+  name: string;
+};
+
+type CommentTarget = {
+  kind: "issue_comment" | "review_comment";
+  reactionEndpoint: string;
+  reviewThreadId: string | null;
+};
+
+type GraphqlReviewThreadComment = {
+  databaseId: number | null;
+};
+
+type GraphqlReviewThreadNode = {
+  id: string;
+  isResolved: boolean;
+  comments: {
+    nodes: GraphqlReviewThreadComment[];
+  };
+};
+
+type GraphqlReviewThreadsResponse = {
+  data?: {
+    repository?: {
+      pullRequest?: {
+        reviewThreads?: {
+          nodes?: GraphqlReviewThreadNode[];
+          pageInfo?: {
+            hasNextPage?: boolean;
+            endCursor?: string | null;
+          };
+        };
+      };
+    };
+  };
+};
+
+type GhIssueComment = {
+  id: number;
+  html_url?: string | null;
+  user?: { login?: string | null } | null;
+  created_at?: string | null;
+  body?: string | null;
+  reactions?: Reactions | null;
+};
+
+type GhReviewComment = {
+  id: number;
+  in_reply_to_id?: number | null;
+  html_url?: string | null;
+  user?: { login?: string | null } | null;
+  created_at?: string | null;
+  body?: string | null;
+  path?: string | null;
+  line?: number | null;
+  reactions?: Reactions | null;
 };
 
 function runGh(
@@ -64,7 +125,25 @@ function runGh(
   return parsed;
 }
 
-function normalizeIssueComment(item: any): UnifiedComment {
+function runGhGraphql(fields: Record<string, string>) {
+  const cmd = ["api", "graphql"];
+  for (const [key, value] of Object.entries(fields)) {
+    cmd.push("-f", `${key}=${value}`);
+  }
+  const out = execFileSync("gh", cmd, { encoding: "utf8" });
+  return JSON.parse(out);
+}
+
+function parseRepo(repo: string): RepoRef {
+  const [owner, name, ...rest] = repo.split("/").map((token) => token.trim());
+  if (!owner || !name || rest.length > 0) {
+    console.error(`--repo must be in owner/name format. Received: ${repo}`);
+    process.exit(2);
+  }
+  return { owner, name };
+}
+
+function normalizeIssueComment(item: GhIssueComment): UnifiedComment {
   return {
     kind: "issue_comment",
     id: item.id,
@@ -74,11 +153,12 @@ function normalizeIssueComment(item: any): UnifiedComment {
     body: item.body ?? "",
     path: null,
     line: null,
+    review_thread_resolved: false,
     reactions: item.reactions ?? {},
   };
 }
 
-function normalizeReviewComment(item: any): UnifiedComment {
+function normalizeReviewComment(item: GhReviewComment): UnifiedComment {
   return {
     kind: item.in_reply_to_id ? "review_comment_reply" : "review_comment",
     id: item.id,
@@ -88,6 +168,7 @@ function normalizeReviewComment(item: any): UnifiedComment {
     body: item.body ?? "",
     path: item.path ?? null,
     line: item.line ?? null,
+    review_thread_resolved: false,
     reactions: item.reactions ?? {},
   };
 }
@@ -106,7 +187,7 @@ function reactionDefaults() {
 }
 
 export function isNewItem(
-  item: Pick<UnifiedComment, "kind" | "body" | "reactions">,
+  item: Pick<UnifiedComment, "kind" | "body" | "reactions" | "review_thread_resolved">,
   addressedMarker: string,
   pendingMarker: string,
   botPrefix: string,
@@ -121,6 +202,9 @@ export function isNewItem(
   if (body.startsWith(botPrefix)) {
     return false;
   }
+  if (item.kind === "review_comment" && item.review_thread_resolved) {
+    return false;
+  }
   if (markerCount(item.reactions, addressedMarker) > 0) {
     return false;
   }
@@ -130,6 +214,63 @@ export function isNewItem(
   return true;
 }
 
+function fetchReviewThreadByCommentId(repo: string, pr: number): Record<number, { threadId: string; isResolved: boolean }> {
+  const { owner, name } = parseRepo(repo);
+  const result: Record<number, { threadId: string; isResolved: boolean }> = {};
+
+  let cursor: string | null = null;
+  do {
+    const queryFields: Record<string, string> = {
+      query: `
+        query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
+          repository(owner: $owner, name: $name) {
+            pullRequest(number: $number) {
+              reviewThreads(first: 100, after: $cursor) {
+                nodes {
+                  id
+                  isResolved
+                  comments(first: 100) {
+                    nodes {
+                      databaseId
+                    }
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+              }
+            }
+          }
+        }
+      `,
+      owner,
+      name,
+      number: String(pr),
+    };
+    if (cursor) {
+      queryFields.cursor = cursor;
+    }
+    const response = runGhGraphql(queryFields) as GraphqlReviewThreadsResponse;
+
+    const reviewThreads = response.data?.repository?.pullRequest?.reviewThreads;
+    const nodes = reviewThreads?.nodes ?? [];
+    for (const thread of nodes) {
+      const commentNodes = thread.comments?.nodes ?? [];
+      for (const comment of commentNodes) {
+        if (typeof comment.databaseId === "number") {
+          result[comment.databaseId] = { threadId: thread.id, isResolved: thread.isResolved };
+        }
+      }
+    }
+
+    const pageInfo = reviewThreads?.pageInfo;
+    cursor = pageInfo?.hasNextPage ? (pageInfo.endCursor ?? null) : null;
+  } while (cursor);
+
+  return result;
+}
+
 function fetchUnified(repo: string, pr: number): UnifiedComment[] {
   const issue = runGh(`/repos/${repo}/issues/${pr}/comments?per_page=100`, {
     paginate: true,
@@ -137,7 +278,15 @@ function fetchUnified(repo: string, pr: number): UnifiedComment[] {
   const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`, {
     paginate: true,
   });
-  const unified = issue.map(normalizeIssueComment).concat(review.map(normalizeReviewComment));
+  const reviewThreadsByCommentId = fetchReviewThreadByCommentId(repo, pr);
+  const normalizedReview = review.map(normalizeReviewComment).map((item) => {
+    const thread = reviewThreadsByCommentId[item.id];
+    return {
+      ...item,
+      review_thread_resolved: thread?.isResolved ?? false,
+    };
+  });
+  const unified = issue.map(normalizeIssueComment).concat(normalizedReview);
   unified.sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
   return unified;
 }
@@ -168,22 +317,47 @@ function cmdQueue(args: QueueArgs) {
   }
 }
 
-function detectCommentEndpoints(repo: string, pr: number): Record<number, string> {
-  const endpoints: Record<number, string> = {};
+function detectCommentTargets(repo: string, pr: number): Record<number, CommentTarget> {
+  const targets: Record<number, CommentTarget> = {};
   const issue = runGh(`/repos/${repo}/issues/${pr}/comments?per_page=100`, {
     paginate: true,
   });
   const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`, {
     paginate: true,
   });
+  const reviewThreadsByCommentId = fetchReviewThreadByCommentId(repo, pr);
 
   for (const item of issue) {
-    endpoints[item.id] = `/repos/${repo}/issues/comments/${item.id}/reactions`;
+    targets[item.id] = {
+      kind: "issue_comment",
+      reactionEndpoint: `/repos/${repo}/issues/comments/${item.id}/reactions`,
+      reviewThreadId: null,
+    };
   }
   for (const item of review) {
-    endpoints[item.id] = `/repos/${repo}/pulls/comments/${item.id}/reactions`;
+    targets[item.id] = {
+      kind: "review_comment",
+      reactionEndpoint: `/repos/${repo}/pulls/comments/${item.id}/reactions`,
+      reviewThreadId: reviewThreadsByCommentId[item.id]?.threadId ?? null,
+    };
   }
-  return endpoints;
+  return targets;
+}
+
+function resolveReviewThread(threadId: string) {
+  runGhGraphql({
+    query: `
+      mutation($threadId: ID!) {
+        resolveReviewThread(input: { threadId: $threadId }) {
+          thread {
+            id
+            isResolved
+          }
+        }
+      }
+    `,
+    threadId,
+  });
 }
 
 function parseIds(rawIds: string): number[] {
@@ -197,17 +371,29 @@ function parseIds(rawIds: string): number[] {
 function cmdMark(args: MarkArgs) {
   const { addressed, pending } = reactionDefaults();
   const marker = args.status === "pending" ? pending : addressed;
-  const endpoints = detectCommentEndpoints(args.repo, args.pr);
+  const targets = detectCommentTargets(args.repo, args.pr);
   const ids = parseIds(args.ids);
 
-  const missing = ids.filter((id) => !endpoints[id]);
+  const missing = ids.filter((id) => !targets[id]);
   if (missing.length > 0) {
     console.error(`Unknown comment IDs for PR ${args.pr}: [${missing.join(", ")}]`);
     process.exit(2);
   }
 
+  const resolvedThreads = new Set<string>();
+
   for (const id of ids) {
-    runGh(endpoints[id], { method: "POST", fields: { content: marker } });
+    const target = targets[id];
+    if (args.status === "addressed" && target.kind === "review_comment" && target.reviewThreadId) {
+      if (!resolvedThreads.has(target.reviewThreadId)) {
+        resolveReviewThread(target.reviewThreadId);
+        resolvedThreads.add(target.reviewThreadId);
+      }
+      console.log(`Resolved review thread for comment ${id}`);
+      continue;
+    }
+
+    runGh(target.reactionEndpoint, { method: "POST", fields: { content: marker } });
     console.log(`Marked ${args.status}: ${id}`);
   }
 }
