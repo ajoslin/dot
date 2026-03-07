@@ -48,6 +48,8 @@ Output requirements:
 - Avoid generic commentary and unnecessary preamble.
 - Prefer stable GitHub permalinks when citing remote source.
 - If evidence is incomplete, state uncertainty clearly and propose the fastest validation step.
+- End with a recommended implementation direction Build can execute immediately.
+- Required fields for handoff: `evidence`, `confidence` (0-1), `next_step`.
 
 Default workflow for external code questions:
 1. Resolve/fetch target via `opensrc_execute`.

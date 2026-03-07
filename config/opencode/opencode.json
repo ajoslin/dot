@@ -1,7 +1,8 @@
 {
 	"$schema": "https://opencode.ai/config.json",
 	"theme": "opencode",
-	"model": "openai/gpt-5.3-codex",
+	"model": "openai/gpt-5.4",
+	"default_agent": "build",
 	"tui": {
 		"scroll_acceleration": {
 			"enabled": true
@@ -58,9 +59,9 @@
 	"provider": {
 		"openai": {
 			"models": {
-				"gpt-5.3-codex": {
+				"gpt-5.4": {
 					"options": {
-						"reasoningEffort": "xhigh"
+						"reasoningEffort": "medium"
 					}
 				}
 			}

@@ -57,3 +57,5 @@ Output requirements:
 - Provide an evidence list with absolute file paths and line references (or source URLs for external code).
 - Include confidence (0-1) and mark whether this is a shallow result or deep result.
 - Include a concise "next step" so the caller can continue without follow-up.
+- Include an explicit edit target list when confidence >= 0.75.
+- Required fields for handoff: `evidence`, `confidence`, `next_step`.
