@@ -17,6 +17,9 @@ const DEFAULT_SEND_COOLDOWN_MS = 60_000;
 const DEFAULT_INTERRUPT_GRACE_MS = 5_000;
 const DEFAULT_REINFORCE_PERIOD_MS = 45 * 60_000;
 const DEFAULT_REINFORCE_TICK_MS = 60_000;
+const DEFAULT_FAILURE_BACKOFF_BASE_MS = 5_000;
+const DEFAULT_FAILURE_RESET_WINDOW_MS = 5 * 60_000;
+const DEFAULT_MAX_CONSECUTIVE_FAILURES = 5;
 const NEVER_STOP_COMMAND = "/never-stop";
 const NEVER_STOP_CLEAR_COMMAND = "/never-stop-clear";
 const NEVER_STOP_PRIMARY_SOUND = join(
@@ -50,6 +53,26 @@ type NeverStopTiming = {
 	interruptGraceMs: number;
 	reinforcePeriodMs: number;
 	reinforceTickMs: number;
+	failureBackoffBaseMs: number;
+	failureResetWindowMs: number;
+	maxConsecutiveFailures: number;
+};
+
+type NeverStopMessagePart = {
+	type?: string;
+	name?: string;
+	toolName?: string;
+};
+
+type NeverStopMessage = {
+	info?: { role?: string };
+	role?: string;
+	parts?: NeverStopMessagePart[];
+};
+
+type NeverStopFailureState = {
+	consecutiveFailures: number;
+	lastFailureAt: number;
 };
 
 type NeverStopClient = {
@@ -64,6 +87,10 @@ type NeverStopClient = {
 			body: { parts: Array<{ type: "text"; text: string }> };
 			query: { directory: string };
 		}): Promise<unknown>;
+		messages?: (input: {
+			path: { id: string };
+			query?: { directory?: string };
+		}) => Promise<unknown>;
 	};
 };
 
@@ -122,7 +149,59 @@ function getTimingConfig(): NeverStopTiming {
 			"NEVER_STOP_REINFORCE_TICK_MS",
 			DEFAULT_REINFORCE_TICK_MS,
 		),
+		failureBackoffBaseMs: parseDurationEnv(
+			"NEVER_STOP_FAILURE_BACKOFF_BASE_MS",
+			DEFAULT_FAILURE_BACKOFF_BASE_MS,
+		),
+		failureResetWindowMs: parseDurationEnv(
+			"NEVER_STOP_FAILURE_RESET_WINDOW_MS",
+			DEFAULT_FAILURE_RESET_WINDOW_MS,
+		),
+		maxConsecutiveFailures: parseDurationEnv(
+			"NEVER_STOP_MAX_CONSECUTIVE_FAILURES",
+			DEFAULT_MAX_CONSECUTIVE_FAILURES,
+		),
 	};
+}
+
+function normalizeMessages(response: unknown): NeverStopMessage[] {
+	if (Array.isArray(response)) {
+		return response as NeverStopMessage[];
+	}
+
+	if (typeof response === "object" && response !== null && "data" in response) {
+		const data = (response as { data?: unknown }).data;
+		if (Array.isArray(data)) {
+			return data as NeverStopMessage[];
+		}
+	}
+
+	return [];
+}
+
+function hasUnansweredQuestion(messages: NeverStopMessage[]): boolean {
+	if (!messages || messages.length === 0) return false;
+
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const message = messages[i];
+		const role = message.info?.role ?? message.role;
+
+		if (role === "user") return false;
+
+		if (role === "assistant" && Array.isArray(message.parts)) {
+			const hasQuestion = message.parts.some((part) => {
+				const type = part.type;
+				const toolName = part.name ?? part.toolName;
+				return (
+					(type === "tool_use" || type === "tool-invocation") &&
+					toolName === "question"
+				);
+			});
+			return hasQuestion;
+		}
+	}
+
+	return false;
 }
 
 function isIdleEvent(event: EventLike): boolean {
@@ -320,6 +399,7 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 	const reinforcementTimers = new Map<string, ReturnType<typeof setInterval>>();
 	const inFlightSends = new Set<string>();
 	const interruptDetectedAt = new Map<string, number>();
+	const failureStates = new Map<string, NeverStopFailureState>();
 
 	function cancelIdleTimer(sessionID: string): void {
 		const timer = idleTimers.get(sessionID);
@@ -342,11 +422,61 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 		stopReinforcement(sessionID);
 		inFlightSends.delete(sessionID);
 		interruptDetectedAt.delete(sessionID);
+		failureStates.delete(sessionID);
+	}
+
+	function resetFailureState(sessionID: string): void {
+		failureStates.delete(sessionID);
+	}
+
+	function markSendFailure(sessionID: string): void {
+		const now = Date.now();
+		const existing = failureStates.get(sessionID);
+		failureStates.set(sessionID, {
+			consecutiveFailures: (existing?.consecutiveFailures ?? 0) + 1,
+			lastFailureAt: now,
+		});
+	}
+
+	function failureBackoffActive(sessionID: string): boolean {
+		const failure = failureStates.get(sessionID);
+		if (!failure || failure.consecutiveFailures <= 0) return false;
+
+		const now = Date.now();
+		if (now - failure.lastFailureAt >= timing.failureResetWindowMs) {
+			failureStates.delete(sessionID);
+			return false;
+		}
+
+		if (failure.consecutiveFailures >= timing.maxConsecutiveFailures) {
+			return true;
+		}
+
+		const backoffMs =
+			timing.failureBackoffBaseMs *
+			Math.pow(2, Math.min(failure.consecutiveFailures - 1, 5));
+		return now - failure.lastFailureAt < backoffMs;
+	}
+
+	async function hasPendingQuestion(sessionID: string): Promise<boolean> {
+		if (typeof ctx.client.session.messages !== "function") return false;
+
+		try {
+			const messagesResponse = await ctx.client.session.messages({
+				path: { id: sessionID },
+				query: { directory: ctx.directory },
+			});
+			const messages = normalizeMessages(messagesResponse);
+			return hasUnansweredQuestion(messages);
+		} catch {
+			return false;
+		}
 	}
 
 	function canSend(sessionID: string): boolean {
 		const meta = getNeverStopSessionMeta(ctx.directory, sessionID);
 		if (!meta?.prompt) return false;
+		if (failureBackoffActive(sessionID)) return false;
 		const lastSentAt = meta.lastSentAt ?? 0;
 		if (Date.now() - lastSentAt < timing.sendCooldownMs) return false;
 		return true;
@@ -361,6 +491,7 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 		if (!canSend(sessionID)) return;
 		const interruptedAt = interruptDetectedAt.get(sessionID) ?? 0;
 		if (Date.now() - interruptedAt < timing.interruptGraceMs) return;
+		if (await hasPendingQuestion(sessionID)) return;
 
 		const prompt = getNeverStopPrompt(ctx.directory, sessionID);
 		if (!prompt) return;
@@ -383,7 +514,9 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 				query: { directory: ctx.directory },
 			});
 			markNeverStopPromptSent(ctx.directory, sessionID);
+			resetFailureState(sessionID);
 		} catch {
+			markSendFailure(sessionID);
 			// Session may no longer exist.
 		} finally {
 			inFlightSends.delete(sessionID);
