@@ -1,4 +1,5 @@
 .DS_Store
+MEMORY.md
 vision/
 saves/
 node_modules
