@@ -454,7 +454,7 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 
 		const backoffMs =
 			timing.failureBackoffBaseMs *
-			Math.pow(2, Math.min(failure.consecutiveFailures - 1, 5));
+			2 ** Math.min(failure.consecutiveFailures - 1, 5);
 		return now - failure.lastFailureAt < backoffMs;
 	}
 
@@ -473,12 +473,14 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 		}
 	}
 
-	function canSend(sessionID: string): boolean {
+	function canSend(sessionID: string, reason: "idle" | "reinforce"): boolean {
 		const meta = getNeverStopSessionMeta(ctx.directory, sessionID);
 		if (!meta?.prompt) return false;
 		if (failureBackoffActive(sessionID)) return false;
-		const lastSentAt = meta.lastSentAt ?? 0;
-		if (Date.now() - lastSentAt < timing.sendCooldownMs) return false;
+		if (reason === "reinforce") {
+			const lastSentAt = meta.lastSentAt ?? 0;
+			if (Date.now() - lastSentAt < timing.sendCooldownMs) return false;
+		}
 		return true;
 	}
 
@@ -488,7 +490,7 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 	): Promise<void> {
 		if (!sessionID) return;
 		if (inFlightSends.has(sessionID)) return;
-		if (!canSend(sessionID)) return;
+		if (!canSend(sessionID, reason)) return;
 		const interruptedAt = interruptDetectedAt.get(sessionID) ?? 0;
 		if (Date.now() - interruptedAt < timing.interruptGraceMs) return;
 		if (await hasPendingQuestion(sessionID)) return;

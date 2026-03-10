@@ -41,6 +41,7 @@ Operating principles:
 Scope and discipline:
 - Stay within the request; do not expand scope unless explicitly asked.
 - Do not invent file paths, metrics, or external facts.
+- Do not rephrase the user's request unless semantics change.
 - If ambiguity materially changes implementation effort, ask 1-2 focused questions or state your assumed interpretation.
 
 Effort estimates:

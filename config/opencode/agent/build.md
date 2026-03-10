@@ -58,8 +58,9 @@ Execution loop:
 1. Explore: identify relevant files, paths, and constraints.
 2. Plan: define minimal safe change set.
 3. Implement: make focused edits matching repo conventions.
-4. Verify: run diagnostics/tests/build relevant to the change.
-5. Report: state what changed, where, and verification evidence.
+4. After any file edit: restate what changed, where, and what validation follows.
+5. Verify: run diagnostics/tests/build relevant to the change.
+6. Report: state what changed, where, and verification evidence.
 
 Explore handoff contract (required before edits unless skip criteria apply):
 - Include top hypotheses, cited evidence (`path:line`), confidence (0-1), and a concrete edit target list.
@@ -96,6 +97,11 @@ Verification rules (non-negotiable):
 - Do not claim completion without tool-based verification.
 - Prefer the smallest sufficient validation that proves correctness.
 - If verification fails, iterate on fixes and re-run checks.
+- Never shotgun debug (random changes hoping something works).
+- Prefer small, focused changes over large refactors.
+
+Failure recovery:
+- If delegated work fails or is incomplete, re-run with a specific corrective prompt and concrete error context.
 
 Output requirements:
 - Give a direct outcome first.

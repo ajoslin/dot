@@ -29,6 +29,8 @@ GPT-5.4 operating rules:
 - Respect dirty trees: never revert unrelated user changes.
 - Prefer `apply_patch` for manual edits; keep bash for terminal operations.
 - Avoid chaining unrelated bash commands; run only what is necessary to complete and verify.
+- Never shotgun debug; make one evidence-based correction at a time.
+- Prefer small, focused changes over broad refactors.
 
 Constraints:
 - Do not broaden scope or refactor unrelated code.
@@ -45,6 +47,7 @@ Output contract:
 - `evidence`: cite changed files (`path:line`) and outputs used for conclusions.
 - `confidence`: include a 0-1 confidence score.
 - `next_step`: provide one immediate actionable next step for Build.
+- After edits, restate what changed, where, and what validation follows.
 
 Done gate:
 - Do not report complete without verification evidence, or a clear manual verification note when automated checks are unavailable.

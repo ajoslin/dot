@@ -151,6 +151,55 @@ describe("never-stop plugin e2e", () => {
 		});
 	});
 
+	it("sends on each idle transition even when cooldown is active", async () => {
+		process.env.NEVER_STOP_SEND_COOLDOWN_MS = "60000";
+
+		const { client, prompts } = createMockClient();
+		const plugin = await NeverStopPlugin({ directory, client });
+		const sessionID = "session-idle-repeat";
+		const prompt = "Keep going";
+
+		await plugin.event({
+			event: {
+				type: "command.executed",
+				properties: {
+					name: "never-stop",
+					sessionID,
+					arguments: prompt,
+					messageID: "m-repeat",
+				},
+			},
+		});
+
+		await plugin.event({ event: { type: "session.idle", properties: { sessionID } } });
+		await Bun.sleep(30);
+
+		expect(prompts.length).toBe(1);
+
+		await plugin.event({
+			event: {
+				type: "message.updated",
+				properties: {
+					sessionID,
+					messageID: "m-repeat",
+				},
+			},
+		});
+
+		await plugin.event({ event: { type: "session.idle", properties: { sessionID } } });
+		await Bun.sleep(30);
+
+		expect(prompts.length).toBe(2);
+		expect(prompts[1]?.body.parts[0]?.text).toBe(prompt);
+
+		await plugin.event({
+			event: {
+				type: "session.deleted",
+				properties: { info: { id: sessionID } },
+			},
+		});
+	});
+
 	it("cancels pending idle send when activity arrives via part.sessionID", async () => {
 		const { client, prompts } = createMockClient();
 		const plugin = await NeverStopPlugin({ directory, client });
