@@ -19,7 +19,7 @@ const DEFAULT_REINFORCE_PERIOD_MS = 45 * 60_000;
 const DEFAULT_REINFORCE_TICK_MS = 60_000;
 const DEFAULT_FAILURE_BACKOFF_BASE_MS = 5_000;
 const DEFAULT_FAILURE_RESET_WINDOW_MS = 5 * 60_000;
-const DEFAULT_MAX_CONSECUTIVE_FAILURES = 5;
+const DEFAULT_MAX_CONSECUTIVE_FAILURES = 3;
 const NEVER_STOP_COMMAND = "/never-stop";
 const NEVER_STOP_CLEAR_COMMAND = "/never-stop-clear";
 const NEVER_STOP_PRIMARY_SOUND = join(
@@ -248,6 +248,12 @@ function isInterruptEvent(event: EventLike): boolean {
 	);
 }
 
+function isCountedErrorEvent(event: EventLike): boolean {
+	if (event?.type !== "session.error") return false;
+	const errorName = event?.properties?.error?.name;
+	return errorName !== "MessageAbortedError" && errorName !== "AbortError";
+}
+
 function parseNeverStopLine(rawLine: string | null | undefined): NeverStopCommand | null {
 	if (typeof rawLine !== "string") return null;
 	const line = rawLine.trim();
@@ -429,13 +435,40 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 		failureStates.delete(sessionID);
 	}
 
-	function markSendFailure(sessionID: string): void {
+	function recordFailure(sessionID: string): NeverStopFailureState {
 		const now = Date.now();
 		const existing = failureStates.get(sessionID);
-		failureStates.set(sessionID, {
-			consecutiveFailures: (existing?.consecutiveFailures ?? 0) + 1,
+		const withinWindow =
+			existing && now - existing.lastFailureAt < timing.failureResetWindowMs;
+		const nextState = {
+			consecutiveFailures: withinWindow
+				? existing.consecutiveFailures + 1
+				: 1,
 			lastFailureAt: now,
-		});
+		};
+		failureStates.set(sessionID, nextState);
+		return nextState;
+	}
+
+	async function stopForRepeatedFailures(sessionID: string): Promise<void> {
+		const removed = clearNeverStopPrompt(ctx.directory, sessionID);
+		clearSessionRuntime(sessionID);
+		if (!removed) return;
+		const windowMinutes = Math.max(
+			1,
+			Math.round(timing.failureResetWindowMs / 60_000),
+		);
+		await showToast(
+			ctx.client,
+			`Never-stop disabled after ${timing.maxConsecutiveFailures} errors within ${windowMinutes}m`,
+			"warning",
+		);
+	}
+
+	async function handleFailure(sessionID: string): Promise<void> {
+		const failure = recordFailure(sessionID);
+		if (failure.consecutiveFailures < timing.maxConsecutiveFailures) return;
+		await stopForRepeatedFailures(sessionID);
 	}
 
 	function failureBackoffActive(sessionID: string): boolean {
@@ -518,7 +551,7 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 			markNeverStopPromptSent(ctx.directory, sessionID);
 			resetFailureState(sessionID);
 		} catch {
-			markSendFailure(sessionID);
+			await handleFailure(sessionID);
 			// Session may no longer exist.
 		} finally {
 			inFlightSends.delete(sessionID);
@@ -636,6 +669,14 @@ export const NeverStopPlugin = async (ctx: NeverStopContext) => {
 			if (isInterruptEvent(event)) {
 				interruptDetectedAt.set(sessionID, Date.now());
 				cancelIdleTimer(sessionID);
+				return event;
+			}
+
+			if (isCountedErrorEvent(event)) {
+				cancelIdleTimer(sessionID);
+				if (getNeverStopPrompt(ctx.directory, sessionID)) {
+					await handleFailure(sessionID);
+				}
 				return event;
 			}
 

@@ -18,6 +18,12 @@
 		"opencode-supermemory@latest"
 	],
 	"mcp": {
+		"executor": {
+			"type": "remote",
+			"url": "http://127.0.0.1:8788/mcp",
+			"enabled": true,
+			"timeout": 10000
+		},
 		"agentation": {
 			"type": "local",
 			"command": ["npx", "-y", "agentation-mcp", "server"],

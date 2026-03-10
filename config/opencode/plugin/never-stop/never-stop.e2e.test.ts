@@ -27,6 +27,9 @@ const ENV_KEYS = [
 	"NEVER_STOP_INTERRUPT_GRACE_MS",
 	"NEVER_STOP_REINFORCE_PERIOD_MS",
 	"NEVER_STOP_REINFORCE_TICK_MS",
+	"NEVER_STOP_FAILURE_BACKOFF_BASE_MS",
+	"NEVER_STOP_FAILURE_RESET_WINDOW_MS",
+	"NEVER_STOP_MAX_CONSECUTIVE_FAILURES",
 ] as const;
 
 let directory = "";
@@ -42,25 +45,29 @@ function readState(rootDirectory: string): NeverStopStateFile {
 	return JSON.parse(fs.readFileSync(statePath, "utf-8")) as NeverStopStateFile;
 }
 
-function createMockClient() {
+	function createMockClient(options?: { failPrompt?: boolean }) {
 	const prompts: PromptRequest[] = [];
+	const toasts: ToastRequest[] = [];
 
 	const client = {
 		tui: {
 			async showToast(input: ToastRequest) {
-				void input;
+				toasts.push(input);
 				return { ok: true };
 			},
 		},
 		session: {
 			async prompt(input: PromptRequest) {
+				if (options?.failPrompt) {
+					throw new Error("prompt failed");
+				}
 				prompts.push(input);
 				return { ok: true };
 			},
 		},
 	};
 
-	return { client, prompts };
+	return { client, prompts, toasts };
 }
 
 describe("never-stop plugin e2e", () => {
@@ -198,6 +205,87 @@ describe("never-stop plugin e2e", () => {
 				properties: { info: { id: sessionID } },
 			},
 		});
+	});
+
+	it("disables never-stop after three session errors within five minutes", async () => {
+		process.env.NEVER_STOP_FAILURE_RESET_WINDOW_MS = "300000";
+		process.env.NEVER_STOP_MAX_CONSECUTIVE_FAILURES = "3";
+
+		const { client, prompts, toasts } = createMockClient();
+		const plugin = await NeverStopPlugin({ directory, client });
+		const sessionID = "session-error-stop";
+
+		await plugin.event({
+			event: {
+				type: "command.executed",
+				properties: {
+					name: "never-stop",
+					sessionID,
+					arguments: "Recover if possible",
+					messageID: "m-errors",
+				},
+			},
+		});
+
+		for (let index = 0; index < 3; index++) {
+			await plugin.event({
+				event: {
+					type: "session.error",
+					properties: {
+						sessionID,
+						error: { name: `ModelError${index}` },
+					},
+				},
+			});
+		}
+
+		expect(readState(directory).sessions[sessionID]).toBeUndefined();
+		expect(toasts.at(-1)?.body.message).toContain("disabled after 3 errors within 5m");
+
+		await plugin.event({ event: { type: "session.idle", properties: { sessionID } } });
+		await Bun.sleep(30);
+		expect(prompts.length).toBe(0);
+	});
+
+	it("disables never-stop after three failed auto-sends within five minutes", async () => {
+		process.env.NEVER_STOP_FAILURE_BACKOFF_BASE_MS = "0";
+		process.env.NEVER_STOP_FAILURE_RESET_WINDOW_MS = "300000";
+		process.env.NEVER_STOP_MAX_CONSECUTIVE_FAILURES = "3";
+
+		const { client, toasts } = createMockClient({ failPrompt: true });
+		const plugin = await NeverStopPlugin({ directory, client });
+		const sessionID = "session-prompt-fail-stop";
+
+		await plugin.event({
+			event: {
+				type: "command.executed",
+				properties: {
+					name: "never-stop",
+					sessionID,
+					arguments: "Try again",
+					messageID: "m-failures",
+				},
+			},
+		});
+
+		for (let index = 0; index < 3; index++) {
+			await plugin.event({
+				event: { type: "session.idle", properties: { sessionID } },
+			});
+			await Bun.sleep(30);
+			await plugin.event({
+				event: {
+					type: "message.updated",
+					properties: {
+						sessionID,
+						messageID: `m-failures-${index}`,
+					},
+				},
+			});
+		}
+
+		expect(readState(directory).sessions[sessionID]).toBeUndefined();
+		expect(toasts.at(-1)?.body.message).toContain("disabled after 3 errors within 5m");
 	});
 
 	it("cancels pending idle send when activity arrives via part.sessionID", async () => {
