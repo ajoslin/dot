@@ -10,6 +10,7 @@ config/tmux-plugins
 gitconfig-pm
 gitconfig-personal
 config/opencode/state
+.opencode/state/
 config/configstore
 config/flutter
 config/gh
