@@ -8,7 +8,7 @@ Run a single unified review flow by invoking `@code-review`.
 Guidance: $ARGUMENTS
 
 Requirements:
-1. `@code-review` must spawn exactly three subagents in parallel: `@code-review-sonnet`, `@code-review-codex`, and `@code-review-glm`.
+1. `@code-review` must spawn exactly three subagents in parallel: `@code-review-a`, `@code-review-b`, and `@code-review-c`.
 2. Review scope precedence:
    - PR/MR diff when user supplies link/number
    - Otherwise uncommitted Git changes

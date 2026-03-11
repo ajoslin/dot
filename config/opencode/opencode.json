@@ -15,7 +15,7 @@
 		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
-		"opencode-supermemory@latest"
+		"@plannotator/opencode@latest"
 	],
 	"mcp": {
 		"executor": {
@@ -23,11 +23,6 @@
 			"url": "http://127.0.0.1:8788/mcp",
 			"enabled": true,
 			"timeout": 10000
-		},
-		"agentation": {
-			"type": "local",
-			"command": ["npx", "-y", "agentation-mcp", "server"],
-			"enabled": true
 		},
 		"opensrc": {
 			"enabled": true,
@@ -48,6 +43,15 @@
 			"type": "remote",
 			"url": "https://api.refero.design/mcp",
 			"enabled": true
+		},
+		"daisyui-blueprint": {
+			"enabled": true,
+			"type": "local",
+			"command": ["npx", "-y", "daisyui-blueprint@latest"],
+			"environment": {
+				"LICENSE": "{env:DAISYUI_LICESE}",
+				"EMAIL": "{env:EMAIL}"
+			}
 		}
 	},
 	"permission": {

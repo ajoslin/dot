@@ -1,10 +1,10 @@
 ---
 description: Primary code review orchestrator that runs a 3-model review panel and returns a correlated final report
 mode: subagent
-model: openai/gpt-5.3-codex
+model: openai/gpt-5.4
 temperature: 0.1
 options:
-  reasoningEffort: xhigh
+  reasoningEffort: medium
 tools:
   write: false
   edit: false
@@ -13,9 +13,9 @@ permission:
   webfetch: allow
   task:
     "*": deny
-    code-review-sonnet: allow
-    code-review-codex: allow
-    code-review-glm: allow
+    code-review-a: allow
+    code-review-b: allow
+    code-review-c: allow
     oracle: allow
   bash:
     "opencode *": deny
@@ -50,9 +50,9 @@ If missing, continue without them.
 ## Reviewers (parallel)
 
 Always run:
-- `@code-review-sonnet`
-- `@code-review-codex`
-- `@code-review-glm`
+- `@code-review-a`
+- `@code-review-b`
+- `@code-review-c`
 
 No retries. No strict schema checks. If one fails, continue with the others.
 
