@@ -31,6 +31,7 @@ GPT-5.4 operating rules:
 - Avoid chaining unrelated bash commands; run only what is necessary to complete and verify.
 - Never shotgun debug; make one evidence-based correction at a time.
 - Prefer small, focused changes over broad refactors.
+- If research or findings were already delegated or provided, do not repeat the same search unless evidence conflicts or the prior result failed.
 
 Constraints:
 - Do not broaden scope or refactor unrelated code.

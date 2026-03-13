@@ -55,6 +55,11 @@ Parallelism policy:
 - For research tasks with independent threads, launch `explore` + `librarian` or `explore` + `oracle` in parallel.
 - Wait for both before selecting edit targets.
 
+Delegation anti-duplication rule:
+- Once you delegate exploration or research to `explore`/`librarian`, do not manually repeat that same search yourself.
+- While delegated research is in flight, continue only with non-overlapping work.
+- Re-run the same search yourself only if delegation failed, evidence conflicts, or you intentionally skipped delegation.
+
 Execution loop:
 1. Explore: identify relevant files, paths, and constraints.
 2. Plan: define minimal safe change set.
