@@ -125,10 +125,11 @@ function runGh(
   return parsed;
 }
 
-function runGhGraphql(fields: Record<string, string>) {
+function runGhGraphql(fields: Record<string, string | number | boolean>) {
   const cmd = ["api", "graphql"];
   for (const [key, value] of Object.entries(fields)) {
-    cmd.push("-f", `${key}=${value}`);
+    const flag = key === "query" ? "-f" : "-F";
+    cmd.push(flag, `${key}=${value}`);
   }
   const out = execFileSync("gh", cmd, { encoding: "utf8" });
   return JSON.parse(out);
@@ -220,7 +221,7 @@ function fetchReviewThreadByCommentId(repo: string, pr: number): Record<number, 
 
   let cursor: string | null = null;
   do {
-    const queryFields: Record<string, string> = {
+    const queryFields: Record<string, string | number | boolean> = {
       query: `
         query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
           repository(owner: $owner, name: $name) {
@@ -246,7 +247,7 @@ function fetchReviewThreadByCommentId(repo: string, pr: number): Record<number, 
       `,
       owner,
       name,
-      number: String(pr),
+      number: pr,
     };
     if (cursor) {
       queryFields.cursor = cursor;

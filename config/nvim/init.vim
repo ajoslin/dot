@@ -48,6 +48,7 @@ call plug#begin(stdpath('data') . '/plugged')
 Plug 'tpope/vim-fugitive'
 Plug 'shinchu/lightline-gruvbox.vim'
 Plug 'ellisonleao/gruvbox.nvim'
+Plug 'dmtrKovalenko/fff.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'MaximilianLloyd/tw-values.nvim'
 Plug 'nvim-neotest/nvim-nio'
@@ -149,15 +150,15 @@ let g:clap_layout = { 'relative': 'editor', 'width': '90%' }
 " prints extra 0 char
 autocmd FileType clap_input inoremap <silent> <buffer> <Esc> <C-R>=clap#exit()<CR><Esc>x 
 
-nnoremap <leader>/ :Telescope live_grep<cr>
+nnoremap <leader>/ <cmd>lua require('telescope-config').live_grep()<cr>
 " nnoremap <leader>/ :Telescope live_grep<cr>
-nnoremap <leader>* :Telescope grep_string<cr>
-nnoremap <leader>r :Telescope resume<cr>
+nnoremap <leader>* <cmd>lua require('telescope-config').grep_string()<cr>
+nnoremap <leader>r <cmd>lua require('telescope-config').resume()<cr>
 " nnoremap <leader>* :execute 'Clap grep2 ++query='.expand('<cword>')<cr>
 
-nnoremap <leader>y :Telescope yank_history<cr>
+nnoremap <leader>y <cmd>lua require('telescope-config').yank_history()<cr>
 
-nnoremap <leader>pf <cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--files', '--hidden', '-g', '!.git' }})<cr>
+nnoremap <leader>pf <cmd>lua require('telescope-config').find_files()<cr>
 
 "lsp provider to find the cursor word definition and reference
 nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
@@ -167,12 +168,12 @@ nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
 
 nnoremap <silent> <leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
 nnoremap <silent> <leader>cn <cmd>lua require('renamer').rename()<CR>
-nnoremap <silent> <leader>cd :Telescope lsp_definitions<cr>
+nnoremap <silent> <leader>cd <cmd>lua require('telescope-config').lsp_definitions()<cr>
 nnoremap <silent> <leader>cs <cmd>vim.lsp.buf.definition()<cr>
-nnoremap <silent> <leader>cr :Telescope lsp_references<cr>
-nnoremap <silent> <leader>cm :Telescope lsp_implementations<cr>
-nnoremap <silent> <leader>cw :Telescope lsp_dynamic_workspace_symbols<cr>
-nnoremap <silent> <leader>co :Telescope lsp_document_symbols<cr>
+nnoremap <silent> <leader>cr <cmd>lua require('telescope-config').lsp_references()<cr>
+nnoremap <silent> <leader>cm <cmd>lua require('telescope-config').lsp_implementations()<cr>
+nnoremap <silent> <leader>cw <cmd>lua require('telescope-config').lsp_dynamic_workspace_symbols()<cr>
+nnoremap <silent> <leader>co <cmd>lua require('telescope-config').lsp_document_symbols()<cr>
 nnoremap <silent> <leader>cc <cmd>lua require("claude-code").toggle()<CR>
 " inoremap <silent> <C-s> <cmd>lua vim.lsp.buf.signature_help()<CR>
 

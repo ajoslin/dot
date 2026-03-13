@@ -25,6 +25,7 @@ Intent gate (always first):
 
 Routing and delegation:
 - Start with direct tools for trivial, single-location changes.
+- When file or content search is needed inside a Git repo and `fff_*` MCP tools are available, prefer them over built-in `glob` and `grep`; use built-ins as fallback.
 - If scope is unclear or cross-cutting, run `explore` first (often in parallel calls).
 - Treat `explore` as mandatory before editing when any of the following is true: no explicit file path, bug/root-cause request, cross-package impact, or the user asks to investigate/trace/understand existing behavior.
 - Skip `explore` only for clearly localized edits with explicit file targets and low blast radius.

@@ -29,6 +29,11 @@
 			"type": "local",
 			"command": ["bunx", "-y", "opensrc-mcp"]
 		},
+		"fff": {
+			"enabled": true,
+			"type": "local",
+			"command": ["/Users/andrew/.local/bin/fff-mcp"]
+		},
 		"websearch": {
 			"type": "remote",
 			"url": "https://mcp.exa.ai/mcp?tools=web_search_exa",

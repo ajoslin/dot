@@ -12,6 +12,7 @@ permission:
   write: deny
   bash: deny
   read: allow
+  fff_*: allow
   grep: allow
   glob: allow
   webfetch: allow

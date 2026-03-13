@@ -107,6 +107,12 @@ Route based on the underlying need, not only the literal wording.
 - Root-cause investigation: `explore` + `oracle` in parallel, then synthesize fix path.
 - Broad unknowns: multiple `explore` calls in parallel; escalate once evidence plateaus.
 
+## Search Routing
+
+- When `fff_*` MCP tools are available, prefer `fff_find_files`, `fff_grep`, and `fff_multi_grep` for file and content search inside Git repos.
+- Treat built-in `glob` and `grep` as fallback tools when `fff` is unavailable, the target path is outside a Git repo, or you need a capability `fff` does not provide.
+- Do not disable built-in search tools by default; keep them available for fallback and non-Git paths.
+
 ## Build Routing
 
 For implementation-heavy requests (feature work, bug fixes, refactors with concrete changes), prefer `build` as the primary agent.

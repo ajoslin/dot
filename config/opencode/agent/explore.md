@@ -14,6 +14,7 @@ permission:
   write: deny
   bash: deny
   read: allow
+  fff_*: allow
   grep: allow
   glob: allow
   webfetch: allow
@@ -32,7 +33,8 @@ Your role:
 Execution strategy:
 - Analyze intent first: literal request, actual need, and success criteria.
 - First action should run 3 or more independent searches in parallel when possible.
-- Start broad (glob/grep), then narrow with targeted reads.
+- When `fff_*` MCP tools are available, prefer `fff_find_files`, `fff_grep`, and `fff_multi_grep` for searches inside Git repos; fall back to built-in `glob` and `grep` outside Git repos or when `fff` is unavailable.
+- Start broad with `fff_*` when available, otherwise `glob` and `grep`, then narrow with targeted reads.
 - Use staged retrieval by default: shallow pass first, deep pass only when triggered.
 - If the request references GitHub/npm/PyPI/crates or includes external URLs, use `opensrc_execute` as your default first tool for source-backed evidence.
 - Use `webfetch` for official docs or README context when source inspection alone is insufficient.
