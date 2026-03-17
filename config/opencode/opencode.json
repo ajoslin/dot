@@ -33,30 +33,6 @@
 			"enabled": true,
 			"type": "local",
 			"command": ["/Users/andrew/.local/bin/fff-mcp"]
-		},
-		"websearch": {
-			"type": "remote",
-			"url": "https://mcp.exa.ai/mcp?tools=web_search_exa",
-			"enabled": true
-		},
-		"context7": {
-			"type": "remote",
-			"url": "https://mcp.context7.com/mcp",
-			"enabled": true
-		},
-		"refero": {
-			"type": "remote",
-			"url": "https://api.refero.design/mcp",
-			"enabled": true
-		},
-		"daisyui-blueprint": {
-			"enabled": true,
-			"type": "local",
-			"command": ["npx", "-y", "daisyui-blueprint@latest"],
-			"environment": {
-				"LICENSE": "{env:DAISYUI_LICESE}",
-				"EMAIL": "{env:EMAIL}"
-			}
 		}
 	},
 	"permission": {

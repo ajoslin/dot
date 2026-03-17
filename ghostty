@@ -1,4 +1,3 @@
-
 font-family = "FiraCode Nerd Font Mono Light"
 font-style = "Medium"
 font-size = 14
@@ -14,4 +13,3 @@ window-padding-color = extend
 link-url = true
 
 confirm-close-surface = false
-

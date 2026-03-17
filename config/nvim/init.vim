@@ -166,10 +166,10 @@ nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
 " nnoremap <silent> <leader>ch <cmd>lua require("hover").hover, {desc = "hover.nvim"})<CR>
         " vim.keymap.set("n", "gK", require("hover").hover_select, {desc = "hover.nvim (select)"})
 
-nnoremap <silent> <leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
+nnoremap <silent> <leader>ca <cmd>lua smart_code_action()<CR>
 nnoremap <silent> <leader>cn <cmd>lua require('renamer').rename()<CR>
-nnoremap <silent> <leader>cd <cmd>lua require('telescope-config').lsp_definitions()<cr>
-nnoremap <silent> <leader>cs <cmd>vim.lsp.buf.definition()<cr>
+nnoremap <silent> <leader>cd <cmd>lua vim.lsp.buf.declaration()<cr>
+nnoremap <silent> <leader>cs <cmd>lua vim.lsp.buf.definition()<cr>
 nnoremap <silent> <leader>cr <cmd>lua require('telescope-config').lsp_references()<cr>
 nnoremap <silent> <leader>cm <cmd>lua require('telescope-config').lsp_implementations()<cr>
 nnoremap <silent> <leader>cw <cmd>lua require('telescope-config').lsp_dynamic_workspace_symbols()<cr>

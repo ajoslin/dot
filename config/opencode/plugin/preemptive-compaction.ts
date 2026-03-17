@@ -69,16 +69,8 @@ interface PluginContext {
 
 const MODEL_CONTEXT_LIMITS: ModelContextLimit[] = [
 	{
-		pattern: /claude-sonnet-4.6/i,
+		pattern: /claude-(opus|sonnet)-4.6/i,
 		limit: 1_000_000,
-	},
-	{
-		pattern: /claude-(opus|sonnet|haiku)/i,
-		limit:
-			process.env.ANTHROPIC_1M_CONTEXT === "true" ||
-			process.env.VERTEX_ANTHROPIC_1M_CONTEXT === "true"
-				? 1_000_000
-				: 200_000,
 	},
 	{ pattern: /-spark/i, limit: 128_000 },
 	{ pattern: /gpt-?5.4/i, limit: 1_000_000 },

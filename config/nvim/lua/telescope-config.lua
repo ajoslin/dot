@@ -1,6 +1,7 @@
 local M = {}
 
 local last_picker = nil
+local last_fff_snapshot = nil
 
 local function copy_opts(opts)
     if opts == nil then
@@ -16,6 +17,104 @@ local function remember_picker(backend, method, opts)
         method = method,
         opts = copy_opts(opts),
     }
+end
+
+local function get_fff_picker_ui()
+    local ok, picker_ui = pcall(require, "fff.picker_ui")
+    if not ok or picker_ui.state == nil or not picker_ui.state.active then
+        return nil
+    end
+
+    return picker_ui
+end
+
+local function clamp(value, min_value, max_value)
+    return math.max(min_value, math.min(value, max_value))
+end
+
+local function snapshot_fff_state()
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
+        return nil
+    end
+
+    local state = picker_ui.state
+    local picker_opts = {}
+    if last_picker ~= nil and last_picker.backend == "fff" then
+        picker_opts = copy_opts(last_picker.opts)
+    end
+
+    last_fff_snapshot = {
+        method = last_picker and last_picker.method or "find_files",
+        opts = picker_opts,
+        query = state.query,
+        cursor = state.cursor,
+        mode = state.mode,
+        renderer = state.renderer,
+        grep_mode = state.grep_mode,
+        grep_config = copy_opts(state.grep_config),
+        location = copy_opts(state.location),
+        items = vim.deepcopy(state.items),
+        filtered_items = vim.deepcopy(state.filtered_items),
+        selected_files = vim.deepcopy(state.selected_files),
+        selected_items = vim.deepcopy(state.selected_items),
+        suggestion_items = vim.deepcopy(state.suggestion_items),
+        suggestion_source = state.suggestion_source,
+    }
+
+    return last_fff_snapshot
+end
+
+local function restore_fff_state(snapshot)
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil or snapshot == nil then
+        return
+    end
+
+    local state = picker_ui.state
+
+    state.query = snapshot.query or ""
+    state.mode = snapshot.mode
+    state.renderer = snapshot.renderer
+    state.grep_mode = snapshot.grep_mode or state.grep_mode
+    state.grep_config = copy_opts(snapshot.grep_config)
+    state.location = copy_opts(snapshot.location)
+    state.items = vim.deepcopy(snapshot.items) or state.items
+    state.filtered_items = vim.deepcopy(snapshot.filtered_items) or state.filtered_items
+    state.selected_files = vim.deepcopy(snapshot.selected_files) or {}
+    state.selected_items = vim.deepcopy(snapshot.selected_items) or {}
+    state.suggestion_items = vim.deepcopy(snapshot.suggestion_items)
+    state.suggestion_source = snapshot.suggestion_source
+
+    local item_count = #state.filtered_items
+    state.cursor = item_count == 0 and 1 or clamp(snapshot.cursor or 1, 1, item_count)
+
+    if state.input_buf ~= nil and vim.api.nvim_buf_is_valid(state.input_buf) then
+        vim.api.nvim_set_option_value("modifiable", true, { buf = state.input_buf })
+        vim.api.nvim_buf_set_lines(state.input_buf, 0, -1, false, { state.config.prompt .. state.query })
+    end
+
+    picker_ui.render_list()
+    picker_ui.update_preview()
+    picker_ui.update_status()
+
+    if state.input_win ~= nil and vim.api.nvim_win_is_valid(state.input_win) then
+        vim.api.nvim_set_current_win(state.input_win)
+        vim.api.nvim_win_set_cursor(state.input_win, { 1, #state.config.prompt + #state.query })
+        vim.cmd("startinsert!")
+    end
+end
+
+local function refresh_fff_picker(picker_ui)
+    local state = picker_ui.state
+
+    picker_ui.render_list()
+    if state.mode == "grep" or state.suggestion_source == "grep" then
+        picker_ui.update_preview_smart()
+    else
+        picker_ui.update_preview()
+    end
+    picker_ui.update_status()
 end
 
 local function notify_missing(plugin_name)
@@ -89,16 +188,90 @@ local function selected_item_count(state)
 end
 
 function M.fff_multi_select()
-    local ok, picker_ui = pcall(require, "fff.picker_ui")
-    if not ok or picker_ui.state == nil or not picker_ui.state.active then
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
         return
     end
+
+    snapshot_fff_state()
 
     if selected_item_count(picker_ui.state) > 0 then
         picker_ui.send_to_quickfix()
     else
         picker_ui.select()
     end
+end
+
+function M.fff_close()
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
+        return
+    end
+
+    snapshot_fff_state()
+    picker_ui.close()
+end
+
+function M.fff_select(action)
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
+        return
+    end
+
+    snapshot_fff_state()
+    picker_ui.select(action)
+end
+
+function M.fff_send_to_quickfix()
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
+        return
+    end
+
+    snapshot_fff_state()
+    picker_ui.send_to_quickfix()
+end
+
+function M.fff_move_up_wrap()
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
+        return
+    end
+
+    local state = picker_ui.state
+    local item_count = #state.filtered_items
+    if item_count == 0 then
+        return
+    end
+
+    if state.cursor <= 1 then
+        state.cursor = item_count
+        refresh_fff_picker(picker_ui)
+        return
+    end
+
+    picker_ui.move_up()
+end
+
+function M.fff_move_down_wrap()
+    local picker_ui = get_fff_picker_ui()
+    if picker_ui == nil then
+        return
+    end
+
+    local state = picker_ui.state
+    local item_count = #state.filtered_items
+    if item_count == 0 then
+        return
+    end
+
+    if state.cursor >= item_count then
+        state.cursor = 1
+        refresh_fff_picker(picker_ui)
+        return
+    end
+
+    picker_ui.move_down()
 end
 
 local function setup_fff_picker_keymaps()
@@ -113,6 +286,29 @@ local function setup_fff_picker_keymaps()
             vim.keymap.set("i", "<S-CR>", M.fff_multi_select, opts)
             vim.keymap.set("n", "<CR>", M.fff_multi_select, opts)
             vim.keymap.set("n", "<S-CR>", M.fff_multi_select, opts)
+            vim.keymap.set({ "i", "n" }, "<C-k>", M.fff_move_up_wrap, opts)
+            vim.keymap.set({ "i", "n" }, "<Up>", M.fff_move_up_wrap, opts)
+            vim.keymap.set({ "i", "n" }, "<C-j>", M.fff_move_down_wrap, opts)
+            vim.keymap.set({ "i", "n" }, "<Down>", M.fff_move_down_wrap, opts)
+            vim.keymap.set({ "i", "n" }, "<Esc>", M.fff_close, opts)
+            vim.keymap.set("n", "q", M.fff_close, opts)
+            vim.keymap.set({ "i", "n" }, "<C-q>", M.fff_send_to_quickfix, opts)
+            vim.keymap.set({ "i", "n" }, "<C-s>", function()
+                M.fff_select("split")
+            end, opts)
+            vim.keymap.set({ "i", "n" }, "<C-v>", function()
+                M.fff_select("vsplit")
+            end, opts)
+            vim.keymap.set({ "i", "n" }, "<C-t>", function()
+                M.fff_select("tab")
+            end, opts)
+
+            vim.api.nvim_create_autocmd("WinLeave", {
+                buffer = event.buf,
+                callback = function()
+                    snapshot_fff_state()
+                end,
+            })
         end,
     })
 end
@@ -223,7 +419,16 @@ end
 
 function M.resume()
     if last_picker ~= nil and last_picker.backend == "fff" then
-        call_fff(last_picker.method, last_picker.opts)
+        local snapshot = vim.deepcopy(last_fff_snapshot)
+        local method = snapshot and snapshot.method or last_picker.method
+        local opts = snapshot and copy_opts(snapshot.opts) or copy_opts(last_picker.opts)
+
+        if snapshot ~= nil and snapshot.query ~= nil then
+            opts.query = snapshot.query
+        end
+
+        call_fff(method, opts)
+        restore_fff_state(snapshot)
         return
     end
 

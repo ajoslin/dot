@@ -161,6 +161,138 @@ vim.lsp.config.tsgo = {
 }
 vim.lsp.enable('tsgo')
 
+local ts_code_action_filetypes = {
+  javascript = true,
+  javascriptreact = true,
+  typescript = true,
+  typescriptreact = true,
+}
+
+local function apply_code_action(action, client, ctx)
+  if action.edit then
+    vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+  end
+
+  local command = action.command
+  if command then
+    local command_to_run = type(command) == 'table' and command or action
+    client:exec_cmd(command_to_run, ctx)
+  end
+end
+
+local function on_code_action_choice(choice)
+  if not choice then
+    return
+  end
+
+  local client = assert(vim.lsp.get_client_by_id(choice.ctx.client_id))
+  local action = choice.action
+  local bufnr = assert(choice.ctx.bufnr, 'Must have buffer number')
+
+  if type(action.title) == 'string' and type(action.command) == 'string' then
+    apply_code_action(action, client, choice.ctx)
+    return
+  end
+
+  if action.disabled then
+    vim.notify(action.disabled.reason, vim.log.levels.ERROR)
+    return
+  end
+
+  if not (action.edit and action.command) and client:supports_method('codeAction/resolve') then
+    client:request('codeAction/resolve', action, function(err, resolved_action)
+      if err then
+        if action.edit or action.command then
+          apply_code_action(action, client, choice.ctx)
+        else
+          vim.notify(err.code .. ': ' .. err.message, vim.log.levels.ERROR)
+        end
+      else
+        apply_code_action(resolved_action, client, choice.ctx)
+      end
+    end, bufnr)
+  else
+    apply_code_action(action, client, choice.ctx)
+  end
+end
+
+local function make_code_action_params(client)
+  local win = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local params = vim.lsp.util.make_range_params(win, client.offset_encoding)
+  local ns_push = vim.lsp.diagnostic.get_namespace(client.id, false)
+  local ns_pull = vim.lsp.diagnostic.get_namespace(client.id, true)
+  local diagnostics = {}
+  local lnum = vim.api.nvim_win_get_cursor(win)[1] - 1
+
+  vim.list_extend(diagnostics, vim.diagnostic.get(bufnr, { namespace = ns_pull, lnum = lnum }))
+  vim.list_extend(diagnostics, vim.diagnostic.get(bufnr, { namespace = ns_push, lnum = lnum }))
+
+  params.context = {
+    triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked,
+    diagnostics = vim.tbl_map(function(d)
+      return d.user_data.lsp
+    end, diagnostics),
+  }
+
+  return params
+end
+
+local function preferred_code_action_client(bufnr)
+  if not ts_code_action_filetypes[vim.bo[bufnr].filetype] then
+    return nil
+  end
+
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/codeAction' })) do
+    if client.name == 'tsgo' then
+      return client
+    end
+  end
+
+  return nil
+end
+
+_G.smart_code_action = function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local client = preferred_code_action_client(bufnr)
+  if not client then
+    vim.lsp.buf.code_action()
+    return
+  end
+
+  client:request('textDocument/codeAction', make_code_action_params(client), function(err, result, ctx)
+    if err then
+      vim.notify(err.code .. ': ' .. err.message, vim.log.levels.ERROR)
+      return
+    end
+
+    local actions = {}
+    for _, action in pairs(result or {}) do
+      table.insert(actions, {
+        action = action,
+        ctx = ctx,
+      })
+    end
+
+    if #actions == 0 then
+      vim.notify('No code actions available', vim.log.levels.INFO)
+      return
+    end
+
+    vim.ui.select(actions, {
+      prompt = 'Code actions:',
+      kind = 'codeaction',
+      format_item = function(item)
+        local title = item.action.title:gsub('\r\n', '\\r\\n'):gsub('\n', '\\n')
+        if item.action.disabled then
+          return title .. ' (disabled)'
+        end
+        return title
+      end,
+    }, on_code_action_choice)
+  end, bufnr)
+end
+
 -- Custom code action function that sorts vtsls/TypeScript actions first, biome last
 _G.sorted_code_action = function()
   local params = vim.lsp.util.make_range_params(nil, nil, 0)
