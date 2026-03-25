@@ -1,196 +1,143 @@
 ---
 name: simplify
-description: Review pending code changes for reuse, quality, and efficiency, then apply worthwhile fixes. Use when asked to simplify, clean up, optimize, or review recent edits.
+description: Pre-commit readability pass for pending diffs. Use when simplifying changed code to make it easier to consume, skimmable, non-clever, and locally obvious without changing behavior or important boundaries.
 ---
 
-# Simplify: Review and Cleanup
+# Simplify
 
-Run a focused review on the user's real diff, then fix high-value issues.
+Run a narrow readability pass on a real diff.
 
-## Guiding Question
+Make code easy to consume. Optimize for readability, skimmability, directness, and early returns. Avoid cleverness.
 
-Apply this exact question during review:
+This is not a redesign skill. It is a pre-commit cleanup pass.
 
-"Without violating locked requirements, acceptance criteria, and externally observable behavior, how can we simplify this change? Can we remove an abstraction? Use plain TypeScript? Omit a dependency? Infer data? Infer types? Avoid recording data? Remove deprecated types/features? Remove secondary paths like smoke tests?"
+If the current repo has a local `simplify` skill, apply that addendum after this base skill.
 
-For every candidate simplification, classify it as `safe-to-apply`, `proposal-only`, or `do-not-apply`.
+## When to Use
 
-## Outcome
+- before every commit on the pending diff
+- when asked to simplify, clean up, or reduce slop
+- when code works but feels noisy, indirect, over-abstracted, or hard to scan
 
-- Find concrete improvements in three lanes: reuse, quality, efficiency.
-- Apply worthwhile fixes directly.
-- Return a concise report of what changed and what was skipped.
+## Goal
 
-## Non-Negotiable Locks
+Simplify changed code without changing:
 
-- Do not remove required behavior, acceptance criteria coverage, or externally observable behavior.
-- Do not auto-remove smoke tests or secondary paths unless they are clearly non-requirements.
-- Do not auto-delete types/abstractions that enforce contracts, boundaries, or compatibility.
-- Do not reduce validation, observability, telemetry, or auditability unless explicitly requested.
-- If uncertainty remains, downgrade to `proposal-only`.
+- externally observable behavior
+- compatibility surfaces
+- ownership boundaries
+- validation, auth, telemetry, logging, or safety guards
 
-## Requirement Witness Ledger (Per Project)
+Bias toward:
 
-Use a project-scoped ledger at `.opencode/simplify-ledger.md`.
+- deletion over addition
+- derived values over stored flags
+- tagged states over boolean soup and optional bags
+- early returns over nested branches
+- explicit function contracts over mixed side effects
+- direct names over clever helpers
+- local code over one-off abstractions
+- tables or maps when branches only differ by data
+- existing canonical patterns over new micro-patterns
 
-Purpose:
-- Store requirement-preservation evidence so simplification gets safer over time.
-- Prevent repeated over-optimization against smoke tests, secondary paths, and contract types.
+## Read This First
 
-Rules:
-- Read ledger before analysis when it exists.
-- If missing, create it with the template in this skill.
-- Every candidate simplification must have a witness entry.
-- If no credible witness can be produced, force `proposal-only`.
+Always read:
 
-Ledger entry fields:
-- `id`: stable short identifier.
-- `scope`: file/API/test scope.
-- `requirement`: locked behavior/acceptance criterion.
-- `preservation-proof`: tests, types, API contract, or observable checks.
-- `risk-note`: what could regress.
-- `decision`: `safe-to-apply` | `proposal-only` | `do-not-apply`.
+- repo `AGENTS.md` if present
+- nearest package or subdirectory `AGENTS.md` if present
 
-## Phase 0: Load Ledger Context
+Read only if needed:
 
-1. Locate `.opencode/simplify-ledger.md` in the current project.
-2. If present, read relevant entries for touched files/APIs/tests.
-3. If absent, defer creation until there are reviewed candidates to record.
+- repo architecture or ownership docs when system boundaries are unclear
+- the current repo's local `simplify` skill, if one exists
+- [Simplify Gotchas](./references/gotchas.md) when deciding whether a cleanup is real simplification or fake simplification
+- [Simplify Checklist](./references/simplify-checklist.md) before applying or reporting changes
 
-Starter template for creation in Phase 6:
+## Hard Stops
 
-```markdown
-# Simplify Ledger
+Do not:
 
-Project-scoped requirement witness ledger for `/simplify`.
+- change behavior just to make code look cleaner
+- remove compatibility paths or migrate domains during simplify-only work
+- replace established model, service, or context helpers with raw access when those helpers enforce invariants
+- remove validation, telemetry, logging, auth, or guard code
+- store derived state just to save a line of computation
+- widen types into optional bags when a tagged shape would remove ambiguity
+- let a pure helper quietly mutate data
+- mix mutation and return-value semantics in a way that hides side effects
+- introduce a new abstraction unless it makes the code clearly easier to read
 
-## Entries
+If safety is unclear, downgrade to `proposal-only` or skip it.
 
-<!--
-- id: RWL-0001
-  scope: src/foo.ts, api/bar
-  requirement: Public API response shape remains backward compatible.
-  preservation-proof: tests/api/bar.test.ts passes; type contract unchanged.
-  risk-note: Hidden consumers may depend on optional field ordering.
-  decision: proposal-only
--->
-```
+## Core Loop
 
-## Phase 1: Build Runtime Diff Context
+1. Build scope from explicit path, otherwise working diff, otherwise latest commit.
+2. If there is no diff, stop with `nothing to simplify`.
+3. Find the top 1-3 highest-signal readability problems.
+4. Apply only fixes that are clearly safe and make the code easier to consume.
+5. Run the smallest relevant verification.
+6. Report what got simpler, what was skipped, and why it was safe.
 
-Do not embed code in this skill. Collect the diff at runtime and pass it to subagents.
+Do not force a cleanup pass if nothing clearly gets better.
 
-1. Choose scope in this precedence order:
-   - PR/MR diff if user provided PR context.
-   - Working tree diff otherwise (`git diff` or `git diff HEAD` if staged changes exist).
-   - Latest commit diff if no uncommitted changes (`git show --patch --format=fuller HEAD`).
-2. Capture:
-   - `DIFF_TEXT`: full patch text.
-   - `CHANGED_FILES`: stable file list in diff order.
-3. If no changes are found, stop and report that there is nothing to simplify.
+## Hunt These First
 
-## Large Diff Fallback
+Start with the changes most likely to improve readability fast:
 
-If `DIFF_TEXT` is too large for a single prompt:
+- wrappers that only rename or forward behavior
+- one-off exported types or interfaces with no real reuse
+- boolean mode soup and optional bags that want a tagged state
+- effect-driven derived state or mirrored state
+- speculative memoization or callback churn
+- helper extraction that moves logic away from the source of truth
+- hard-to-skim branching that wants early returns
+- repeated branches that all return the same shape and want a table
+- tiny abstractions added for aesthetics, not clarity
 
-1. Split by file or hunk while preserving patch boundaries.
-2. Run the same three-lane review in parallel on chunks.
-3. Merge chunk findings, dedupe globally, then continue with Phase 3.
+## Safe Fix Test
 
-## Phase 2: Launch Three Parallel Reviewers
+Apply a simplification only when the answer is clearly yes:
 
-Launch all three reviewers concurrently in one message using `task(...)`. Every reviewer must receive the same `DIFF_TEXT`.
+- Is the code easier to scan than before?
+- Did we remove a layer, branch, flag, or rename-only wrapper?
+- Did we make the state model or function contract more explicit?
+- Does the code still live in the same correct home?
+- Would a new reviewer understand the flow faster?
+- Is verification straightforward?
 
-### Reviewer A: Reuse
+If the answer is weak, skip it.
 
-Goal: reduce duplicate or hand-rolled logic.
+## Verification
 
-Checks:
-- Existing utilities/helpers that can replace new inline logic.
-- Newly added functions that duplicate existing functionality.
-- Ad-hoc parsing, normalization, path/env/type-guard logic that should reuse shared helpers.
+Use the smallest check that proves the cleanup is safe:
 
-### Reviewer B: Quality
+- targeted tests for changed modules when available
+- the smallest relevant typecheck or lint command
+- add focused checks beyond typecheck when async behavior, interaction flow, or visible UI changed
+- if no automated check exists, state the manual verification plan explicitly
 
-Goal: improve maintainability and abstraction boundaries.
+Typecheck alone is not enough when the cleanup changes async behavior, interaction flow, or visible UI structure.
 
-Checks:
-- Redundant state or derivations that can be simplified.
-- Parameter sprawl instead of better structure.
-- Copy-paste variants that should be unified.
-- Leaky abstractions and boundary breaks.
-- Stringly-typed additions where existing constants/unions/enums exist.
+## Output
 
-### Reviewer C: Efficiency
+Return concise sections:
 
-Goal: remove unnecessary work and hot-path cost.
+- `Scope used`
+- `Applied fixes`
+- `Skipped or proposal-only items`
+- `Verification evidence`
+- `Residual risks or assumptions`
 
-Checks:
-- Redundant computation, repeated I/O/API calls, N+1 patterns.
-- Missed concurrency for independent operations.
-- New blocking work in hot paths.
-- TOCTOU-style pre-checks that should be direct operation + error handling.
-- Memory growth/leaks and overly broad reads/loads.
+For each applied fix, say:
 
-## Phase 3: Aggregate Findings
+- path
+- what got simpler
+- why it is safe
 
-Merge all reviewer findings into one deduplicated list.
+## In This Reference
 
-For each finding:
-- Keep only concrete, evidence-backed issues.
-- Mark priority: `high`, `medium`, `low`.
-- Score `value` (0-3), `risk` (0-3), and `confidence` (0-3).
-- Attach a requirement witness:
-  - `requirement`
-  - `preservation-proof`
-  - `risk-note`
-- Classify action:
-  - `safe-to-apply` if `risk <= 1` and `confidence >= 2` and all locks are preserved.
-  - `proposal-only` if behavior/scope may change or evidence is incomplete.
-  - `do-not-apply` if it violates locks.
-- Add a one-line rationale for the classification.
-
-## Phase 4: Apply Worthwhile Fixes
-
-Apply only `safe-to-apply` findings directly with minimal safe edits.
-
-Rules:
-- Prefer existing project abstractions over new helpers.
-- Keep behavior unchanged unless user asked for behavior changes.
-- Avoid speculative refactors unrelated to changed code.
-- Never apply `proposal-only` or `do-not-apply` items automatically.
-
-Conservative default:
-- Apply at most 3 `safe-to-apply` findings per run unless the user asked for broader cleanup.
-
-## Phase 5: Verify
-
-Run the smallest sufficient checks that prove correctness for touched code.
-
-Typical order:
-1. Targeted tests for changed modules.
-2. Project lint/typecheck if relevant and available.
-3. Any focused build/check command tied to touched area.
-
-If checks fail, iterate on fixes and re-run checks before final output.
-
-## Phase 6: Update Ledger
-
-Append or update entries in `.opencode/simplify-ledger.md` for all reviewed candidates:
-
-- If missing and there are reviewed candidates, create the file with the starter template.
-- Add new witness entries for new simplification decisions.
-- Update existing entries when evidence or risk changed.
-- Keep concise wording and stable IDs where possible.
-
-## Phase 7: Final Output Format
-
-Return a concise report with:
-
-- Scope used (PR diff / working tree / latest commit).
-- Findings summary by lane (reuse, quality, efficiency).
-- Classification summary (`safe-to-apply`, `proposal-only`, `do-not-apply`).
-- Fixes applied (file + what changed).
-- Skipped findings with one-line reasons.
-- Ledger updates in `.opencode/simplify-ledger.md` (added/updated IDs).
-- Verification commands and status.
+| File | Purpose |
+|------|---------|
+| [references/gotchas.md](./references/gotchas.md) | High-signal pitfalls: fake simplification, boundary drift, and readability traps |
+| [references/simplify-checklist.md](./references/simplify-checklist.md) | Quick safety and verification checklist |

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "sources": {
+    "src_9d2afca7-3234-440d-90ca-6365561e7e84": {
+      "status": "connected",
+      "lastError": null,
+      "sourceHash": null,
+      "createdAt": 1773573305839,
+      "updatedAt": 1773573313199
+    },
+    "src_c373691e-760e-476d-be9d-98332b9ac51c": {
+      "status": "error",
+      "lastError": "Failed fetching OpenAPI spec for src_c373691e-760e-476d-be9d-98332b9ac51c: StatusCode: non 2xx status code (404 GET https://raw.githubusercontent.com/getsentry/sentry/refs/heads/master/api-docs/openapi.json)",
+      "sourceHash": null,
+      "createdAt": 1773573662649,
+      "updatedAt": 1773573662829
+    },
+    "src_e5de4a36-ced8-4e44-8757-6b1e98d8b841": {
+      "status": "connected",
+      "lastError": null,
+      "sourceHash": null,
+      "createdAt": 1773573718260,
+      "updatedAt": 1773573718665
+    },
+    "src_36fbe0ba-aedf-4cd9-88ff-6bebde47f69f": {
+      "status": "connected",
+      "lastError": null,
+      "sourceHash": null,
+      "createdAt": 1773573728075,
+      "updatedAt": 1773573728379
+    },
+    "api-linear-app": {
+      "status": "error",
+      "lastError": "Failed fetching GraphQL introspection for api-linear-app: GraphQL introspection failed with status 400",
+      "sourceHash": null,
+      "createdAt": 1773789093235,
+      "updatedAt": 1773789093557
+    }
+  },
+  "policies": {}
+}

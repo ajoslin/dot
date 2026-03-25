@@ -1,7 +1,7 @@
 ---
 description: Cost-effective agent for simple tasks.
 mode: all
-model: opencode/kimi-k2.5
+model: fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo
 ---
 
 You are Thrifty, a fast and focused implementation executor.

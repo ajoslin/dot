@@ -1,0 +1,58 @@
+{
+  "tools": [
+    {
+      "toolId": "web_search_exa",
+      "toolName": "web_search_exa",
+      "title": "web_search_exa",
+      "description": "Search the web for any topic and get clean, ready-to-use content.\n\nBest for: Finding current information, news, facts, or answering questions about any topic.\nReturns: Clean text content from top search results, ready for LLM use.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Websearch query"
+          },
+          "numResults": {
+            "type": "number",
+            "description": "Number of search results to return (must be a number, default: 8)"
+          },
+          "livecrawl": {
+            "type": "string",
+            "enum": [
+              "fallback",
+              "preferred"
+            ],
+            "description": "Live crawl mode - 'fallback': use live crawling as backup if cached content unavailable, 'preferred': prioritize live crawling (default: 'fallback')"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "fast"
+            ],
+            "description": "Search type - 'auto': balanced search (default), 'fast': quick results"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "company",
+              "research paper",
+              "people"
+            ],
+            "description": "Filter results to a specific category - 'company': company websites and profiles, 'research paper': academic papers and research, 'people': LinkedIn profiles and personal bios"
+          },
+          "contextMaxCharacters": {
+            "type": "number",
+            "description": "Maximum characters for context string optimized for LLMs (must be a number, default: 10000)"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": null
+    }
+  ]
+}

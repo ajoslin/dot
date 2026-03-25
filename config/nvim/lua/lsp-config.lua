@@ -293,6 +293,18 @@ _G.smart_code_action = function()
   end, bufnr)
 end
 
+_G.smart_declaration = function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local has_declaration = #vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/declaration' }) > 0
+
+  if has_declaration then
+    vim.lsp.buf.declaration()
+    return
+  end
+
+  vim.lsp.buf.definition()
+end
+
 -- Custom code action function that sorts vtsls/TypeScript actions first, biome last
 _G.sorted_code_action = function()
   local params = vim.lsp.util.make_range_params(nil, nil, 0)

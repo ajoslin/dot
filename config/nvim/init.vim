@@ -168,7 +168,7 @@ nnoremap <silent> <leader>ch <cmd>lua vim.lsp.buf.hover()<cr>
 
 nnoremap <silent> <leader>ca <cmd>lua smart_code_action()<CR>
 nnoremap <silent> <leader>cn <cmd>lua require('renamer').rename()<CR>
-nnoremap <silent> <leader>cd <cmd>lua vim.lsp.buf.declaration()<cr>
+nnoremap <silent> <leader>cd <cmd>lua smart_declaration()<cr>
 nnoremap <silent> <leader>cs <cmd>lua vim.lsp.buf.definition()<cr>
 nnoremap <silent> <leader>cr <cmd>lua require('telescope-config').lsp_references()<cr>
 nnoremap <silent> <leader>cm <cmd>lua require('telescope-config').lsp_implementations()<cr>

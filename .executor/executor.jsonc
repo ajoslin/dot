@@ -1,0 +1,66 @@
+{
+  "sources": {
+    "src_9d2afca7-3234-440d-90ca-6365561e7e84": {
+      "name": "linear",
+      "namespace": "linear",
+      "connection": {
+        "endpoint": "https://mcp.linear.app/mcp"
+      },
+      "kind": "mcp",
+      "binding": {
+        "transport": "auto",
+        "queryParams": null,
+        "headers": null
+      }
+    },
+    "src_c373691e-760e-476d-be9d-98332b9ac51c": {
+      "name": "Sentry Self-hosted",
+      "namespace": "sentry.self.hosted",
+      "connection": {
+        "endpoint": "https://sentry-prod.therealworld.ag/api"
+      },
+      "kind": "openapi",
+      "binding": {
+        "specUrl": "https://raw.githubusercontent.com/getsentry/sentry/refs/heads/master/api-docs/openapi.json",
+        "defaultHeaders": null
+      }
+    },
+    "src_e5de4a36-ced8-4e44-8757-6b1e98d8b841": {
+      "name": "mcp.exa.ai",
+      "namespace": "mcp.exa.ai",
+      "connection": {
+        "endpoint": "https://mcp.exa.ai/mcp?tools=web_search_exa"
+      },
+      "kind": "mcp",
+      "binding": {
+        "transport": "auto",
+        "queryParams": null,
+        "headers": null
+      }
+    },
+    "src_36fbe0ba-aedf-4cd9-88ff-6bebde47f69f": {
+      "name": "mcp.context7.com",
+      "namespace": "mcp.context7.com",
+      "connection": {
+        "endpoint": "https://mcp.context7.com/mcp"
+      },
+      "kind": "mcp",
+      "binding": {
+        "transport": "auto",
+        "queryParams": null,
+        "headers": null
+      }
+    },
+    "api-linear-app": {
+      "kind": "graphql",
+      "name": "api.linear.app",
+      "namespace": "api.linear.app",
+      "connection": {
+        "endpoint": "https://api.linear.app/graphql"
+      },
+      "binding": {
+        "defaultHeaders": null
+      }
+    }
+  }
+}

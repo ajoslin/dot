@@ -1,0 +1,10 @@
+{
+  "agents": {
+    "clarify": "claude",
+    "plan": "claude",
+    "critique": "codex",
+    "integrate": "claude",
+    "execute": "codex",
+    "review": "codex"
+  }
+}
