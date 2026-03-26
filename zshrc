@@ -173,6 +173,7 @@ alias grph="echo 'git rev-parse HEAD | pbcopy' && git rev-parse HEAD | pbcopy"
 
 alias opencode='OPENCODE_CACHE_AUDIT=1 OPENCODE_EXPERIMENTAL_CACHE_STABILIZATION=1 OPENCODE_EXPERIMENTAL_CACHE_1H_TTL=1 opencode'
 alias oc=opencode
+alias occ=opencode --continue
 
 alias clocker="HOME=~/sync/andrew clocker"
 

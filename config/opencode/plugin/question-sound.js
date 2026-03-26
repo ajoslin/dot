@@ -2,6 +2,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 export const QuestionSoundPlugin = async ({ $, client }) => {
+  if (process.env.OPENCODE_MUTE_SOUNDS === "1") return {};
   const soundPath = join(homedir(), ".config/opencode/sounds/18_monk_select.ogg");
 
   const isMainSession = async (sessionID) => {

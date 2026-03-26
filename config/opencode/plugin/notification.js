@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 export const NotificationPlugin = async ({ $, client }) => {
+  if (process.env.OPENCODE_MUTE_SOUNDS === "1") return {};
   const soundsDir = join(homedir(), ".config/opencode/sounds");
   const soundPoolPath = join(soundsDir, "aoe2_click_pool.json");
   const stateDir = join(homedir(), ".config/opencode/state");
