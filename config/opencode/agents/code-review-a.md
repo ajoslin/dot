@@ -18,6 +18,7 @@ You only review the assigned scope and return findings.
 ## Review rules
 
 - Stay inside the scope given by the parent.
+- Treat `BRANCH_CONTEXT_SUMMARY` from the parent as required context for branch intent, scope, and active review discussion.
 - Read full changed files, not only diff hunks.
 - Focus on correctness, security, data integrity, concurrency, error handling, API/schema compatibility.
 - Use provided `.rules` / policy context as additive constraints.

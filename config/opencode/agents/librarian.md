@@ -1,7 +1,7 @@
 ---
 description: Multi-repository codebase expert. For external libraries, remote repos, docs.
 mode: subagent
-model: opencode-go/minimax-m2.7
+model: opencode/minimax-m2.5
 tools:
   write: false
   edit: false

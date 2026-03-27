@@ -244,3 +244,6 @@ is_cmux_like_terminal() {
 if [[ -o interactive ]] && [[ -z ${TMUX:-} ]] && ! is_cmux_like_terminal && command -v tmux &> /dev/null; then
   tmux attach || tmux new-session -s main
 fi
+
+# Vite+ bin (https://viteplus.dev)
+. "$HOME/.vite-plus/env"

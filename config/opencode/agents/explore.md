@@ -1,7 +1,7 @@
 ---
 description: Fast codebase discovery specialist. First hop for finding where behavior lives.
 mode: subagent
-model: opencode-go/minimax-m2.7
+model: opencode/minimax-m2.5
 tools:
   write: false
   edit: false

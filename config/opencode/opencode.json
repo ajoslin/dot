@@ -1,85 +1,117 @@
 {
-	"$schema": "https://opencode.ai/config.json",
-	"theme": "opencode",
-	"model": "opencode/gpt-5.4",
-	"default_agent": "build",
-	"tui": {
-		"scroll_acceleration": {
-			"enabled": true
-		}
-	},
-	"plugin": [
-		"@ex-machina/opencode-anthropic-auth",
-		"opencode-rate-limit-fallback",
-		"opencode-comments-plugin",
-		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
-		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
-		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
-		"@plannotator/opencode@latest"
-	],
-	"mcp": {
-		"executor": {
-			"type": "remote",
-			"url": "http://127.0.0.1:8788/mcp",
-			"enabled": true,
-			"timeout": 10000
-		},
-		"opensrc": {
-			"enabled": true,
-			"type": "local",
-			"command": ["bunx", "-y", "opensrc-mcp"]
-		},
-		"fff": {
-			"enabled": true,
-			"type": "local",
-			"command": ["/Users/andrew/.local/bin/fff-mcp"]
-		}
-	},
-	"permission": {
-		"external_directory": {
-			"*": "ask",
-			"/tmp": "allow",
-			"/tmp/*": "allow",
-			"/private/tmp": "allow",
-			"/private/tmp/*": "allow",
-			"{env:$TMPDIR}": "allow",
-			"{env:$TMPDIR}/*": "allow",
-			"{env:$HOME}/.local/share/opensrc/*": "allow"
-		}
-	},
-	"provider": {
-		"openai": {
-			"models": {
-				"gpt-5.4": {
-					"options": {
-						"reasoningEffort": "medium"
-					}
-				}
-			}
-		},
-		"fireworks-ai": {
-			"options": {
-				"apiKey": "{env:FIREWORKS_API_KEY}"
-			},
-			"models": {
-				"accounts/fireworks/routers/kimi-k2p5-turbo": {
-					"id": "accounts/fireworks/routers/kimi-k2p5-turbo",
-					"name": "Kimi K2.5 Turbo (Developer Pass)",
-					"family": "kimi",
-					"attachment": false,
-					"reasoning": true,
-					"tool_call": true,
-					"temperature": true,
-					"modalities": {
-						"input": ["text", "image"],
-						"output": ["text"]
-					},
-					"limit": {
-						"context": 256000,
-						"output": 256000
-					}
-				}
-			}
-		}
-	}
+  "$schema" : "https://opencode.ai/config.json",
+  "default_agent" : "build",
+  "mcp" : {
+    "daisyui-blueprint" : {
+      "command" : [
+        "npx",
+        "-y",
+        "daisyui-blueprint@latest"
+      ],
+      "environment" : {
+        "EMAIL" : "{email:EMAIL}",
+        "LICENSE" : "{env:DAISYUI_LICENSE}"
+      },
+      "type" : "local"
+    },
+    "exa" : {
+      "enabled" : true,
+      "type" : "remote",
+      "url" : "https://mcp.exa.ai/mcp"
+    },
+    "fff" : {
+      "command" : [
+        "/Users/andrew/.local/bin/fff-mcp"
+      ],
+      "enabled" : true,
+      "type" : "local"
+    },
+    "opensrc" : {
+      "command" : [
+        "bunx",
+        "-y",
+        "opensrc-mcp"
+      ],
+      "enabled" : true,
+      "type" : "local"
+    },
+    "RepoPrompt" : {
+      "command" : [
+        "/Users/andrew/RepoPrompt/repoprompt_cli"
+      ],
+      "environment" : {
+
+      },
+      "timeout" : 14400000,
+      "type" : "local"
+    }
+  },
+  "model" : "opencode/gpt-5.4",
+  "permission" : {
+    "external_directory" : {
+      "{env:$HOME}/.local/share/opensrc/*" : "allow",
+      "{env:$TMPDIR}" : "allow",
+      "{env:$TMPDIR}/*" : "allow",
+      "*" : "ask",
+      "/private/tmp" : "allow",
+      "/private/tmp/*" : "allow",
+      "/tmp" : "allow",
+      "/tmp/*" : "allow"
+    }
+  },
+  "plugin" : [
+    "@ex-machina/opencode-anthropic-auth",
+    "opencode-rate-limit-fallback",
+    "opencode-comments-plugin",
+    "file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
+    "file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
+    "file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
+    "@plannotator/opencode@latest"
+  ],
+  "provider" : {
+    "fireworks-ai" : {
+      "models" : {
+        "accounts/fireworks/routers/kimi-k2p5-turbo" : {
+          "attachment" : false,
+          "family" : "kimi",
+          "id" : "accounts/fireworks/routers/kimi-k2p5-turbo",
+          "limit" : {
+            "context" : 256000,
+            "output" : 256000
+          },
+          "modalities" : {
+            "input" : [
+              "text",
+              "image"
+            ],
+            "output" : [
+              "text"
+            ]
+          },
+          "name" : "Kimi K2.5 Turbo (Developer Pass)",
+          "reasoning" : true,
+          "temperature" : true,
+          "tool_call" : true
+        }
+      },
+      "options" : {
+        "apiKey" : "{env:FIREWORKS_API_KEY}"
+      }
+    },
+    "openai" : {
+      "models" : {
+        "gpt-5.4" : {
+          "options" : {
+            "reasoningEffort" : "medium"
+          }
+        }
+      }
+    }
+  },
+  "theme" : "opencode",
+  "tui" : {
+    "scroll_acceleration" : {
+      "enabled" : true
+    }
+  }
 }

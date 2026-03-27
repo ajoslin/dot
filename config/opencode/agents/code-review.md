@@ -37,6 +37,15 @@ Use this order:
 
 All 3 reviewers get the exact same scope and user guidance.
 
+## Branch context handoff (required)
+
+Expect a structured `BRANCH_CONTEXT_SUMMARY` block from the main thread containing SCOPE, INTENT, CHANGESET, HOTSPOTS, TEST_SIGNAL, REVIEW_CONTEXT, WORKTREE, RISK_SUMMARY, and NEXT_ACTIONS sections.
+
+- Forward the same `BRANCH_CONTEXT_SUMMARY` verbatim to each reviewer (`@code-review-a`, `@code-review-b`, `@code-review-c`).
+- Do not rewrite or tailor it per reviewer.
+- Reviewers should use HOTSPOTS to prioritize which files to read deeply and TEST_SIGNAL to flag coverage gaps.
+- If the block is missing, state that explicitly in `Rules` and continue.
+
 ## Rules
 
 Load these if present:

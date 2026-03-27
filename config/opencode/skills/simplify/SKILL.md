@@ -74,16 +74,26 @@ If safety is unclear, downgrade to `proposal-only` or skip it.
 
 1. Build scope from explicit path, otherwise working diff, otherwise latest commit.
 2. If there is no diff, stop with `nothing to simplify`.
-3. Find the top 1-3 highest-signal readability problems.
-4. Apply only fixes that are clearly safe and make the code easier to consume.
-5. Run the smallest relevant verification.
-6. Report what got simpler, what was skipped, and why it was safe.
+3. List all changed files. If **more than 6 files**, use the parallel strategy below. Otherwise, process inline.
+4. Sweep every changed file. Find **all** readability problems, not just a few. Be thorough — scan every function, every branch, every type, every import.
+5. Apply every fix that passes the Safe Fix Test below. Do not self-limit to a small count.
+6. Run the smallest relevant verification.
+7. Report what got simpler, what was skipped, and why it was safe.
 
-Do not force a cleanup pass if nothing clearly gets better.
+Do not force a cleanup pass if nothing clearly gets better, but do not artificially stop early when there is more to fix.
 
-## Hunt These First
+## Parallel Strategy (Large Diffs)
 
-Start with the changes most likely to improve readability fast:
+When the diff touches **more than 6 files**, split the work across parallel subagents to avoid context bloat and attention drift.
+
+1. Group changed files into batches of **up to 6 files each**. Keep related files together when obvious (e.g. a component and its test, a module and its types).
+2. Launch one subagent per batch using the Task tool. **Max 5 subagents at once** to avoid bogging down the device. If there are more batches, run them in waves of 5 until all are addressed.
+3. Each subagent prompt: `Load the simplify skill. Run it on only these files: <list>. Do not run verification — just apply fixes and report back.`
+4. After all waves complete, the orchestrator runs verification once and produces the unified Output report.
+
+## Hunt These (All of Them)
+
+Sweep every changed file for all of these. Do not stop after the first few wins:
 
 - wrappers that only rename or forward behavior
 - one-off exported types or interfaces with no real reuse
@@ -106,7 +116,7 @@ Apply a simplification only when the answer is clearly yes:
 - Would a new reviewer understand the flow faster?
 - Is verification straightforward?
 
-If the answer is weak, skip it.
+If the answer is weak, move it to `proposal-only` instead of silently skipping.
 
 ## Verification
 

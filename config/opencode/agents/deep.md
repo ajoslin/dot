@@ -33,7 +33,10 @@ Do not ask — just do:
 - Note assumptions in final output, not as mid-task questions.
 
 Delegation policy:
-- Use `build-junior` for bounded slices only when parallel execution improves throughput.
+- Route by decision complexity, not task label.
+- Use `thrifty` for clear, deterministic slices with explicit steps and pass/fail checks.
+- Use `build-junior` when slices need deeper reasoning, subtle failure analysis, or stronger synthesis.
+- Delegate only when parallel execution provides real throughput gains.
 - Include: objective, file targets, constraints, verification commands, expected output.
 - Never trust delegated self-reports; re-verify with your own tools.
 
