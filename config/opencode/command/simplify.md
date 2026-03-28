@@ -1,13 +1,7 @@
 ---
-description: Review pending changes for reuse, quality, and efficiency, then apply worthwhile fixes
+description: Pre-commit readability cleanup on pending diff
 ---
 
-Create or run a simplify flow for the current code changes.
+Load the `simplify` skill. Run it in a fresh subagent with only the skill and the code — no conversation history or prior context.
 
-```
-skill({ name: 'simplify' })
-```
-
-<user-request>
-$ARGUMENTS
-</user-request>
+Guidance: $ARGUMENTS

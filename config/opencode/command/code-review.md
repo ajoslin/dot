@@ -25,5 +25,6 @@ Requirements:
    - Otherwise uncommitted Git changes
    - Otherwise latest Git commit
 4. Apply baseline rubric and repo policy files (`.opencode/review/policy.md`, `.opencode/review/checklist.md`, `.opencode/review/severity.yml`) with additive semantics.
-5. Correlate and dedupe panel findings inside `@code-review` before finalizing.
-6. Return one final severity-ranked report with confirmed, uncertain/rejected findings, concrete fix guidance, and action required.
+5. Load the `review-guidelines` skill if available. If not available, continue without it.
+6. Correlate and dedupe panel findings inside `@code-review` before finalizing.
+7. Return one final severity-ranked report with confirmed, uncertain/rejected findings, concrete fix guidance, and action required.

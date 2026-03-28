@@ -33,8 +33,8 @@ Request
   +-- Architecture trade-offs or high-risk debugging?
   |      -> oracle (often with explore in parallel)
   |
-  +-- Explicit deep mode request or exhaustive end-to-end execution needed?
-  |      -> deep
+  +-- User explicitly requested deep mode?
+  |      -> deep (only when user says "deep", "@deep", or explicitly asks for autonomous end-to-end execution)
   |
   +-- Clear deterministic implementation?
          -> thrifty (default)
@@ -44,7 +44,7 @@ Request
 - Route by decision complexity, not task label.
 - `thrifty` is the default implementation executor when the path can be specified as concrete steps with clear pass/fail checks.
 - `build-junior` is for bounded implementation where success depends on interpretation, trade-offs, or non-obvious inference.
-- `deep` is for explicit deep-mode work requiring sustained exploration + execution + verification in one flow.
+- `deep` is only for user-initiated deep mode — never auto-escalate to deep based on task size alone.
 - Start with `explore` when no explicit file path is provided, behavior must be traced, or ownership is unclear.
 - Use `librarian` aggressively for external code/docs questions (unfamiliar npm/pip/crates, internals, API confirmation, web docs).
 - For external feasibility questions, run `explore` + `librarian` in parallel.

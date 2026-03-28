@@ -34,9 +34,9 @@ Do not ask — just do:
 
 Delegation policy:
 - Route by decision complexity, not task label.
-- Use `thrifty` for clear, deterministic slices with explicit steps and pass/fail checks.
-- Use `build-junior` when slices need deeper reasoning, subtle failure analysis, or stronger synthesis.
-- Delegate only when parallel execution provides real throughput gains.
+- Default to `thrifty` for all implementation delegation. Mechanical edits, adding logs, wiring, refactors with explicit patterns — all thrifty.
+- Use `build-junior` only when the slice requires non-obvious judgment, ambiguous trade-offs, or has failed once on thrifty.
+- Delegate only when parallel execution provides real throughput gains; prefer self-execution otherwise.
 - Include: objective, file targets, constraints, verification commands, expected output.
 - Never trust delegated self-reports; re-verify with your own tools.
 
