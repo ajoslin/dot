@@ -1,7 +1,7 @@
 ---
 description: Multi-repository codebase expert. For external libraries, remote repos, docs.
 mode: subagent
-model: opencode/minimax-m2.5
+model: fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo
 tools:
   write: false
   edit: false

@@ -74,6 +74,7 @@ Plug 'NvChad/nvim-colorizer.lua'
 
 Plug 'akinsho/git-conflict.nvim'
 Plug 'sindrets/diffview.nvim'
+Plug 'pwntester/octo.nvim'
 
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -177,14 +178,9 @@ nnoremap <silent> <leader>co <cmd>lua require('telescope-config').lsp_document_s
 nnoremap <silent> <leader>cc <cmd>lua require("claude-code").toggle()<CR>
 " inoremap <silent> <C-s> <cmd>lua vim.lsp.buf.signature_help()<CR>
 
-nnoremap <silent> <leader>gr <cmd>:GpRewrite<CR>
-nnoremap <silent> <leader>gn <cmd>:GpChatToggle<CR>
-
 nnoremap <silent> <leader>e :PrettyTsError<cr>
 
 nnoremap <leader>ff :Oil<cr>:set ma<cr>
-
-nnoremap <silent> <leader>go :OpenURL <cfile><CR>
 
 " OpenCode keymaps (using <Leader>o prefix)
 " Define OpenCode commands with their descriptions
@@ -276,6 +272,7 @@ lua require('jump-config')
 lua require('tree-config')
 lua require('opencode-config')
 lua require('diffview-config')
+lua require('octo-config')
 
 lua require'colorizer'.setup()
 lua require('lspkind').init({ preset = 'codicons' })

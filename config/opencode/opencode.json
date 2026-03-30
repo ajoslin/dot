@@ -5,8 +5,8 @@
 		"daisyui-blueprint": {
 			"command": ["npx", "-y", "daisyui-blueprint@latest"],
 			"environment": {
-				"EMAIL": "{email:EMAIL}",
-				"LICENSE": "{env:DAISYUI_LICENSE}"
+				"EMAIL": "{env:EMAIL}",
+				"DAISYUI_LICENSE": "{env:DAISYUI_LICENSE}"
 			},
 			"type": "local"
 		},
@@ -23,12 +23,6 @@
 		"opensrc": {
 			"command": ["bunx", "-y", "opensrc-mcp"],
 			"enabled": true,
-			"type": "local"
-		},
-		"RepoPrompt": {
-			"command": ["/Users/andrew/RepoPrompt/repoprompt_cli"],
-			"environment": {},
-			"timeout": 14400000,
 			"type": "local"
 		}
 	},

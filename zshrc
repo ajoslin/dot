@@ -1,13 +1,6 @@
-# Homebrew
-export HOMEBREW_PREFIX="/opt/homebrew";
-export HOMEBREW_CELLAR="/opt/homebrew/Cellar";
-export HOMEBREW_REPOSITORY="/opt/homebrew";
-export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:";
-export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}";
-export MINIO_CONFIG_ENV_FILE=/etc/default/minio
-
 # ============================================================================
-# FAST ZSH SETUP - Replacing Zprezto for speed
+# INTERACTIVE ZSH CONFIGURATION (.zshrc)
+# Environment variables are in ~/.zshenv (symlinked from ~/dot/zshenv)
 # ============================================================================
 
 # History configuration
@@ -90,66 +83,16 @@ source ~/.config/z/z.sh
 
 # zstyle ':completion:*:*:git:*' script ~/.config/git-completion.bash
 
-export EMAIL="andrew@ajoslin.com"
-export NAME="Andrew Joslin"
+# ============================================================================
+# PATH filtering (actual path entries are defined in ~/.zshenv)
+# ============================================================================
 
-# Cache Python user base path (was running python on every shell startup)
-export PIP_USER_BASE_PATH="$HOME/Library/Python/3.11/bin"
-
-export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
-export BOX="$ICLOUD_DIR/box"
-export CFLAGS=-Qunused-arguments
-export CPPFLAGS=-Qunused-arguments
-export EDITOR=nvim
-export RCRC=$HOME/dot/rcrc
-export GOPATH=$HOME/gocode
-export AWS_REGION=us-west-2
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-
-# Android
-export ANDROID_SDK_ROOT="/Users/andrew/Library/Android/sdk"
-export ANDROID_HOME="$ANDROID_SDK_ROOT"
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
-
-# Other tools
-export GOOGLE_APPLICATION_CREDENTIALS=$HOME/Documents/gcp-auth.json
-export BUN_INSTALL="$HOME/.bun"
-
-# Consolidated PATH (active directories only)
-typeset -a path_entries new_path
-path_entries=(
-  "$HOME/.bin"
-  "$HOME/.opencode/bin"
-  "$HOME/.codeium/windsurf/bin"
-  "$HOME/.local/bin"
-  "$HOME/.cache/lm-studio/bin"
-  "$HOME/.npm-global/bin"
-  "$BUN_INSTALL/bin"
-  "$HOME/.yarn/bin"
-  "$HOME/.cargo/bin"
-  "$HOME/.foundry/bin"
-  "$PIP_USER_BASE_PATH"
-  "$ANDROID_SDK_ROOT/platform-tools"
-  "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin"
-  "$ANDROID_SDK_ROOT/emulator"
-  "$GOPATH/bin"
-  "$HOME/flutter/bin"
-  "$HOME/tools/lua-language-server/bin"
-  "/opt/homebrew/bin"
-  "/opt/homebrew/sbin"
-  "/usr/local/go/bin"
-  "/usr/local/bin"
-  "/opt/local/bin"
-  "$HOME/.rvm/bin"
-)
-
-new_path=()
-for p in "${path_entries[@]}"; do
-  [[ -d "$p" ]] && new_path+=("$p")
+# Filter PATH entries to only existing directories (faster than checking every time)
+typeset -a new_path filtered_entries
+for p in "$path[@]"; do
+  [[ -d "$p" ]] && filtered_entries+=("$p")
 done
-
-path=("${new_path[@]}" "${path[@]}")
+path=("${filtered_entries[@]}")
 typeset -U path
 
 # GPG
@@ -180,9 +123,6 @@ alias clocker="HOME=~/sync/andrew clocker"
 setopt CLOBBER
 # Disable zsh autocorrect
 unsetopt CORRECT
-
-# This file is not in source control
-[ -f $HOME/.tokens ] && source ~/.tokens
 
 # Functions
 portgrep () {

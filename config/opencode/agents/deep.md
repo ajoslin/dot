@@ -34,8 +34,9 @@ Do not ask — just do:
 
 Delegation policy:
 - Route by decision complexity, not task label.
-- Default to `thrifty` for all implementation delegation. Mechanical edits, adding logs, wiring, refactors with explicit patterns — all thrifty.
-- Use `build-junior` only when the slice requires non-obvious judgment, ambiguous trade-offs, or has failed once on thrifty.
+- `thrifty` is the default implementation executor when the path can be specified as concrete steps with clear pass/fail checks.
+- `build-junior` is for bounded implementation where success depends on interpretation, trade-offs, or non-obvious inference.
+- Escalate from `thrifty` to `build-junior` only with uncertainty evidence: confidence < 0.75, conflicting signals, or failed first verification.
 - Delegate only when parallel execution provides real throughput gains; prefer self-execution otherwise.
 - Include: objective, file targets, constraints, verification commands, expected output.
 - Never trust delegated self-reports; re-verify with your own tools.

@@ -194,9 +194,6 @@ export function isNewItem(
   botPrefix: string,
 ): boolean {
   const body = item.body || "";
-  if (item.kind === "review_comment_reply") {
-    return false;
-  }
   if (!body.trim()) {
     return false;
   }
