@@ -40,8 +40,9 @@ set mouse=a
 set undodir=~/.vim_runtime/temp_dirs/undodir
 set undofile
 
-" Blinking cursor
-set guicursor=a:blinkon100
+" No cursor blinking – eliminates repaint storms while scrolling
+set guicursor=a:blinkon0
+set lazyredraw
 
 call plug#begin(stdpath('data') . '/plugged')
 
@@ -58,7 +59,7 @@ Plug 'stevearc/dressing.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'MunifTanjim/nui.nvim'
 Plug 'nvim-tree/nvim-web-devicons'
-Plug 'MeanderingProgrammer/render-markdown.nvim'
+" Plug 'MeanderingProgrammer/render-markdown.nvim'
 Plug 'robitx/gp.nvim'
 
 Plug 'chottolabs/kznllm.nvim'
@@ -102,7 +103,7 @@ Plug 'elentok/format-on-save.nvim'
 
 Plug 'tpope/vim-surround'
 Plug 'dhruvasagar/vim-open-url'
-Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate', 'commit': '57a8acf0c4ed5e7f6dda83c3f9b073f8a99a70f9'}
+" Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate', 'commit': '57a8acf0c4ed5e7f6dda83c3f9b073f8a99a70f9'}
 Plug 'kwkarlwang/bufjump.nvim'
 Plug 'pantharshit00/vim-prisma'
 Plug 'junegunn/goyo.vim'

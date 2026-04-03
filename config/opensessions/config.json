@@ -1,0 +1,8 @@
+{
+  "plugins": [],
+  "sidebarWidth": 42,
+  "detailPanelHeights": {
+    "email": 11,
+    "main": 31
+  }
+}

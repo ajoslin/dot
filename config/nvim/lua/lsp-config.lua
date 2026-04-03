@@ -1,39 +1,6 @@
 require("lsp-file-operations").setup()
 
 local formatters = require("format-on-save.formatters")
-require("nvim-treesitter.configs").setup({
-  ensure_installed = { "markdown", "lua", "markdown_inline" },
-  auto_install = true,
-  highlight = {
-    enable = true,
-  },
-  indent = {
-    enable = true
-  },
-  incremental_selection = {
-    enable = true
-  },
-  textobjects = {
-    enable = true
-  },
-})
--- local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
--- parser_config.sql = {
---   install_info = {
---     url = "https://github.com/derekstride/tree-sitter-sql",
---     files = { "src/parser.c" },
---     branch = "main",
---   },
---   used_by = { "typescript", "javascript" }
--- }
--- local injections = require 'vim.treesitter.query'
--- injections.add_predicate("sql-template-literal", function(match, _, _, pred)
---   local node = match[pred[2]]
---   return node:type() == "template_string" and
---       node:prev_sibling() and
---       node:prev_sibling():type() == "comment" and
---       node:prev_sibling():source():match("/%*%s*sql%s*%*/")
--- end)
 
 local biome_formatter = formatters.shell({
   cmd = function()
@@ -90,7 +57,7 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagn
     severity_limit = "Warning",
   },
   underline = true,
-  update_in_insert = true,
+  update_in_insert = false,
   virtual_text = {
     spacing = 2,
     severity_limit = "Warning",
@@ -102,7 +69,7 @@ require("lspkind").init({
 })
 
 require("highlight-undo").setup({
-  duration = 300,
+  duration = 100,
   undo = {
     hlgroup = "HighlightUndo",
     mode = "n",

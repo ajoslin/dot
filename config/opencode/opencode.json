@@ -1,14 +1,11 @@
 {
 	"$schema": "https://opencode.ai/config.json",
-	"default_agent": "build",
+	"default_agent": "deep",
 	"mcp": {
-		"daisyui-blueprint": {
-			"command": ["npx", "-y", "daisyui-blueprint@latest"],
-			"environment": {
-				"EMAIL": "{env:EMAIL}",
-				"DAISYUI_LICENSE": "{env:DAISYUI_LICENSE}"
-			},
-			"type": "local"
+		"cloudflare": {
+			"enabled": true,
+			"type": "remote",
+			"url": "https://mcp.cloudflare.com/mcp"
 		},
 		"exa": {
 			"enabled": true,

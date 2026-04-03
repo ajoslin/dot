@@ -327,8 +327,9 @@ local function setup_fff()
             height = 0.85,
             width = 0.85,
             prompt_position = "top",
-            preview_position = "right",
-            preview_size = 0.5,
+        },
+        preview = {
+            enabled = false,
         },
         keymaps = {
             close = "<Esc>",
@@ -392,7 +393,7 @@ local function setup_telescope_yanky()
         highlight = {
             on_put = true,
             on_yank = true,
-            timer = 250,
+            timer = 100,
         },
         preserve_cursor_position = {
             enabled = true,
