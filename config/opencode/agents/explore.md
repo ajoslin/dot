@@ -1,7 +1,8 @@
 ---
 description: Fast codebase discovery specialist. First hop for finding where behavior lives.
 mode: subagent
-model: fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo
+model: fireworks-ai/accounts/fireworks/models/glm-5
+
 tools:
   write: false
   edit: false
