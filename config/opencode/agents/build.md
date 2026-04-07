@@ -4,8 +4,6 @@ mode: all
 model: anthropic/claude-opus-4-6
 options:
   reasoningEffort: high
-tools:
-  skill: true
 permission:
   apply_patch: deny
   write: deny
