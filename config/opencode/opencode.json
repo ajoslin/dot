@@ -44,7 +44,7 @@
 		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
-		"@plannotator/opencode@latest"
+		"@plannotator/opencode@0.17.0"
 	],
 	"provider": {
 		"fireworks-ai": {
