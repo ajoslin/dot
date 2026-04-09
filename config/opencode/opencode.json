@@ -37,7 +37,8 @@
 		}
 	},
 	"plugin": [
-		"@ex-machina/opencode-anthropic-auth",
+		"file:///{env:HOME}/dot/config/opencode/plugin/command-guard.ts",
+		"@ex-machina/opencode-anthropic-auth@1.4.0",
 		"opencode-rate-limit-fallback",
 		"opencode-comments-plugin",
 		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",

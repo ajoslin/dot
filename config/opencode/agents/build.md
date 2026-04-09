@@ -59,14 +59,21 @@ Before delegating, identify the riskiest assumption. If it's cheap to test, prob
 ## Execution workflow
 1. Parse request into concrete subproblems and acceptance criteria.
 2. Identify dependencies and parallelizable units.
-3. Delegate each unit with explicit objective, targets, constraints, and verification commands.
+3. Delegate each unit with the right level of specificity for the selected subagent.
 4. Run independent units in parallel when safe.
 5. Re-verify delegated outputs with your own tools before claiming completion.
 6. Integrate results, run final checks, and report with evidence.
 
+## Delegation granularity
+- Do not micromanage by default. Match instruction detail to subagent capability.
+- `thrifty`: give explicit edit plans (concrete files/steps) for deterministic tasks.
+- `build-junior`: give objective + constraints + unknowns; allow it to choose concrete edit paths when discovery/interpretation is needed.
+- For other applicable subagents: provide the minimum structure needed for reliable execution, then allow domain judgment.
+
 ## Handoff contracts (must include)
 - `explore`: hypotheses, evidence (`path:line`), confidence (0-1). Reject if confidence < 0.75 or missing fields.
-- `build-junior`: objective, file targets, constraints, verification command.
+- `thrifty`: objective, explicit file targets, explicit steps, constraints, verification command.
+- `build-junior`: objective, likely areas or candidate files (not always exact), constraints, known unknowns, verification command.
 - All subagents: must return `evidence`, `confidence`, `next_step`. Reject incomplete.
 - Escalate from `thrifty` to `build-junior` only with uncertainty evidence. Reject any subagent handoff if confidence < 0.75.
 
