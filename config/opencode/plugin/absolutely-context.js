@@ -16,6 +16,7 @@ export const AbsolutelyContextPlugin = async ({ client }) => {
 
       output.parts.push({
         type: "text",
+        sessionID: input.sessionID,
         text:
           "\n\n[CONTEXT HOOK] If this question is about the codebase, read the relevant " +
           "files before answering to back up your claims. If it's about a specific " +
