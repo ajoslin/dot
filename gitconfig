@@ -22,6 +22,7 @@
   rp = rev-parse
   x = !git add . && git commit --allow-empty -a -m 'x' && git push
 	ai = "!f() { MSG=$(~/.git-commit-ai); if [ $? -eq 0 ]; then echo \"\\nProposed commit message:\\n---\\n$MSG\\n---\\n\"; read -p \"Accept? (y/n/e to edit): \" choice; case \"$choice\" in y|Y) git commit -m \"$MSG\";; e|E) git commit -e -m \"$MSG\";; *) echo \"Commit cancelled.\";; esac; fi; }; f"
+	lol = log --graph --pretty=format:'%C(yellow)%h%Creset %C(bold red)%d%Creset %C(white)%s%Creset %C(green)(%cr)%Creset' --abbrev-commit --date=relative --branches --remotes --tags --decorate
 [core]
 	excludesfile = /Users/andrew/.globalgitignore
 	editor = nvim

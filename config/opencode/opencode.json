@@ -2,6 +2,11 @@
 	"$schema": "https://opencode.ai/config.json",
 	"default_agent": "deep",
 	"mcp": {
+		"intercom": {
+			"enabled": true,
+			"type": "remote",
+			"url": "https://mcp.intercom.com/mcp"
+		},
 		"cloudflare": {
 			"enabled": true,
 			"type": "remote",
@@ -49,8 +54,25 @@
 	"provider": {
 		"fireworks-ai": {
 			"models": {
+				"accounts/fireworks/models/glm-5p1": {
+					"attachment": true,
+					"family": "glm",
+					"id": "accounts/fireworks/models/glm-5p1",
+					"limit": {
+						"context": 128000,
+						"output": 16384
+					},
+					"modalities": {
+						"input": ["text", "image"],
+						"output": ["text"]
+					},
+					"name": "GLM-5-Plus",
+					"reasoning": true,
+					"temperature": true,
+					"tool_call": true
+				},
 				"accounts/fireworks/routers/kimi-k2p5-turbo": {
-					"attachment": false,
+					"attachment": true,
 					"family": "kimi",
 					"id": "accounts/fireworks/routers/kimi-k2p5-turbo",
 					"limit": {

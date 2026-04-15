@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 type Reactions = Record<string, number | null | undefined>;
 
 type UnifiedComment = {
-  kind: "issue_comment" | "review_comment" | "review_comment_reply";
+  kind: "issue_comment" | "review_comment" | "review_comment_reply" | "review_body";
   id: number;
   url: string | null;
   author: string | null;
@@ -14,6 +14,7 @@ type UnifiedComment = {
   path: string | null;
   line: number | null;
   review_thread_resolved: boolean;
+  review_state: string | null;
   reactions: Reactions;
 };
 
@@ -36,9 +37,10 @@ type RepoRef = {
 };
 
 type CommentTarget = {
-  kind: "issue_comment" | "review_comment";
-  reactionEndpoint: string;
+  kind: "issue_comment" | "review_comment" | "review_body";
+  reactionEndpoint: string | null;
   reviewThreadId: string | null;
+  reviewDismissalEndpoint: string | null;
 };
 
 type GraphqlReviewThreadComment = {
@@ -90,10 +92,19 @@ type GhReviewComment = {
   reactions?: Reactions | null;
 };
 
+type GhReview = {
+  id: number;
+  html_url?: string | null;
+  user?: { login?: string | null } | null;
+  submitted_at?: string | null;
+  body?: string | null;
+  state?: string | null;
+};
+
 function runGh(
   path: string,
   options?: {
-    method?: "GET" | "POST";
+    method?: "GET" | "POST" | "PUT";
     fields?: Record<string, string>;
     paginate?: boolean;
   },
@@ -155,6 +166,7 @@ function normalizeIssueComment(item: GhIssueComment): UnifiedComment {
     path: null,
     line: null,
     review_thread_resolved: false,
+    review_state: null,
     reactions: item.reactions ?? {},
   };
 }
@@ -170,7 +182,24 @@ function normalizeReviewComment(item: GhReviewComment): UnifiedComment {
     path: item.path ?? null,
     line: item.line ?? null,
     review_thread_resolved: false,
+    review_state: null,
     reactions: item.reactions ?? {},
+  };
+}
+
+function normalizeReview(item: GhReview): UnifiedComment {
+  return {
+    kind: "review_body",
+    id: item.id,
+    url: item.html_url ?? null,
+    author: item.user?.login ?? null,
+    created_at: item.submitted_at ?? null,
+    body: item.body ?? "",
+    path: null,
+    line: null,
+    review_thread_resolved: false,
+    review_state: item.state ?? null,
+    reactions: {},
   };
 }
 
@@ -188,7 +217,9 @@ function reactionDefaults() {
 }
 
 export function isNewItem(
-  item: Pick<UnifiedComment, "kind" | "body" | "reactions" | "review_thread_resolved">,
+  item: Pick<UnifiedComment, "kind" | "body" | "reactions" | "review_thread_resolved"> & {
+    review_state?: UnifiedComment["review_state"];
+  },
   addressedMarker: string,
   pendingMarker: string,
   botPrefix: string,
@@ -200,8 +231,14 @@ export function isNewItem(
   if (body.startsWith(botPrefix)) {
     return false;
   }
+  if (item.kind === "review_comment_reply") {
+    return false;
+  }
   if (item.kind === "review_comment" && item.review_thread_resolved) {
     return false;
+  }
+  if (item.kind === "review_body") {
+    return item.review_state !== "DISMISSED";
   }
   if (markerCount(item.reactions, addressedMarker) > 0) {
     return false;
@@ -276,6 +313,9 @@ function fetchUnified(repo: string, pr: number): UnifiedComment[] {
   const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`, {
     paginate: true,
   });
+  const reviews = runGh(`/repos/${repo}/pulls/${pr}/reviews?per_page=100`, {
+    paginate: true,
+  });
   const reviewThreadsByCommentId = fetchReviewThreadByCommentId(repo, pr);
   const normalizedReview = review.map(normalizeReviewComment).map((item) => {
     const thread = reviewThreadsByCommentId[item.id];
@@ -284,7 +324,7 @@ function fetchUnified(repo: string, pr: number): UnifiedComment[] {
       review_thread_resolved: thread?.isResolved ?? false,
     };
   });
-  const unified = issue.map(normalizeIssueComment).concat(normalizedReview);
+  const unified = issue.map(normalizeIssueComment).concat(normalizedReview, reviews.map(normalizeReview));
   unified.sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
   return unified;
 }
@@ -323,6 +363,9 @@ function detectCommentTargets(repo: string, pr: number): Record<number, CommentT
   const review = runGh(`/repos/${repo}/pulls/${pr}/comments?per_page=100`, {
     paginate: true,
   });
+  const reviews = runGh(`/repos/${repo}/pulls/${pr}/reviews?per_page=100`, {
+    paginate: true,
+  });
   const reviewThreadsByCommentId = fetchReviewThreadByCommentId(repo, pr);
 
   for (const item of issue) {
@@ -330,6 +373,7 @@ function detectCommentTargets(repo: string, pr: number): Record<number, CommentT
       kind: "issue_comment",
       reactionEndpoint: `/repos/${repo}/issues/comments/${item.id}/reactions`,
       reviewThreadId: null,
+      reviewDismissalEndpoint: null,
     };
   }
   for (const item of review) {
@@ -337,6 +381,15 @@ function detectCommentTargets(repo: string, pr: number): Record<number, CommentT
       kind: "review_comment",
       reactionEndpoint: `/repos/${repo}/pulls/comments/${item.id}/reactions`,
       reviewThreadId: reviewThreadsByCommentId[item.id]?.threadId ?? null,
+      reviewDismissalEndpoint: null,
+    };
+  }
+  for (const item of reviews) {
+    targets[item.id] = {
+      kind: "review_body",
+      reactionEndpoint: null,
+      reviewThreadId: null,
+      reviewDismissalEndpoint: `/repos/${repo}/pulls/${pr}/reviews/${item.id}/dismissals`,
     };
   }
   return targets;
@@ -382,6 +435,23 @@ function cmdMark(args: MarkArgs) {
 
   for (const id of ids) {
     const target = targets[id];
+    if (target.kind === "review_body") {
+      if (args.status === "pending") {
+        console.log(`Skipped pending for review body ${id}: no reaction endpoint`);
+        continue;
+      }
+
+      runGh(target.reviewDismissalEndpoint!, {
+        method: "PUT",
+        fields: {
+          message: "Addressed",
+          event: "DISMISS",
+        },
+      });
+      console.log(`Dismissed review ${id}`);
+      continue;
+    }
+
     if (args.status === "addressed" && target.kind === "review_comment" && target.reviewThreadId) {
       if (!resolvedThreads.has(target.reviewThreadId)) {
         resolveReviewThread(target.reviewThreadId);
@@ -391,7 +461,7 @@ function cmdMark(args: MarkArgs) {
       continue;
     }
 
-    runGh(target.reactionEndpoint, { method: "POST", fields: { content: marker } });
+    runGh(target.reactionEndpoint!, { method: "POST", fields: { content: marker } });
     console.log(`Marked ${args.status}: ${id}`);
   }
 }

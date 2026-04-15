@@ -61,4 +61,59 @@ describe("isNewItem", () => {
     };
     expect(isNewItem(item, "+1", "eyes", "🤖")).toBe(false);
   });
+
+  it("returns true for a fresh review body", () => {
+    const item = {
+      kind: "review_body" as const,
+      body: "<!-- BUGBOT_REVIEW -->\nPlease fix this before merge.",
+      review_thread_resolved: false,
+      review_state: "COMMENTED",
+      reactions: {},
+    };
+    expect(isNewItem(item, "+1", "eyes", "🤖")).toBe(true);
+  });
+
+  it("returns false for an empty review body", () => {
+    const item = {
+      kind: "review_body" as const,
+      body: "   ",
+      review_thread_resolved: false,
+      review_state: "COMMENTED",
+      reactions: {},
+    };
+    expect(isNewItem(item, "+1", "eyes", "🤖")).toBe(false);
+  });
+
+  it("returns false for a bot-prefixed review body", () => {
+    const item = {
+      kind: "review_body" as const,
+      body: "🤖 Addressed in abc123",
+      review_thread_resolved: false,
+      review_state: "COMMENTED",
+      reactions: {},
+    };
+    expect(isNewItem(item, "+1", "eyes", "🤖")).toBe(false);
+  });
+
+  it("ignores reaction markers for review bodies", () => {
+    const item = {
+      kind: "review_body" as const,
+      body: "Still needs work.",
+      review_thread_resolved: false,
+      review_state: "COMMENTED",
+      reactions: { "+1": 1, eyes: 1 },
+    };
+    expect(isNewItem(item, "+1", "eyes", "🤖")).toBe(true);
+  });
+
+  it("returns false for dismissed review bodies", () => {
+    const item = {
+      kind: "review_body" as const,
+      body: "This was already handled.",
+      review_thread_resolved: false,
+      review_state: "DISMISSED",
+      reactions: {},
+    };
+    expect(isNewItem(item, "+1", "eyes", "🤖")).toBe(false);
+  });
 });

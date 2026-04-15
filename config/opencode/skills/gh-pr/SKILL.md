@@ -39,7 +39,7 @@ Use helper script:
 bun skills/gh-pr/scripts/gh_pr_ops.ts queue --repo <owner/repo> --pr <number>
 ```
 
-This fetches issue + inline review comments and returns only unmarked, non-bot-prefixed items.
+This fetches issue comments, inline review comments, and top-level PR review bodies (including summary reviews from Cursor Bugbot, Hodor, and similar tools), then returns only unmarked, non-bot-prefixed items.
 
 ### 3) Mark pending/addressed (one or many)
 
