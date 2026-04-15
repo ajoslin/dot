@@ -7,6 +7,8 @@ description: Build an actionable branch/PR/commit context pack so follow-up agen
 
 Build a **standardized, actionable context pack** for the current branch so follow-up agents can act immediately without re-discovery.
 
+**Execution Mode:** This skill MUST always be executed in a **subagent**. Default subagent type is `thrifty`. Use a different subagent type only when explicitly requested.
+
 Preferred invocation:
 
 - `prepare-branch-context from <base-branch>`
