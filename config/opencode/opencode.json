@@ -26,11 +26,10 @@
 	"model": "opencode/gpt-5.4",
 	"permission": {
 		"external_directory": {
+			"*": "deny",
 			"{env:$HOME}/.local/share/opensrc/*": "allow",
-			"{env:$HOME}/.dev-browser/**": "allow",
 			"{env:$TMPDIR}": "allow",
 			"{env:$TMPDIR}/*": "allow",
-			"*": "ask",
 			"/private/tmp": "allow",
 			"/private/tmp/*": "allow",
 			"/tmp": "allow",
@@ -44,7 +43,7 @@
 		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
-		"@plannotator/opencode@0.17.0"
+		"file:///{env:HOME}/.config/opencode/plugin/absolutely-context.js"
 	],
 	"provider": {
 		"fireworks-ai": {

@@ -187,3 +187,9 @@ fi
 
 # Vite+ bin (https://viteplus.dev)
 . "$HOME/.vite-plus/env"
+
+# bun completions
+[ -s "/Users/raynor/.bun/_bun" ] && source "/Users/raynor/.bun/_bun"
+
+# opencode
+export PATH=/Users/raynor/.opencode/bin:$PATH

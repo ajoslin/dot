@@ -103,7 +103,6 @@ Plug 'elentok/format-on-save.nvim'
 
 Plug 'tpope/vim-surround'
 Plug 'dhruvasagar/vim-open-url'
-" Plug 'nvim-treesitter/nvim-treesitter', {'do':':TSUpdate', 'commit': '57a8acf0c4ed5e7f6dda83c3f9b073f8a99a70f9'}
 Plug 'kwkarlwang/bufjump.nvim'
 Plug 'pantharshit00/vim-prisma'
 Plug 'junegunn/goyo.vim'

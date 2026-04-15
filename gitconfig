@@ -76,3 +76,12 @@
 
 [advice]
 	skippedCherryPicks = false
+[user]
+	name = Andrew Joslin
+	email = andrew@ajoslin.com
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
