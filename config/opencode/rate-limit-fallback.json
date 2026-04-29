@@ -1,6 +1,6 @@
 {
-  "enabled": true,
-  "fallbackModel": "opencode/kimi-k2.5",
-  "cooldownMs": 300000,
-  "logging": false
+	"enabled": true,
+	"fallbackModel": "opencode/gpt-5.4",
+	"cooldownMs": 300000,
+	"logging": false
 }

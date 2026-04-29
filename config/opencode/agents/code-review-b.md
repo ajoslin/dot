@@ -1,10 +1,10 @@
 ---
 description: Parallel reviewer (Codex) focused on defect discovery and evidence-backed findings
 mode: subagent
-model: openai/gpt-5.4
+model: openai/gpt-5.5
 temperature: 0.1
 options:
-  reasoningEffort: medium
+  reasoningEffort: high
 tools:
   write: false
   edit: false

@@ -1,9 +1,9 @@
 ---
 description: Principal engineering advisor. For architecture, complex debug, planning.
 mode: subagent
-model: openai/gpt-5.4
+model: openai/gpt-5.5
 options:
-  reasoningEffort: high
+  reasoningEffort: medium
 tools:
   skill: true
 permission:

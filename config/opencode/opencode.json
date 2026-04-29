@@ -2,16 +2,6 @@
 	"$schema": "https://opencode.ai/config.json",
 	"default_agent": "deep",
 	"mcp": {
-		"intercom": {
-			"enabled": true,
-			"type": "remote",
-			"url": "https://mcp.intercom.com/mcp"
-		},
-		"cloudflare": {
-			"enabled": true,
-			"type": "remote",
-			"url": "https://mcp.cloudflare.com/mcp"
-		},
 		"exa": {
 			"enabled": true,
 			"type": "remote",
@@ -28,13 +18,13 @@
 			"type": "local"
 		}
 	},
-	"model": "opencode/gpt-5.4",
+	"model": "opencode/gpt-5.5",
 	"permission": {
 		"external_directory": {
-			"*": "deny",
 			"{env:$HOME}/.local/share/opensrc/*": "allow",
 			"{env:$TMPDIR}": "allow",
 			"{env:$TMPDIR}/*": "allow",
+			"*": "deny",
 			"/private/tmp": "allow",
 			"/private/tmp/*": "allow",
 			"/tmp": "allow",
@@ -43,12 +33,11 @@
 	},
 	"plugin": [
 		"file:///{env:HOME}/dot/config/opencode/plugin/command-guard.ts",
-		"@ex-machina/opencode-anthropic-auth@1.4.0",
-		"opencode-rate-limit-fallback",
-		"opencode-comments-plugin",
-		"file:///{env:HOME}/dot/config/opencode/plugin/question-sound.js",
+		"@ex-machina/opencode-anthropic-auth@1.7.5",
+		"opencode-rate-limit-fallback@0.3.1",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
-		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts"
+		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
+		"@plannotator/opencode@latest"
 	],
 	"provider": {
 		"fireworks-ai": {
@@ -66,6 +55,23 @@
 						"output": ["text"]
 					},
 					"name": "GLM-5-Plus",
+					"reasoning": true,
+					"temperature": true,
+					"tool_call": true
+				},
+				"accounts/fireworks/models/kimi-k2p6": {
+					"attachment": true,
+					"family": "kimi",
+					"id": "accounts/fireworks/models/kimi-k2p6",
+					"limit": {
+						"context": 256000,
+						"output": 256000
+					},
+					"modalities": {
+						"input": ["text", "image"],
+						"output": ["text"]
+					},
+					"name": "Kimi K2.6 (Developer Pass)",
 					"reasoning": true,
 					"temperature": true,
 					"tool_call": true

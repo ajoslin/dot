@@ -1,7 +1,7 @@
 ---
 description: Primary code review orchestrator that runs a 3-model review panel and returns a correlated final report
 mode: subagent
-model: openai/gpt-5.4
+model: openai/gpt-5.5
 temperature: 0.1
 options:
   reasoningEffort: medium

@@ -1,9 +1,9 @@
 ---
 description: Autonomous deep worker for complex end-to-end implementation. Use when tasks require sustained exploration, execution, and verification before stopping.
 mode: all
-model: openai/gpt-5.4
+model: openai/gpt-5.5
 options:
-  reasoningEffort: high
+  reasoningEffort: medium
 tools:
   skill: true
 permission:
