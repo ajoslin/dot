@@ -1,7 +1,7 @@
 ---
 description: Focused execution subagent for narrow implementation slices delegated by build.
 mode: subagent
-model: openai/gpt-5.5
+model: openai/gpt-5.5-fast
 options:
   reasoningEffort: low
 tools:

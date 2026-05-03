@@ -33,7 +33,7 @@
 	},
 	"plugin": [
 		"file:///{env:HOME}/dot/config/opencode/plugin/command-guard.ts",
-		"@ex-machina/opencode-anthropic-auth@1.7.5",
+		"@ex-machina/opencode-anthropic-auth@1.8.0",
 		"opencode-rate-limit-fallback@0.3.1",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
