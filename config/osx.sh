@@ -195,17 +195,9 @@ install_casks() {
 		1password
 		ghostty
 		google-chrome
-		slack
-		spotify
 		telegram
-		signal
-		discord
-		droplr
-		superhuman
-		postico
 		raycast
 		hammerspoon
-		zed
 		docker
 	)
 

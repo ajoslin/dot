@@ -12,6 +12,7 @@ import sys
 
 START_MARKER = "# BEGIN TMUX-OPENCODE-HEALTHCHECK"
 END_MARKER = "# END TMUX-OPENCODE-HEALTHCHECK"
+CRON_PATH = "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 def run(
@@ -108,7 +109,7 @@ def install(args: argparse.Namespace) -> int:
         print("DRY_RUN install tmux-opencode healthcheck cron entry")
         print(cron_line)
         return 0
-    write_crontab(cleaned + [START_MARKER, cron_line, END_MARKER])
+    write_crontab(cleaned + [START_MARKER, CRON_PATH, cron_line, END_MARKER])
     print("installed tmux-opencode healthcheck cron entry")
     print(cron_line)
     return 0

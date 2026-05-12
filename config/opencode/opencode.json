@@ -37,7 +37,8 @@
 		"opencode-rate-limit-fallback@0.3.1",
 		"file:///{env:HOME}/dot/config/opencode/plugin/interrupt-on-x.js",
 		"file:///{env:HOME}/dot/config/opencode/plugin/never-stop.ts",
-		"@plannotator/opencode@latest"
+		"file:///{env:HOME}/dot/config/opencode/plugin/goal.ts",
+		"@plannotator/opencode@0.19.8"
 	],
 	"provider": {
 		"fireworks-ai": {
