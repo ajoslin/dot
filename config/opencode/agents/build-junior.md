@@ -1,11 +1,9 @@
 ---
 description: Focused execution subagent for narrow implementation slices delegated by build.
 mode: subagent
-model: openai/gpt-5.5-fast
+model: anthropic/claude-opus-4-6
 options:
-  reasoningEffort: low
-tools:
-  skill: true
+  reasoningEffort: high
 permission:
   "*": allow
 ---

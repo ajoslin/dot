@@ -1,9 +1,9 @@
 ---
 description: Manager/orchestrator agent. Break tasks into parts and delegate implementation to subagents.
 mode: all
-model: anthropic/claude-opus-4-6
+model: openai/gpt-5.5
 options:
-  reasoningEffort: high
+  reasoningEffort: low
 permission:
   apply_patch: deny
   write: deny
