@@ -1,6 +1,6 @@
 ---
 description: Cost-effective agent for simple tasks.
-model: fireworks-ai/accounts/fireworks/models/kimi-k2p6
+model: fireworks-ai/accounts/fireworks/models/kimi-k2p6-turbo
 mode: all
 ---
 

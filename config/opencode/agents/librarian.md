@@ -1,7 +1,7 @@
 ---
 description: Multi-repository codebase expert. For external libraries, remote repos, docs.
 mode: subagent
-model: fireworks-ai/accounts/fireworks/models/kimi-k2p6
+model: fireworks-ai/accounts/fireworks/models/kimi-k2p6-turbo
 tools:
   write: false
   edit: false

@@ -60,10 +60,10 @@
 					"temperature": true,
 					"tool_call": true
 				},
-				"accounts/fireworks/models/kimi-k2p6": {
+				"accounts/fireworks/models/kimi-k2p6-turbo": {
 					"attachment": true,
 					"family": "kimi",
-					"id": "accounts/fireworks/models/kimi-k2p6",
+					"id": "accounts/fireworks/models/kimi-k2p6-turbo",
 					"limit": {
 						"context": 256000,
 						"output": 256000
@@ -72,7 +72,7 @@
 						"input": ["text", "image"],
 						"output": ["text"]
 					},
-					"name": "Kimi K2.6 (Developer Pass)",
+					"name": "Kimi K2.6 Turbo (Developer Pass)",
 					"reasoning": true,
 					"temperature": true,
 					"tool_call": true
