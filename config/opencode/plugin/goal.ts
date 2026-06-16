@@ -86,7 +86,7 @@ export const GoalPlugin = async ({
 			}),
 			create_goal: tool({
 				description:
-					"Create a new active goal for this session only when no goal exists. Goals default to unlimited token budget.",
+					"Create a new active goal for this session ONLY when the user explicitly commands goal creation/setting and no goal exists. Explicit commands include bare /goal <objective>, /goal create <objective>, /goal set <objective>, /goal start <objective>, /goal: <objective>, or direct requests to invoke/call create_goal. Do not use for status checks, ambiguous requests, implied tasks, or ordinary work requests. Goals default to unlimited token budget.",
 				args: {
 					objective: tool.schema.string().describe("Explicit goal objective."),
 				},
