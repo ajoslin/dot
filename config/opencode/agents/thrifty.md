@@ -1,6 +1,6 @@
 ---
 description: Cost-effective agent for simple tasks.
-model: fireworks-ai/accounts/fireworks/models/kimi-k2p6-turbo
+model: vercel/zai/glm-5.2-fast
 mode: all
 ---
 
